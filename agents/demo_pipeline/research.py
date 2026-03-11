@@ -403,7 +403,7 @@ def _gather_operator_philosophy() -> str:
 def _gather_architecture_rag(scope: str, limit: int = 10) -> str:
     """Semantic search over architecture docs in Qdrant 'documents' collection.
 
-    Filters by source path containing 'hapax-mgmt' to isolate architecture docs
+    Filters by source path containing 'hapax-officium' to isolate architecture docs
     from personal data in the same collection.
     """
     try:
@@ -418,7 +418,7 @@ def _gather_architecture_rag(scope: str, limit: int = 10) -> str:
             f"{scope} agent orchestration tiered architecture",
         ]
         hapax_filter = Filter(
-            must=[FieldCondition(key="source", match=MatchText(text="hapax-mgmt"))]
+            must=[FieldCondition(key="source", match=MatchText(text="hapax-officium"))]
         )
         seen_ids: set[str] = set()
         chunks: list[str] = []

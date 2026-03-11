@@ -210,7 +210,7 @@ async def _preflight_check(specs: list[tuple[str, ScreenshotSpec]]) -> None:
             except httpx.HTTPError:
                 hint = ""
                 if "localhost:5173" in origin or "localhost:8060" in origin:
-                    hint = " If this is cockpit-web, start it with: cd ~/projects/hapax-mgmt/cockpit-web && pnpm dev"
+                    hint = " If this is cockpit-web, start it with: cd ~/projects/hapax-officium/officium-web && pnpm dev"
                 raise ConnectionError(f"Cannot reach {origin}.{hint}") from None
 
 

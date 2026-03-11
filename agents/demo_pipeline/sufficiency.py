@@ -349,7 +349,7 @@ def check_sufficiency(
 
         arch_vector = embed("system architecture design")
         arch_filter = Filter(
-            must=[FieldCondition(key="source", match=MatchText(text="hapax-mgmt"))]
+            must=[FieldCondition(key="source", match=MatchText(text="hapax-officium"))]
         )
         arch_results = client.query_points(
             collection_name="documents",
@@ -381,12 +381,12 @@ def check_sufficiency(
         detail = "file not found"
     system_checks.append(KnowledgeCheck("profile_digest", available, detail, "system"))
 
-    # 9. doc_freshness — count of hapax-mgmt doc chunks in Qdrant
+    # 9. doc_freshness — count of hapax-officium doc chunks in Qdrant
     progress("Checking doc freshness...")
     try:
         from qdrant_client.models import FieldCondition, Filter, MatchText
 
-        doc_filter = Filter(must=[FieldCondition(key="source", match=MatchText(text="hapax-mgmt"))])
+        doc_filter = Filter(must=[FieldCondition(key="source", match=MatchText(text="hapax-officium"))])
         doc_count_result = client.count(
             collection_name="documents",
             count_filter=doc_filter,

@@ -54,7 +54,7 @@ def _mock_qdrant_collection(point_count: int, arch_rag_available: bool = True):
     qp_result = MagicMock()
     if arch_rag_available:
         point = MagicMock()
-        point.payload = {"source": "/documents/rag-sources/hapax-mgmt/CLAUDE.md", "text": "arch"}
+        point.payload = {"source": "/documents/rag-sources/hapax-officium/CLAUDE.md", "text": "arch"}
         qp_result.points = [point]
     else:
         qp_result.points = []

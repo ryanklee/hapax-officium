@@ -4,7 +4,7 @@ This document defines the relationship between the wider hapax system and the
 containerized management cockpit. It must be byte-identical in both repos:
 
 - `~/projects/hapaxromana/docs/cross-project-boundary.md`
-- `~/projects/hapax-mgmt/docs/cross-project-boundary.md`
+- `~/projects/hapax-officium/docs/cross-project-boundary.md`
 
 Any divergence is a high-severity drift item detected by the wider system's
 drift-detector agent (weekly Sunday 03:00).
@@ -16,7 +16,7 @@ function platform for a single operator. Covers all domains — management,
 personal knowledge, health monitoring, audio capture, content sync, creative
 production. 28+ agents across sync, RAG, analysis, and automation.
 
-**Management Cockpit** (`hapax-mgmt`): A management-only decision
+**Management Cockpit** (`hapax-officium`): A management-only decision
 support system extracted from the wider system in March 2026. Purpose-built
 for team leadership — 1:1 prep, coaching tracking, management self-awareness
 profiling, actionable nudges. 15 agents, all management-scoped. Safety
@@ -35,15 +35,15 @@ extracted via a deliberate conversion that:
 - Rewrote the demo pipeline for management-only content
 
 The extraction is documented in:
-- `hapax-mgmt/docs/plans/2026-03-06-management-conversion-design.md`
-- `hapax-mgmt/docs/plans/2026-03-06-management-conversion-plan.md`
+- `hapax-officium/docs/plans/2026-03-06-management-conversion-design.md`
+- `hapax-officium/docs/plans/2026-03-06-management-conversion-plan.md`
 
 ## Axiom Correspondence
 
-hapax-mgmt's axioms are a fork-with-rename of the wider system's axioms.
+hapax-officium's axioms are a fork-with-rename of the wider system's axioms.
 Same constitutional principles, different grounding language.
 
-| Wider System (hapaxromana) | hapax-mgmt | Weight | Notes |
+| Wider System (hapaxromana) | hapax-officium | Weight | Notes |
 |---------------------------|------------------|--------|-------|
 | single_operator | single_operator | 100 | Same semantics, role-generic language |
 | decision_support | decision_support | 95 | Regrounded: neurodivergent-friendly design → decision-support theory |
@@ -56,7 +56,7 @@ All T0 blocking implications are preserved. Only the grounding text differs.
 
 ### Present in both (identical or renamed)
 
-| Wider System | hapax-mgmt | Change |
+| Wider System | hapax-officium | Change |
 |-------------|------------------|--------|
 | management_prep | management_prep | Identical |
 | meeting_lifecycle | meeting_lifecycle | Identical |
@@ -71,7 +71,7 @@ All T0 blocking implications are preserved. Only the grounding text differs.
 | introspect | introspect | Ported |
 | ingest | ingest | Ported |
 
-### Only in hapax-mgmt
+### Only in hapax-officium
 
 | Agent | Purpose |
 |-------|---------|
@@ -79,7 +79,7 @@ All T0 blocking implications are preserved. Only the grounding text differs.
 | status_update | Upward-facing status reports from management data |
 | review_prep | Performance review evidence aggregation |
 
-### Only in wider system (removed from hapax-mgmt)
+### Only in wider system (removed from hapax-officium)
 
 Sync agents (7): gdrive_sync, gcalendar_sync, gmail_sync, youtube_sync,
 chrome_sync, claude_code_sync, obsidian_sync.
@@ -92,7 +92,7 @@ Other (3): query, profiler_sources, demo_eval.
 
 ## Shared Modules
 
-18 modules in `shared/` exist in both repos. hapax-mgmt is a strict
+18 modules in `shared/` exist in both repos. hapax-officium is a strict
 subset — it has no unique shared modules.
 
 Key shared modules: config.py, operator.py, profile_store.py,
@@ -100,7 +100,7 @@ management_bridge.py, notify.py, vault_writer.py, axiom_*.py,
 context_tools.py, langfuse_client.py, langfuse_config.py.
 
 The wider system has 18 additional shared modules not present in
-hapax-mgmt (google_auth.py, calendar_context.py, health_*.py,
+hapax-officium (google_auth.py, calendar_context.py, health_*.py,
 capacity.py, dimensions.py, email_utils.py, service_*.py, etc.).
 
 ## Infrastructure (Isolated)

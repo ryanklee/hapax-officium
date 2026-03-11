@@ -1,6 +1,6 @@
 # Management Cockpit — Operations Manual
 
-*Operational reference for the hapax-mgmt management cockpit system.*
+*Operational reference for the hapax-officium management cockpit system.*
 
 ---
 
@@ -514,7 +514,7 @@ uv run pytest tests/ -q
 | `cockpit/` | FastAPI API server + data collectors + reactive engine |
 | `data/` | Live management data (DATA_DIR) |
 | `demo-data/` | Synthetic seed corpus |
-| `hapax-mgmt-web/` | React dashboard (SPA) |
+| `officium-web/` | React dashboard (SPA) |
 | `axioms/` | Axiom governance definitions |
 
 ---

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What This Repo Is
 
-**Management Cockpit** -- a decision support system for a single engineering manager. Agents prepare context for 1:1s, track management practice patterns, surface stale conversations and open loops, and profile the operator's management self-awareness. A React dashboard provides the operational interface.
+**hapax-officium** -- a management decision support system for a single engineering manager. Agents prepare context for 1:1s, track management practice patterns, surface stale conversations and open loops, and profile the operator's management self-awareness. A React dashboard provides the operational interface. A management instantiation of the hapax-core pattern.
 
 **Demo seed system:** This repo is designed to produce, at any moment, a fully-hydrated replica of itself containing realistic synthetic data exercised through every agent and collector. The demo agent then operates against a live, functioning system -- not a static mockup. See `demo-data/` for the synthetic corpus and `scripts/bootstrap-demo.sh` for the hydration pipeline.
 
@@ -13,7 +13,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Repository Layout
 
 ```
-hapax-mgmt/
+hapax-officium/
 ├── CLAUDE.md                    # This file
 ├── agents/                      # 16 agents (7 management + 5 system + 2 I/O + 2 demo)
 │   ├── management_prep.py       # 1:1 prep, team snapshots, overviews
@@ -43,7 +43,7 @@ hapax-mgmt/
 ├── profiles/                    # Persistent state (gitignored: *.json, *.md, *.jsonl, *.yaml)
 ├── scripts/                     # Bootstrap and operational scripts
 ├── tests/                       # Test suite
-├── hapax-mgmt-web/              # React SPA dashboard
+├── officium-web/                # React SPA dashboard
 ├── vscode/                      # VS Code extension (TypeScript)
 ├── axioms/                      # Governance axioms (registry.yaml + implications)
 ├── docs/                        # Design documents and plans

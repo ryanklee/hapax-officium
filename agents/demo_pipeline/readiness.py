@@ -102,7 +102,7 @@ def check_readiness(
     except Exception:
         issues.append(
             "Cockpit API (:8060) not reachable — start with: "
-            "cd ~/projects/hapax-mgmt/ai-agents && uv run python -m cockpit.api --port 8060"
+            "cd ~/projects/hapax-officium/ai-agents && uv run python -m cockpit.api --port 8060"
         )
 
     # 3. Cockpit web
@@ -114,7 +114,7 @@ def check_readiness(
     except Exception:
         issues.append(
             "Cockpit web (:5173) not reachable — start with: "
-            "cd ~/projects/hapax-mgmt/cockpit-web && pnpm dev"
+            "cd ~/projects/hapax-officium/officium-web && pnpm dev"
         )
 
     # 4 & 5. TTS (only if required)
@@ -127,7 +127,7 @@ def check_readiness(
         except Exception:
             issues.append(
                 "Chatterbox TTS (:4123) not running — start with: "
-                "cd ~/projects/hapax-mgmt/llm-stack && docker compose --profile tts up -d chatterbox"
+                "cd ~/projects/hapax-officium/llm-stack && docker compose --profile tts up -d chatterbox"
             )
 
         # Voice sample

@@ -1107,7 +1107,7 @@ wheels = [
 ]
 
 [[package]]
-name = "hapax-mgmt"
+name = "hapax-officium"
 version = "1.0.0"
 source = { editable = "." }
 dependencies = [

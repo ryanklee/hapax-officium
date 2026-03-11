@@ -1,4 +1,4 @@
-# Document Registry — hapax-mgmt
+# Document Registry — hapax-officium
 #
 # Consumed by shared/document_registry.py and agents/drift_detector.py.
 # Defines archetypes, repo declarations, coverage rules, and mutual
@@ -47,7 +47,7 @@ archetypes:
 # ── Repos ─────────────────────────────────────────────────────────────────────
 
 repos:
-  hapax-mgmt:
+  hapax-officium:
     path: "."
     required_docs:
       - path: "CLAUDE.md"

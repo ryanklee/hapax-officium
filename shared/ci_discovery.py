@@ -1,7 +1,7 @@
 """CI discovery — find live Configuration Items for coverage enforcement.
 
 Discovers agents, timers, and services from the filesystem and Docker.
-Adapted for the hapax-mgmt self-contained repo (no systemd, no multi-repo scan).
+Adapted for the hapax-officium self-contained repo (no systemd, no multi-repo scan).
 Zero LLM calls.
 """
 

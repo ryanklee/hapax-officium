@@ -72,7 +72,7 @@ The cockpit consumes data from health-monitor, briefing, scout, activity-analyze
 
 ### Extended Interactive Surfaces
 
-> **Note:** The surfaces listed below are part of the wider Hapax system only, not part of hapax-mgmt. They are documented here for architectural context.
+> **Note:** The surfaces listed below are part of the wider Hapax system only, not part of hapax-officium. They are documented here for architectural context.
 
 Beyond Claude Code and the Cockpit, the wider Hapax system includes additional LLM-enabled surfaces that route through LiteLLM for model access and Langfuse tracing. These are not agents — they are interaction points that make LLM availability ambient across the workstation.
 

@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 packages = ["agents", "cockpit", "shared"]
 
 [project]
-name = "hapax-mgmt"
+name = "hapax-officium"
 version = "1.0.0"
 description = "Management decision support cockpit for engineering managers"
 readme = "README.md"

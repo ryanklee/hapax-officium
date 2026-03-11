@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """index-docs.py — Index project documentation into Qdrant for demo research.
 
-Reads markdown and YAML files from the hapax-mgmt project root, chunks them
+Reads markdown and YAML files from the hapax-officium project root, chunks them
 by heading boundaries, embeds via nomic-embed-text, and upserts into the
 Qdrant "documents" collection with deterministic UUIDs for idempotency.
 
@@ -29,7 +29,7 @@ from shared.config import PROJECT_ROOT, embed_batch, get_qdrant  # noqa: E402
 log = logging.getLogger("index-docs")
 
 COLLECTION = "documents"
-SOURCE_PREFIX = "/documents/rag-sources/hapax-mgmt"
+SOURCE_PREFIX = "/documents/rag-sources/hapax-officium"
 BATCH_SIZE = 100
 MIN_CHUNK_CHARS = 200
 MAX_CHUNK_CHARS = 1500

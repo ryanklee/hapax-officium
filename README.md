@@ -1,6 +1,8 @@
-# hapax-mgmt
+# hapax-officium
 
 A management cockpit for engineering managers. LLM-powered agents prepare context for 1:1s, track management practice patterns, surface stale conversations and open loops, and profile your management self-awareness -- so you walk into every conversation prepared, not scrambling. A React dashboard and FastAPI backend provide the operational interface.
+
+A management instantiation of the [hapax-core](https://github.com/ryanklee/hapax-core) pattern. See [hapax-council](https://github.com/ryanklee/hapax-council) for the full operational system.
 
 **Safety principle:** LLMs prepare, humans deliver. The system never generates feedback language, coaching recommendations, or evaluations of individual team members.
 
@@ -8,8 +10,8 @@ A management cockpit for engineering managers. LLM-powered agents prepare contex
 
 ```bash
 # Clone and install
-git clone https://github.com/ryanklee/hapax-mgmt.git
-cd hapax-mgmt
+git clone git@github.com:ryanklee/hapax-officium.git
+cd hapax-officium
 uv sync
 
 # Run tests (all mocked, no infrastructure needed)
@@ -28,7 +30,7 @@ uv run python -m cockpit.api --host 127.0.0.1 --port 8050
 ## Project Structure
 
 ```
-hapax-mgmt/
+hapax-officium/
 ├── agents/              16 agents (management, system, I/O, demo)
 ├── shared/              Shared modules (config, data bridge, profile, axioms)
 ├── cockpit/             FastAPI API + data collectors + reactive engine
@@ -40,7 +42,7 @@ hapax-mgmt/
 ├── profiles/            Generated operational state (gitignored)
 ├── scripts/             Bootstrap and operational scripts
 ├── tests/               Test suite
-├── hapax-mgmt-web/      React SPA dashboard
+├── officium-web/        React SPA dashboard
 ├── vscode/              VS Code extension
 ├── axioms/              Governance axioms (registry + implications)
 ├── docs/                Design documents and plans

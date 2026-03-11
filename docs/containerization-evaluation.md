@@ -256,7 +256,7 @@ hapax-ingest:
 | Add `OLLAMA_URL` to config constants | `shared/config.py` | Trivial | None |
 | Update systemd watchdogs to use `docker compose run` | `systemd/watchdogs/*` | Medium | Low |
 | Add hapax-agents + hapax-ingest to compose | `llm-stack/docker-compose.yml` | Low | Low |
-| Update cockpit-web API base URL | `hapax-mgmt-web/` config | Trivial | None |
+| Update cockpit-web API base URL | `officium-web/` config | Trivial | None |
 | Update hapax-vscode cockpit URL | `vscode/` settings | Trivial | None |
 
 ## Environment Variables for Container

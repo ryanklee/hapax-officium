@@ -761,12 +761,12 @@ def test_gather_architecture_rag_filters_by_source():
             result.points = [
                 make_point(
                     "p1",
-                    "/home/user/documents/rag-sources/hapax-mgmt/CLAUDE.md",
+                    "/home/user/documents/rag-sources/hapax-officium/CLAUDE.md",
                     "Architecture overview",
                 ),
                 make_point(
                     "p2",
-                    "/home/user/documents/rag-sources/hapax-mgmt/agent-architecture.md",
+                    "/home/user/documents/rag-sources/hapax-officium/agent-architecture.md",
                     "Agent tiers",
                 ),
             ]
@@ -774,7 +774,7 @@ def test_gather_architecture_rag_filters_by_source():
             result.points = [
                 make_point(
                     "p1",
-                    "/home/user/documents/rag-sources/hapax-mgmt/CLAUDE.md",
+                    "/home/user/documents/rag-sources/hapax-officium/CLAUDE.md",
                     "Architecture overview",
                 ),  # dupe
             ]
