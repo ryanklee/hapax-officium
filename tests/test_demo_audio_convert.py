@@ -1,4 +1,5 @@
 """Tests for WAV-to-MP3 audio conversion."""
+
 from __future__ import annotations
 
 import struct
@@ -9,6 +10,7 @@ import pytest
 
 try:
     import imageio_ffmpeg  # noqa: F401
+
     _HAS_FFMPEG = True
 except ModuleNotFoundError:
     _HAS_FFMPEG = False

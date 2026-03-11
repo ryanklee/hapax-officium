@@ -3,6 +3,7 @@
 All endpoints return the latest cached data from the background
 refresh loop. Clients poll at 5-minute cadence.
 """
+
 from __future__ import annotations
 
 from dataclasses import asdict
@@ -75,6 +76,7 @@ def _freshness_response(data: Any, *, hot: bool = True) -> JSONResponse:
 
 # ── Management data ────────────────────────────────────────────────────
 
+
 @router.get("/briefing")
 async def get_briefing():
     return _freshness_response(cache.briefing, hot=True)
@@ -106,6 +108,7 @@ async def get_team_health():
 
 
 # ── Tier 1 expansion ──────────────────────────────────────────────────
+
 
 @router.get("/okrs")
 async def get_okrs():

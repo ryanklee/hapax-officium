@@ -4,6 +4,7 @@ Uses pydantic-ai with structured output to generate SimulatedEvent
 objects for a single simulation tick. Safety enforcement strips
 body_template from restricted types (coaching, feedback).
 """
+
 from __future__ import annotations
 
 import logging
@@ -11,8 +12,8 @@ from typing import Any
 
 from pydantic_ai import Agent
 
-from shared.config import get_model
 from agents.simulator_pipeline.models import ContentPolicy, SimulatedEvent
+from shared.config import get_model
 
 _log = logging.getLogger(__name__)
 
@@ -63,6 +64,7 @@ async def generate_tick_events(
     # Validate against workflow-semantics if provided
     if valid_workflows is not None:
         from agents.simulator_pipeline.validation import validate_events
+
         events = validate_events(events, valid_workflows)
 
     return events

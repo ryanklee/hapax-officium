@@ -1,10 +1,11 @@
 """Tests for mutable DATA_DIR config holder."""
+
 from __future__ import annotations
 
 from pathlib import Path
 from unittest.mock import patch
 
-from shared.config import config, DATA_DIR
+from shared.config import DATA_DIR, config
 
 
 class TestMutableConfig:
@@ -30,7 +31,7 @@ class TestMutableConfig:
         original = config.data_dir
         try:
             config.set_data_dir(tmp_path)
-            assert DATA_DIR != tmp_path
+            assert tmp_path != DATA_DIR
         finally:
             config.set_data_dir(original)
 
@@ -45,5 +46,6 @@ class TestMutableConfig:
         """HAPAX_DATA_DIR env var is respected at init time."""
         with patch.dict("os.environ", {"HAPAX_DATA_DIR": str(tmp_path)}):
             from shared.config import _Config
+
             c = _Config()
             assert c.data_dir == tmp_path

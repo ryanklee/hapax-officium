@@ -1,17 +1,13 @@
 """Tests for cockpit/engine/synthesis.py — SynthesisScheduler."""
+
 from __future__ import annotations
 
 import asyncio
 import time
-from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
-
-import pytest
 
 from cockpit.engine.synthesis import (
     HOT_PATH,
-    WARM_PATH,
-    SYNTHESIS_RELEVANT,
     SynthesisScheduler,
 )
 
@@ -45,7 +41,14 @@ class TestSignal:
     def test_irrelevant_subdirectory(self):
         """decisions/, status-reports/, references/, 1on1-prep/ don't affect dirty set."""
         scheduler, _ = _make_scheduler()
-        for subdir in ("decisions", "status-reports", "references", "1on1-prep", "inbox", "processed"):
+        for subdir in (
+            "decisions",
+            "status-reports",
+            "references",
+            "1on1-prep",
+            "inbox",
+            "processed",
+        ):
             scheduler.signal(subdir)
         assert len(scheduler._dirty) == 0
         assert scheduler._profiler_dirty is False
@@ -93,10 +96,12 @@ class TestQuietWindow:
         """Handlers called after timer expires."""
         scheduler, executor = _make_scheduler(quiet_window_s=0.05)
 
-        with patch("cockpit.engine.synthesis._synthesize_briefing", new_callable=AsyncMock) as mock_brief, \
-             patch("cockpit.engine.synthesis._synthesize_snapshot", new_callable=AsyncMock) as mock_snap, \
-             patch("cockpit.engine.synthesis._synthesize_overview", new_callable=AsyncMock) as mock_over, \
-             patch("cockpit.api.cache.cache") as mock_cache:
+        with (
+            patch("cockpit.engine.synthesis._synthesize_briefing", new_callable=AsyncMock),
+            patch("cockpit.engine.synthesis._synthesize_snapshot", new_callable=AsyncMock),
+            patch("cockpit.engine.synthesis._synthesize_overview", new_callable=AsyncMock),
+            patch("cockpit.api.cache.cache") as mock_cache,
+        ):
             mock_cache.refresh = AsyncMock()
 
             scheduler.signal("people")
@@ -115,9 +120,7 @@ class TestQuietWindow:
 class TestSuppression:
     async def test_suppressed_when_agent_running(self):
         """Reschedules 60s when manual agent active."""
-        scheduler, executor = _make_scheduler(
-            agent_running=True, quiet_window_s=0.05
-        )
+        scheduler, executor = _make_scheduler(agent_running=True, quiet_window_s=0.05)
 
         scheduler.signal("people")
         await asyncio.sleep(0.2)

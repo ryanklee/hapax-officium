@@ -1,11 +1,15 @@
 # ai-agents/tests/test_simulator_renderer.py
 """Tests for simulator event renderer."""
+
 from __future__ import annotations
 
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 from agents.simulator_pipeline.models import SimulatedEvent
 from agents.simulator_pipeline.renderer import render_event, render_events
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 class TestRenderEvent:

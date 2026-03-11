@@ -6,6 +6,7 @@ repaying-debt, innovating).
 
 Fully deterministic, no LLM calls.
 """
+
 from __future__ import annotations
 
 import logging
@@ -19,6 +20,7 @@ _log = logging.getLogger(__name__)
 @dataclass
 class TeamState:
     """Aggregated state of a single team."""
+
     name: str
     members: list[PersonState] = field(default_factory=list)
     avg_cognitive_load: float | None = None
@@ -26,14 +28,15 @@ class TeamState:
     stale_1on1_count: int = 0
     coaching_active_count: int = 0
     size: int = 0
-    larson_state: str = ""           # falling-behind | treading-water | repaying-debt | innovating
+    larson_state: str = ""  # falling-behind | treading-water | repaying-debt | innovating
     larson_evidence: list[str] = field(default_factory=list)
-    team_type: str = ""              # majority team-type from members
+    team_type: str = ""  # majority team-type from members
 
 
 @dataclass
 class TeamHealthSnapshot:
     """Aggregated team health across all teams."""
+
     teams: list[TeamState] = field(default_factory=list)
     total_people: int = 0
     teams_falling_behind: int = 0
@@ -69,10 +72,12 @@ def classify_larson_state(team: TeamState) -> tuple[str, list[str]]:
         return "falling-behind", evidence
 
     # innovating: low load AND coaching active AND no stale 1:1s
-    if (has_load_data
-            and team.avg_cognitive_load < 3  # type: ignore[operator]
-            and team.coaching_active_count > 0
-            and team.stale_1on1_count == 0):
+    if (
+        has_load_data
+        and team.avg_cognitive_load < 3  # type: ignore[operator]
+        and team.coaching_active_count > 0
+        and team.stale_1on1_count == 0
+    ):
         evidence.append(f"avg load {team.avg_cognitive_load:.1f} < 3")
         evidence.append(f"{team.coaching_active_count} active coaching")
         evidence.append("no stale 1:1s")
@@ -96,6 +101,7 @@ def classify_larson_state(team: TeamState) -> tuple[str, list[str]]:
 def _compute_majority_team_type(members: list[PersonState]) -> str:
     """Return the most common team_type among members, or empty string."""
     from collections import Counter
+
     types = [m.team_type for m in members if m.team_type]
     if not types:
         return ""

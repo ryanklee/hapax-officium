@@ -4,15 +4,19 @@ Deterministic, no LLM calls. Tracks performance review process
 state: deadlines, self-assessments, peer feedback progress.
 Does NOT track review content (management safety axiom).
 """
+
 from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
 from datetime import date
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 from shared.config import config
 from shared.frontmatter import parse_frontmatter as _parse_frontmatter
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 _log = logging.getLogger(__name__)
 

@@ -1,10 +1,15 @@
 """Tests for cockpit/data/postmortem_actions.py."""
+
 from __future__ import annotations
 
-from pathlib import Path
-from shared.config import config
+from typing import TYPE_CHECKING
 
 import yaml
+
+from shared.config import config
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def _write_md(path: Path, frontmatter: dict, body: str = "") -> None:
@@ -17,15 +22,18 @@ class TestCollectPostmortemActions:
     def test_open_action(self, tmp_path: Path):
         from cockpit.data.postmortem_actions import collect_postmortem_action_state
 
-        _write_md(tmp_path / "postmortem-actions" / "add-alerting.md", {
-            "type": "postmortem-action",
-            "incident-ref": "2026-02-15-api-gateway-outage",
-            "title": "Add alerting",
-            "owner": "Marcus",
-            "status": "open",
-            "priority": "high",
-            "due-date": "2026-03-01",
-        })
+        _write_md(
+            tmp_path / "postmortem-actions" / "add-alerting.md",
+            {
+                "type": "postmortem-action",
+                "incident-ref": "2026-02-15-api-gateway-outage",
+                "title": "Add alerting",
+                "owner": "Marcus",
+                "status": "open",
+                "priority": "high",
+                "due-date": "2026-03-01",
+            },
+        )
 
         config.set_data_dir(tmp_path)
         try:
@@ -39,10 +47,15 @@ class TestCollectPostmortemActions:
     def test_overdue_action(self, tmp_path: Path):
         from cockpit.data.postmortem_actions import collect_postmortem_action_state
 
-        _write_md(tmp_path / "postmortem-actions" / "overdue.md", {
-            "type": "postmortem-action", "title": "Overdue task",
-            "status": "open", "due-date": "2026-01-01",
-        })
+        _write_md(
+            tmp_path / "postmortem-actions" / "overdue.md",
+            {
+                "type": "postmortem-action",
+                "title": "Overdue task",
+                "status": "open",
+                "due-date": "2026-01-01",
+            },
+        )
 
         config.set_data_dir(tmp_path)
         try:
@@ -57,10 +70,15 @@ class TestCollectPostmortemActions:
     def test_completed_not_open(self, tmp_path: Path):
         from cockpit.data.postmortem_actions import collect_postmortem_action_state
 
-        _write_md(tmp_path / "postmortem-actions" / "done.md", {
-            "type": "postmortem-action", "title": "Done",
-            "status": "completed", "completed-date": "2026-02-20",
-        })
+        _write_md(
+            tmp_path / "postmortem-actions" / "done.md",
+            {
+                "type": "postmortem-action",
+                "title": "Done",
+                "status": "completed",
+                "completed-date": "2026-02-20",
+            },
+        )
 
         config.set_data_dir(tmp_path)
         try:

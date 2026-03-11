@@ -1,21 +1,21 @@
 # ai-agents/tests/test_simulator_context.py
 """Tests for simulator context assembly."""
+
 from __future__ import annotations
 
 from pathlib import Path
 
 from agents.simulator_pipeline.context import (
-    load_workflow_semantics,
+    build_tick_prompt,
+    compose_role_profile,
+    infer_role,
+    load_org_dossier,
     load_role_matrix,
     load_scenarios,
-    load_org_dossier,
-    infer_role,
-    compose_role_profile,
-    build_tick_prompt,
+    load_workflow_semantics,
     validate_distribution,
 )
 from agents.simulator_pipeline.models import SimulatedEvent
-
 
 _FIXTURES = Path(__file__).resolve().parent.parent
 _WORKFLOW_SEMANTICS = _FIXTURES / "docs" / "workflow-semantics.yaml"

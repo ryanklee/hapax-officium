@@ -8,15 +8,15 @@ Usage:
     uv run python -m shared.axiom_derivation --axiom single_user
     uv run python -m shared.axiom_derivation --axiom executive_function --output implications.yaml
 """
+
 from __future__ import annotations
 
 import argparse
 import asyncio
 import logging
 import re
-import sys
 from collections import Counter
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import yaml
@@ -129,7 +129,7 @@ def merge_self_consistent(runs: list[list[dict]]) -> list[dict]:
 
     threshold = max(1, len(runs) // 2)  # Majority: appears in > half of runs
     merged = []
-    for impl_id, versions in by_id.items():
+    for _impl_id, versions in by_id.items():
         if len(versions) < threshold:
             continue
 
@@ -161,13 +161,26 @@ async def derive_implications(
 
     # Gather codebase context
     import subprocess
+
     from shared.config import PROJECT_ROOT
+
     ai_agents_dir = PROJECT_ROOT / "ai-agents"
     result = subprocess.run(
-        ["find", str(ai_agents_dir),
-         "-name", "*.py", "-path", "*/agents/*", "-o",
-         "-name", "*.py", "-path", "*/shared/*"],
-        capture_output=True, text=True,
+        [
+            "find",
+            str(ai_agents_dir),
+            "-name",
+            "*.py",
+            "-path",
+            "*/agents/*",
+            "-o",
+            "-name",
+            "*.py",
+            "-path",
+            "*/shared/*",
+        ],
+        capture_output=True,
+        text=True,
     )
     file_tree = result.stdout.strip() if result.returncode == 0 else "File tree unavailable"
 
@@ -175,6 +188,7 @@ async def derive_implications(
 
     # Run N derivations
     from pydantic_ai import Agent
+
     agent = Agent(get_model("balanced"))
 
     runs = []
@@ -192,7 +206,7 @@ async def derive_implications(
     # Output
     output = {
         "axiom_id": axiom_id,
-        "derived_at": datetime.now(timezone.utc).isoformat()[:10],
+        "derived_at": datetime.now(UTC).isoformat()[:10],
         "model": "balanced",
         "derivation_version": 1,
         "implications": merged,

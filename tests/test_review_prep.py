@@ -1,19 +1,21 @@
 """Tests for agents/review_prep.py — review evidence data gathering and model."""
+
 from __future__ import annotations
 
-from datetime import datetime, timezone, timedelta
-from pathlib import Path
-from shared.config import config
+from datetime import UTC, datetime, timedelta
+from typing import TYPE_CHECKING
 
 import yaml
 
 from agents.review_prep import (
     ReviewEvidence,
     _gather_person_evidence,
-    _parse_frontmatter,
-    _file_date,
     _save_review,
 )
+from shared.config import config
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def _write_md(path: Path, frontmatter: dict, body: str = "") -> None:
@@ -70,13 +72,17 @@ class TestReviewEvidenceModel:
 
 class TestGatherMeetingsByAttendees:
     def test_matches_attendees_list(self, tmp_path: Path):
-        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-        _write_md(tmp_path / "meetings" / f"{today}-1on1.md", {
-            "type": "meeting",
-            "title": "1:1 with Alice",
-            "date": today,
-            "attendees": ["Alice", "Operator"],
-        }, "Discussed project status")
+        today = datetime.now(UTC).strftime("%Y-%m-%d")
+        _write_md(
+            tmp_path / "meetings" / f"{today}-1on1.md",
+            {
+                "type": "meeting",
+                "title": "1:1 with Alice",
+                "date": today,
+                "attendees": ["Alice", "Operator"],
+            },
+            "Discussed project status",
+        )
 
         config.set_data_dir(tmp_path)
         try:
@@ -88,13 +94,17 @@ class TestGatherMeetingsByAttendees:
         assert ev["meetings"][0]["filename"] == f"{today}-1on1.md"
 
     def test_attendee_case_insensitive(self, tmp_path: Path):
-        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-        _write_md(tmp_path / "meetings" / f"{today}-1on1.md", {
-            "type": "meeting",
-            "title": "1:1",
-            "date": today,
-            "attendees": ["ALICE", "Operator"],
-        }, "Content")
+        today = datetime.now(UTC).strftime("%Y-%m-%d")
+        _write_md(
+            tmp_path / "meetings" / f"{today}-1on1.md",
+            {
+                "type": "meeting",
+                "title": "1:1",
+                "date": today,
+                "attendees": ["ALICE", "Operator"],
+            },
+            "Content",
+        )
 
         config.set_data_dir(tmp_path)
         try:
@@ -110,12 +120,16 @@ class TestGatherMeetingsByAttendees:
 
 class TestGatherMeetingsByBodyText:
     def test_matches_body_mention(self, tmp_path: Path):
-        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-        _write_md(tmp_path / "meetings" / f"{today}-standup.md", {
-            "type": "meeting",
-            "title": "Standup",
-            "date": today,
-        }, "Alice presented the new design")
+        today = datetime.now(UTC).strftime("%Y-%m-%d")
+        _write_md(
+            tmp_path / "meetings" / f"{today}-standup.md",
+            {
+                "type": "meeting",
+                "title": "Standup",
+                "date": today,
+            },
+            "Alice presented the new design",
+        )
 
         config.set_data_dir(tmp_path)
         try:
@@ -126,12 +140,16 @@ class TestGatherMeetingsByBodyText:
         assert len(ev["meetings"]) == 1
 
     def test_no_match_excludes(self, tmp_path: Path):
-        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-        _write_md(tmp_path / "meetings" / f"{today}-standup.md", {
-            "type": "meeting",
-            "title": "Standup",
-            "date": today,
-        }, "Bob presented the new design")
+        today = datetime.now(UTC).strftime("%Y-%m-%d")
+        _write_md(
+            tmp_path / "meetings" / f"{today}-standup.md",
+            {
+                "type": "meeting",
+                "title": "Standup",
+                "date": today,
+            },
+            "Bob presented the new design",
+        )
 
         config.set_data_dir(tmp_path)
         try:
@@ -147,13 +165,17 @@ class TestGatherMeetingsByBodyText:
 
 class TestGatherCoaching:
     def test_matches_person_field(self, tmp_path: Path):
-        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-        _write_md(tmp_path / "coaching" / f"{today}-experiment.md", {
-            "type": "coaching",
-            "title": "Delegation experiment",
-            "person": "Alice",
-            "date": today,
-        }, "Trying to delegate more reviews")
+        today = datetime.now(UTC).strftime("%Y-%m-%d")
+        _write_md(
+            tmp_path / "coaching" / f"{today}-experiment.md",
+            {
+                "type": "coaching",
+                "title": "Delegation experiment",
+                "person": "Alice",
+                "date": today,
+            },
+            "Trying to delegate more reviews",
+        )
 
         config.set_data_dir(tmp_path)
         try:
@@ -165,13 +187,17 @@ class TestGatherCoaching:
         assert ev["coaching"][0]["frontmatter"]["title"] == "Delegation experiment"
 
     def test_excludes_other_person(self, tmp_path: Path):
-        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-        _write_md(tmp_path / "coaching" / f"{today}-experiment.md", {
-            "type": "coaching",
-            "title": "Delegation experiment",
-            "person": "Bob",
-            "date": today,
-        }, "Content")
+        today = datetime.now(UTC).strftime("%Y-%m-%d")
+        _write_md(
+            tmp_path / "coaching" / f"{today}-experiment.md",
+            {
+                "type": "coaching",
+                "title": "Delegation experiment",
+                "person": "Bob",
+                "date": today,
+            },
+            "Content",
+        )
 
         config.set_data_dir(tmp_path)
         try:
@@ -187,14 +213,18 @@ class TestGatherCoaching:
 
 class TestGatherFeedback:
     def test_matches_person_field(self, tmp_path: Path):
-        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-        _write_md(tmp_path / "feedback" / f"{today}-code-review.md", {
-            "type": "feedback",
-            "title": "Code review quality",
-            "person": "Alice",
-            "direction": "given",
-            "date": today,
-        }, "Feedback on code review thoroughness")
+        today = datetime.now(UTC).strftime("%Y-%m-%d")
+        _write_md(
+            tmp_path / "feedback" / f"{today}-code-review.md",
+            {
+                "type": "feedback",
+                "title": "Code review quality",
+                "person": "Alice",
+                "direction": "given",
+                "date": today,
+            },
+            "Feedback on code review thoroughness",
+        )
 
         config.set_data_dir(tmp_path)
         try:
@@ -205,12 +235,16 @@ class TestGatherFeedback:
         assert len(ev["feedback"]) == 1
 
     def test_person_case_insensitive(self, tmp_path: Path):
-        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-        _write_md(tmp_path / "feedback" / f"{today}-review.md", {
-            "type": "feedback",
-            "person": "alice",
-            "date": today,
-        }, "Content")
+        today = datetime.now(UTC).strftime("%Y-%m-%d")
+        _write_md(
+            tmp_path / "feedback" / f"{today}-review.md",
+            {
+                "type": "feedback",
+                "person": "alice",
+                "date": today,
+            },
+            "Content",
+        )
 
         config.set_data_dir(tmp_path)
         try:
@@ -226,15 +260,17 @@ class TestGatherFeedback:
 
 class TestDateFiltering:
     def test_excludes_old_evidence(self, tmp_path: Path):
-        old_date = (datetime.now(timezone.utc) - timedelta(days=200)).strftime(
-            "%Y-%m-%d"
+        old_date = (datetime.now(UTC) - timedelta(days=200)).strftime("%Y-%m-%d")
+        _write_md(
+            tmp_path / "meetings" / f"{old_date}-old.md",
+            {
+                "type": "meeting",
+                "title": "Old meeting",
+                "date": old_date,
+                "attendees": ["Alice"],
+            },
+            "Old content",
         )
-        _write_md(tmp_path / "meetings" / f"{old_date}-old.md", {
-            "type": "meeting",
-            "title": "Old meeting",
-            "date": old_date,
-            "attendees": ["Alice"],
-        }, "Old content")
 
         config.set_data_dir(tmp_path)
         try:
@@ -245,15 +281,17 @@ class TestDateFiltering:
         assert len(ev["meetings"]) == 0
 
     def test_includes_recent_evidence(self, tmp_path: Path):
-        recent = (datetime.now(timezone.utc) - timedelta(days=10)).strftime(
-            "%Y-%m-%d"
+        recent = (datetime.now(UTC) - timedelta(days=10)).strftime("%Y-%m-%d")
+        _write_md(
+            tmp_path / "coaching" / f"{recent}-exp.md",
+            {
+                "type": "coaching",
+                "title": "Recent coaching",
+                "person": "Alice",
+                "date": recent,
+            },
+            "Recent",
         )
-        _write_md(tmp_path / "coaching" / f"{recent}-exp.md", {
-            "type": "coaching",
-            "title": "Recent coaching",
-            "person": "Alice",
-            "date": recent,
-        }, "Recent")
 
         config.set_data_dir(tmp_path)
         try:
@@ -265,10 +303,14 @@ class TestDateFiltering:
 
     def test_includes_undated_files(self, tmp_path: Path):
         """Files without parseable dates should be included (not excluded)."""
-        _write_md(tmp_path / "feedback" / "undated-feedback.md", {
-            "type": "feedback",
-            "person": "Alice",
-        }, "Undated feedback content")
+        _write_md(
+            tmp_path / "feedback" / "undated-feedback.md",
+            {
+                "type": "feedback",
+                "person": "Alice",
+            },
+            "Undated feedback content",
+        )
 
         config.set_data_dir(tmp_path)
         try:
@@ -280,15 +322,17 @@ class TestDateFiltering:
 
     def test_longer_period_includes_more(self, tmp_path: Path):
         """12-month lookback should include files that 3-month excludes."""
-        five_months_ago = (datetime.now(timezone.utc) - timedelta(days=150)).strftime(
-            "%Y-%m-%d"
+        five_months_ago = (datetime.now(UTC) - timedelta(days=150)).strftime("%Y-%m-%d")
+        _write_md(
+            tmp_path / "meetings" / f"{five_months_ago}-meeting.md",
+            {
+                "type": "meeting",
+                "title": "5 months ago",
+                "date": five_months_ago,
+                "attendees": ["Alice"],
+            },
+            "Content from 5 months ago",
         )
-        _write_md(tmp_path / "meetings" / f"{five_months_ago}-meeting.md", {
-            "type": "meeting",
-            "title": "5 months ago",
-            "date": five_months_ago,
-            "attendees": ["Alice"],
-        }, "Content from 5 months ago")
 
         config.set_data_dir(tmp_path)
         try:
@@ -306,25 +350,37 @@ class TestDateFiltering:
 
 class TestUnknownPerson:
     def test_returns_empty_evidence(self, tmp_path: Path):
-        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-        _write_md(tmp_path / "meetings" / f"{today}-standup.md", {
-            "type": "meeting",
-            "title": "Standup",
-            "date": today,
-            "attendees": ["Bob", "Carol"],
-        }, "Bob and Carol discussed roadmap")
+        today = datetime.now(UTC).strftime("%Y-%m-%d")
+        _write_md(
+            tmp_path / "meetings" / f"{today}-standup.md",
+            {
+                "type": "meeting",
+                "title": "Standup",
+                "date": today,
+                "attendees": ["Bob", "Carol"],
+            },
+            "Bob and Carol discussed roadmap",
+        )
 
-        _write_md(tmp_path / "coaching" / f"{today}-coaching.md", {
-            "type": "coaching",
-            "person": "Bob",
-            "date": today,
-        }, "Bob coaching")
+        _write_md(
+            tmp_path / "coaching" / f"{today}-coaching.md",
+            {
+                "type": "coaching",
+                "person": "Bob",
+                "date": today,
+            },
+            "Bob coaching",
+        )
 
-        _write_md(tmp_path / "feedback" / f"{today}-feedback.md", {
-            "type": "feedback",
-            "person": "Carol",
-            "date": today,
-        }, "Carol feedback")
+        _write_md(
+            tmp_path / "feedback" / f"{today}-feedback.md",
+            {
+                "type": "feedback",
+                "person": "Carol",
+                "date": today,
+            },
+            "Carol feedback",
+        )
 
         config.set_data_dir(tmp_path)
         try:

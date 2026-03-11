@@ -5,12 +5,16 @@ activity metrics, profiler, briefing, digest, team snapshot.
 Each agent is called with try/except so individual failures
 don't abort the warm-up.
 """
+
 from __future__ import annotations
 
 import logging
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 from shared.config import config
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 _log = logging.getLogger(__name__)
 
@@ -71,16 +75,17 @@ def _run_activity() -> None:
     from shared.config import PROFILES_DIR
 
     report = generate_management_report()
-    (PROFILES_DIR / "management-activity.json").write_text(
-        report.model_dump_json(indent=2)
-    )
+    (PROFILES_DIR / "management-activity.json").write_text(report.model_dump_json(indent=2))
 
 
 async def _run_profiler() -> None:
     """Run management_profiler synthesis."""
     from agents.management_profiler import (
-        generate_and_load_management_facts, synthesize_profile,
-        build_profile, save_profile, load_existing_profile,
+        build_profile,
+        generate_and_load_management_facts,
+        load_existing_profile,
+        save_profile,
+        synthesize_profile,
     )
 
     facts = generate_and_load_management_facts()
@@ -93,32 +98,28 @@ async def _run_profiler() -> None:
 
 async def _run_briefing() -> None:
     """Run management_briefing synthesis."""
-    from agents.management_briefing import generate_briefing, format_briefing_md
-    from shared.vault_writer import write_briefing_to_vault
+    from agents.management_briefing import format_briefing_md, generate_briefing
     from shared.config import PROFILES_DIR
+    from shared.vault_writer import write_briefing_to_vault
 
     briefing = await generate_briefing()
     md = format_briefing_md(briefing)
     write_briefing_to_vault(md)
-    (PROFILES_DIR / "management-briefing.json").write_text(
-        briefing.model_dump_json(indent=2)
-    )
+    (PROFILES_DIR / "management-briefing.json").write_text(briefing.model_dump_json(indent=2))
 
 
 async def _run_digest() -> None:
     """Run digest synthesis."""
-    from agents.digest import generate_digest, format_digest_md
+    from agents.digest import generate_digest
     from shared.config import PROFILES_DIR
 
     digest = await generate_digest()
-    (PROFILES_DIR / "digest.json").write_text(
-        digest.model_dump_json(indent=2)
-    )
+    (PROFILES_DIR / "digest.json").write_text(digest.model_dump_json(indent=2))
 
 
 async def _run_snapshot() -> None:
     """Run team snapshot synthesis."""
-    from agents.management_prep import generate_team_snapshot, format_snapshot_md
+    from agents.management_prep import format_snapshot_md, generate_team_snapshot
     from shared.vault_writer import write_team_snapshot_to_vault
 
     snapshot = await generate_team_snapshot()

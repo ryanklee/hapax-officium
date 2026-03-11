@@ -3,23 +3,21 @@
 Tests classification logic with synthetic data. collect_team_health tests
 use mocked collect_management_state since vault is excised.
 """
+
 from __future__ import annotations
 
 from unittest.mock import patch
 
-import pytest
-
-from cockpit.data.management import PersonState, ManagementSnapshot
+from cockpit.data.management import ManagementSnapshot, PersonState
 from cockpit.data.team_health import (
     TeamState,
-    TeamHealthSnapshot,
+    _compute_majority_team_type,
     classify_larson_state,
     collect_team_health,
-    _compute_majority_team_type,
 )
 
-
 # ── classify_larson_state ──────────────────────────────────────────────────
+
 
 class TestClassifyLarsonState:
     def test_falling_behind_high_load(self):
@@ -127,6 +125,7 @@ class TestClassifyLarsonState:
 
 # ── collect_team_health ────────────────────────────────────────────────────
 
+
 class TestCollectTeamHealth:
     def test_empty_snapshot_returns_empty(self):
         """With empty management snapshot, team health is empty."""
@@ -159,8 +158,14 @@ class TestCollectTeamHealth:
     def test_team_state_aggregation(self):
         mock_snap = ManagementSnapshot(
             people=[
-                PersonState(name="Alice", team="platform", cognitive_load=5,
-                            stale_1on1=True, days_since_1on1=15, coaching_active=True),
+                PersonState(
+                    name="Alice",
+                    team="platform",
+                    cognitive_load=5,
+                    stale_1on1=True,
+                    days_since_1on1=15,
+                    coaching_active=True,
+                ),
                 PersonState(name="Bob", team="platform", cognitive_load=3),
             ],
             active_people_count=2,
@@ -200,6 +205,7 @@ class TestCollectTeamHealth:
 
 
 # ── _compute_majority_team_type ────────────────────────────────────────────
+
 
 class TestComputeMajorityTeamType:
     def test_majority(self):

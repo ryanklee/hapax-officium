@@ -3,14 +3,18 @@
 Deterministic, no LLM calls. Tracks incident status, severity,
 and whether a postmortem has been completed.
 """
+
 from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 from shared.config import config
 from shared.frontmatter import parse_frontmatter as _parse_frontmatter
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 _log = logging.getLogger(__name__)
 

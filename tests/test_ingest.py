@@ -3,22 +3,22 @@
 Covers transcript detection, frontmatter type detection, classification,
 and document processing/routing. All tests use tmp_path with patched DATA_DIR.
 """
+
 from __future__ import annotations
 
-from pathlib import Path
-from shared.config import config
-
-import pytest
+from typing import TYPE_CHECKING
 
 from agents.ingest import (
     DocumentType,
-    ProcessResult,
     _detect_frontmatter_type,
     _detect_transcript,
     classify_document,
     process_document,
 )
+from shared.config import config
 
+if TYPE_CHECKING:
+    from pathlib import Path
 
 # ── Helpers ──────────────────────────────────────────────────────────────
 
@@ -114,8 +114,7 @@ class TestClassifyDocument:
         """Transcript detection takes priority over frontmatter type."""
         p = tmp_path / "mixed.md"
         p.write_text(
-            "---\ntype: reference\n---\n"
-            "Alice: Hello\nBob: Hi\nCharlie: Hey\n",
+            "---\ntype: reference\n---\nAlice: Hello\nBob: Hi\nCharlie: Hey\n",
             encoding="utf-8",
         )
         assert classify_document(p) == DocumentType.TRANSCRIPT
@@ -168,7 +167,9 @@ class TestProcessDocument:
         try:
             (tmp_path / "people").mkdir()
 
-            src = _write_md(tmp_path / "alice.md", "type: person\nname: Alice\n", "Notes about Alice")
+            src = _write_md(
+                tmp_path / "alice.md", "type: person\nname: Alice\n", "Notes about Alice"
+            )
             result = await process_document(src)
 
             assert result.success is True

@@ -1,19 +1,24 @@
 """Self-contained HTML player generation from DemoScript + screenshots + audio."""
+
 from __future__ import annotations
 
 import base64
 import logging
-import re
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from io import BytesIO
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from jinja2 import Environment, FileSystemLoader
 from PIL import Image, ImageDraw
 
-from agents.demo_models import DemoScript
 from agents.demo_pipeline.slides import AUDIENCE_LABELS
 from agents.demo_pipeline.title_cards import ACCENT_COLOR, BG_COLOR
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from agents.demo_models import DemoScript
 
 log = logging.getLogger(__name__)
 
@@ -98,7 +103,7 @@ def generate_html_player(
     screenshot_map: dict[str, Path],
     audio_dir: Path | None = None,
     output_path: Path | None = None,
-    on_progress: callable | None = None,
+    on_progress: Callable[..., object] | None = None,
     audience_display_name: str | None = None,
 ) -> Path:
     """Build a self-contained HTML player from a DemoScript.
@@ -119,7 +124,6 @@ def generate_html_player(
     audience_label = audience_display_name or AUDIENCE_LABELS.get(
         script.audience, script.audience.replace("-", " ").title()
     )
-    title_subtitle = f"For {audience_label}" if audience_display_name else audience_label
 
     scenes: list[dict] = []
     scene_id = 0
@@ -209,7 +213,7 @@ def generate_html_player(
     )
 
     total_duration = sum(s["duration"] for s in scenes)
-    generated_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    generated_at = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
     # ── Render template ─────────────────────────────────────────
     env = Environment(loader=FileSystemLoader(TEMPLATE_DIR), autoescape=False)
@@ -231,5 +235,7 @@ def generate_html_player(
 
     if on_progress:
         on_progress(f"HTML player written to {output_path}")
-    log.info("HTML player written to %s (%d scenes, %.0fs)", output_path, len(scenes), total_duration)
+    log.info(
+        "HTML player written to %s (%d scenes, %.0fs)", output_path, len(scenes), total_duration
+    )
     return output_path

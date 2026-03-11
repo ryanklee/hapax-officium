@@ -3,14 +3,12 @@
 Covers frontmatter parsing, people/coaching/feedback collection,
 staleness computation, and snapshot aggregates.
 """
+
 from __future__ import annotations
 
 import dataclasses
 from datetime import date, timedelta
-from pathlib import Path
-from shared.config import config
-
-import pytest
+from typing import TYPE_CHECKING
 
 from cockpit.data.management import (
     CoachingState,
@@ -23,6 +21,10 @@ from cockpit.data.management import (
     _parse_frontmatter,
     collect_management_state,
 )
+from shared.config import config
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 # ── Helpers ──────────────────────────────────────────────────────────────
 

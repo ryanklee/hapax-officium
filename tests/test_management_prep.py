@@ -2,38 +2,37 @@
 
 Tests data collection logic. LLM synthesis is mocked.
 """
+
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from pathlib import Path
-from unittest.mock import AsyncMock, patch, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
 from agents.management_prep import (
+    ManagementOverview,
     PrepDocument,
     TeamSnapshot,
-    ManagementOverview,
-    _find_person,
-    _read_recent_meetings,
     _collect_person_context,
     _collect_team_context,
-    generate_1on1_prep,
-    generate_team_snapshot,
-    generate_overview,
+    _find_person,
+    _read_recent_meetings,
+    format_overview_md,
     format_prep_md,
     format_snapshot_md,
-    format_overview_md,
+    generate_1on1_prep,
+    generate_overview,
+    generate_team_snapshot,
 )
 from cockpit.data.management import (
-    PersonState,
     CoachingState,
     FeedbackState,
     ManagementSnapshot,
+    PersonState,
 )
 
-
 # ── Helpers ──────────────────────────────────────────────────────────────────
+
 
 def _make_snapshot(**kwargs) -> ManagementSnapshot:
     defaults = {
@@ -58,6 +57,7 @@ def _make_person(**kwargs) -> PersonState:
 
 # ── _find_person ─────────────────────────────────────────────────────────────
 
+
 class TestFindPerson:
     def test_finds_by_exact_name(self):
         snap = _make_snapshot(people=[_make_person(name="Alice")])
@@ -74,6 +74,7 @@ class TestFindPerson:
 
 # ── _read_recent_meetings (stubbed) ──────────────────────────────────────────
 
+
 class TestReadRecentMeetings:
     def test_returns_empty_list(self):
         """Stub always returns empty — vault excised."""
@@ -85,10 +86,13 @@ class TestReadRecentMeetings:
 
 # ── _collect_person_context ──────────────────────────────────────────────────
 
+
 class TestCollectPersonContext:
     def test_basic_context(self):
         person = _make_person(
-            name="Alice", cognitive_load=3, growth_vector="leadership",
+            name="Alice",
+            cognitive_load=3,
+            growth_vector="leadership",
         )
         snap = _make_snapshot(people=[person])
         ctx = _collect_person_context(person, snap)
@@ -99,8 +103,10 @@ class TestCollectPersonContext:
     def test_includes_coaching(self):
         person = _make_person(name="Alice")
         coaching = CoachingState(
-            title="delegation experiment", person="Alice",
-            status="active", overdue=True,
+            title="delegation experiment",
+            person="Alice",
+            status="active",
+            overdue=True,
         )
         snap = _make_snapshot(people=[person], coaching=[coaching])
         ctx = _collect_person_context(person, snap)
@@ -110,8 +116,10 @@ class TestCollectPersonContext:
     def test_includes_feedback(self):
         person = _make_person(name="Alice")
         feedback = FeedbackState(
-            title="q1 growth", person="Alice",
-            category="growth", direction="given",
+            title="q1 growth",
+            person="Alice",
+            category="growth",
+            direction="given",
         )
         snap = _make_snapshot(people=[person], feedback=[feedback])
         ctx = _collect_person_context(person, snap)
@@ -119,6 +127,7 @@ class TestCollectPersonContext:
 
 
 # ── _collect_team_context ────────────────────────────────────────────────────
+
 
 class TestCollectTeamContext:
     def test_basic_team(self):
@@ -138,6 +147,7 @@ class TestCollectTeamContext:
 
 # ── generate_1on1_prep (mocked LLM) ─────────────────────────────────────────
 
+
 class TestGenerate1on1Prep:
     @pytest.mark.asyncio
     async def test_person_not_found(self):
@@ -151,10 +161,13 @@ class TestGenerate1on1Prep:
         snap = _make_snapshot(people=[_make_person(name="Alice")])
         mock_result = MagicMock()
         mock_result.output = PrepDocument(
-            summary="Alice context", rolling_themes=["growth"],
+            summary="Alice context",
+            rolling_themes=["growth"],
         )
-        with patch("agents.management_prep.collect_management_state", return_value=snap), \
-             patch("agents.management_prep.prep_agent") as mock_agent:
+        with (
+            patch("agents.management_prep.collect_management_state", return_value=snap),
+            patch("agents.management_prep.prep_agent") as mock_agent,
+        ):
             mock_agent.run = AsyncMock(return_value=mock_result)
             prep = await generate_1on1_prep("Alice")
         assert prep.summary == "Alice context"
@@ -162,6 +175,7 @@ class TestGenerate1on1Prep:
 
 
 # ── generate_team_snapshot (mocked LLM) ──────────────────────────────────────
+
 
 class TestGenerateTeamSnapshot:
     @pytest.mark.asyncio
@@ -176,16 +190,20 @@ class TestGenerateTeamSnapshot:
         snap = _make_snapshot(people=[_make_person(name="Alice")])
         mock_result = MagicMock()
         mock_result.output = TeamSnapshot(
-            headline="Team healthy", people_summaries=["Alice: all good"],
+            headline="Team healthy",
+            people_summaries=["Alice: all good"],
         )
-        with patch("agents.management_prep.collect_management_state", return_value=snap), \
-             patch("agents.management_prep.snapshot_agent") as mock_agent:
+        with (
+            patch("agents.management_prep.collect_management_state", return_value=snap),
+            patch("agents.management_prep.snapshot_agent") as mock_agent,
+        ):
             mock_agent.run = AsyncMock(return_value=mock_result)
             result = await generate_team_snapshot()
         assert result.headline == "Team healthy"
 
 
 # ── Formatters ───────────────────────────────────────────────────────────────
+
 
 class TestFormatters:
     def test_format_prep_md(self):
@@ -230,6 +248,7 @@ class TestFormatters:
 
 # ── F-6.5: generate_overview tests ────────────────────────────────────────
 
+
 @pytest.mark.asyncio
 async def test_generate_overview_success():
     """generate_overview returns LLM output on success."""
@@ -240,8 +259,10 @@ async def test_generate_overview_success():
         key_actions=["Review OKRs"],
     )
 
-    with patch("agents.management_prep.overview_agent") as mock_agent, \
-         patch("agents.management_prep.collect_management_state"):
+    with (
+        patch("agents.management_prep.overview_agent") as mock_agent,
+        patch("agents.management_prep.collect_management_state"),
+    ):
         mock_agent.run = AsyncMock(return_value=mock_result)
         result = await generate_overview()
 
@@ -252,8 +273,10 @@ async def test_generate_overview_success():
 @pytest.mark.asyncio
 async def test_generate_overview_handles_error():
     """generate_overview returns error overview on LLM failure."""
-    with patch("agents.management_prep.overview_agent") as mock_agent, \
-         patch("agents.management_prep.collect_management_state"):
+    with (
+        patch("agents.management_prep.overview_agent") as mock_agent,
+        patch("agents.management_prep.collect_management_state"),
+    ):
         mock_agent.run = AsyncMock(side_effect=RuntimeError("model down"))
         result = await generate_overview()
 

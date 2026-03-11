@@ -1,21 +1,19 @@
 """Tests for the knowledge sufficiency gate."""
+
 from __future__ import annotations
 
-import json
-import time
-from pathlib import Path
 from types import SimpleNamespace
+from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
-
-import pytest
 
 from agents.demo_models import AudienceDossier, AudiencePersona
 from agents.demo_pipeline.sufficiency import (
-    KnowledgeCheck,
     SufficiencyResult,
     check_sufficiency,
 )
 
+if TYPE_CHECKING:
+    from pathlib import Path
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -115,26 +113,16 @@ def _run_with_all_passing(
     qdrant = _mock_qdrant_collection(point_count)
 
     with (
-        patch(
-            "agents.demo_pipeline.sufficiency._SYSTEM_CLAUDE_MD", claude_md
-        ),
+        patch("agents.demo_pipeline.sufficiency._SYSTEM_CLAUDE_MD", claude_md),
         patch("agents.demo_pipeline.sufficiency.PROFILES_DIR", profiles),
-        patch(
-            "agents.demo_pipeline.sufficiency.get_qdrant", return_value=qdrant
-        ),
-        patch(
-            "agents.demo_pipeline.sufficiency.get_operator", operator_fn
-        ),
-        patch(
-            "agents.demo_pipeline.sufficiency.load_audiences", return_value=dossiers
-        ),
+        patch("agents.demo_pipeline.sufficiency.get_qdrant", return_value=qdrant),
+        patch("agents.demo_pipeline.sufficiency.get_operator", operator_fn),
+        patch("agents.demo_pipeline.sufficiency.load_audiences", return_value=dossiers),
         patch(
             "agents.demo_pipeline.sufficiency.load_personas",
             return_value={"family": _mock_persona()},
         ),
-        patch(
-            "shared.config.embed", return_value=[0.1] * 768
-        ),
+        patch("shared.config.embed", return_value=[0.1] * 768),
     ):
         return check_sufficiency(
             scope="full",
@@ -186,7 +174,10 @@ class TestConfidenceLevels:
             patch("agents.demo_pipeline.sufficiency.get_qdrant", return_value=qdrant),
             patch("agents.demo_pipeline.sufficiency.get_operator", _mock_operator_with_axioms),
             patch("agents.demo_pipeline.sufficiency.load_audiences", return_value={}),
-            patch("agents.demo_pipeline.sufficiency.load_personas", return_value={"family": _mock_persona()}),
+            patch(
+                "agents.demo_pipeline.sufficiency.load_personas",
+                return_value={"family": _mock_persona()},
+            ),
             patch("shared.config.embed", return_value=[0.1] * 768),
         ):
             result = check_sufficiency(
@@ -214,7 +205,9 @@ class TestConfidenceLevels:
         # architecture_rag fails (no points returned).
         health_report = SimpleNamespace(healthy_count=75, total_checks=75, failed_count=0)
 
-        qdrant = _mock_qdrant_collection(10, arch_rag_available=False)  # < 100 → profile_facts fails
+        qdrant = _mock_qdrant_collection(
+            10, arch_rag_available=False
+        )  # < 100 → profile_facts fails
 
         with (
             patch("agents.demo_pipeline.sufficiency._SYSTEM_CLAUDE_MD", claude_md),
@@ -222,7 +215,10 @@ class TestConfidenceLevels:
             patch("agents.demo_pipeline.sufficiency.get_qdrant", return_value=qdrant),
             patch("agents.demo_pipeline.sufficiency.get_operator", _mock_operator_no_axioms),
             patch("agents.demo_pipeline.sufficiency.load_audiences", return_value={}),
-            patch("agents.demo_pipeline.sufficiency.load_personas", return_value={"family": _mock_persona()}),
+            patch(
+                "agents.demo_pipeline.sufficiency.load_personas",
+                return_value={"family": _mock_persona()},
+            ),
             patch("shared.config.embed", return_value=[0.1] * 768),
         ):
             result = check_sufficiency(
@@ -256,7 +252,10 @@ class TestEnrichmentActions:
             patch("agents.demo_pipeline.sufficiency.get_qdrant", return_value=qdrant),
             patch("agents.demo_pipeline.sufficiency.get_operator", _mock_operator_with_axioms),
             patch("agents.demo_pipeline.sufficiency.load_audiences", return_value={}),
-            patch("agents.demo_pipeline.sufficiency.load_personas", return_value={"family": _mock_persona()}),
+            patch(
+                "agents.demo_pipeline.sufficiency.load_personas",
+                return_value={"family": _mock_persona()},
+            ),
             patch("shared.config.embed", return_value=[0.1] * 768),
         ):
             result = check_sufficiency(
@@ -305,7 +304,10 @@ class TestHealthReportReuse:
             patch("agents.demo_pipeline.sufficiency.get_qdrant", return_value=qdrant),
             patch("agents.demo_pipeline.sufficiency.get_operator", _mock_operator_with_axioms),
             patch("agents.demo_pipeline.sufficiency.load_audiences", return_value={}),
-            patch("agents.demo_pipeline.sufficiency.load_personas", return_value={"family": _mock_persona()}),
+            patch(
+                "agents.demo_pipeline.sufficiency.load_personas",
+                return_value={"family": _mock_persona()},
+            ),
             patch("shared.config.embed", return_value=[0.1] * 768),
         ):
             result = check_sufficiency(
@@ -340,7 +342,10 @@ class TestQdrantFailure:
             patch("agents.demo_pipeline.sufficiency.get_qdrant", return_value=_qdrant_error()),
             patch("agents.demo_pipeline.sufficiency.get_operator", _mock_operator_with_axioms),
             patch("agents.demo_pipeline.sufficiency.load_audiences", return_value={}),
-            patch("agents.demo_pipeline.sufficiency.load_personas", return_value={"family": _mock_persona()}),
+            patch(
+                "agents.demo_pipeline.sufficiency.load_personas",
+                return_value={"family": _mock_persona()},
+            ),
             patch("shared.config.embed", return_value=[0.1] * 768),
         ):
             result = check_sufficiency(

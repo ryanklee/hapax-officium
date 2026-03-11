@@ -3,23 +3,19 @@
 Validates: data files -> collector -> nudges -> team_health -> writer round-trip.
 All tests use tmp_path and config.set_data_dir() to redirect DATA_DIR.
 """
+
 from __future__ import annotations
 
-import asyncio
 from datetime import date, timedelta
-from pathlib import Path
+from typing import TYPE_CHECKING
 
-import pytest
-
-from shared.config import config
-
+from agents.ingest import DocumentType, process_document
 from cockpit.data.management import (
-    ManagementSnapshot,
-    PersonState,
     collect_management_state,
 )
 from cockpit.data.nudges import collect_nudges
 from cockpit.data.team_health import collect_team_health
+from shared.config import config
 from shared.management_bridge import generate_facts
 from shared.vault_writer import (
     create_coaching_starter,
@@ -27,8 +23,9 @@ from shared.vault_writer import (
     create_fb_record_starter,
     write_1on1_prep_to_vault,
 )
-from agents.ingest import DocumentType, process_document
 
+if TYPE_CHECKING:
+    from pathlib import Path
 
 # ── Helpers ──────────────────────────────────────────────────────────────
 

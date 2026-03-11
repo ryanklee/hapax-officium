@@ -4,10 +4,14 @@ Every tick: deterministic cache refresh (nudges, team health, activity).
 Weekly boundaries (Friday): LLM synthesis (briefing, snapshot, profiler).
 On significant events: immediate synthesis for relevant agents.
 """
+
 from __future__ import annotations
 
 import logging
-from datetime import date
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from datetime import date
 
 _log = logging.getLogger(__name__)
 
@@ -45,6 +49,7 @@ async def _refresh_caches() -> None:
     """Refresh data caches (management state, nudges, team health)."""
     try:
         from cockpit.api.cache import cache
+
         await cache.refresh()
     except Exception:
         _log.debug("Cache refresh skipped (not in API context)")
@@ -53,16 +58,14 @@ async def _refresh_caches() -> None:
 async def _run_briefing() -> None:
     """Run management_briefing synthesis."""
     try:
-        from agents.management_briefing import generate_briefing, format_briefing_md
-        from shared.vault_writer import write_briefing_to_vault
+        from agents.management_briefing import format_briefing_md, generate_briefing
         from shared.config import PROFILES_DIR
+        from shared.vault_writer import write_briefing_to_vault
 
         briefing = await generate_briefing()
         md = format_briefing_md(briefing)
         write_briefing_to_vault(md)
-        (PROFILES_DIR / "management-briefing.json").write_text(
-            briefing.model_dump_json(indent=2)
-        )
+        (PROFILES_DIR / "management-briefing.json").write_text(briefing.model_dump_json(indent=2))
         _log.info("Briefing synthesized: %s", briefing.headline)
     except Exception:
         _log.exception("Briefing synthesis failed")
@@ -71,7 +74,7 @@ async def _run_briefing() -> None:
 async def _run_snapshot() -> None:
     """Run team snapshot synthesis."""
     try:
-        from agents.management_prep import generate_team_snapshot, format_snapshot_md
+        from agents.management_prep import format_snapshot_md, generate_team_snapshot
         from shared.vault_writer import write_team_snapshot_to_vault
 
         snapshot = await generate_team_snapshot()
@@ -85,8 +88,11 @@ async def _run_profiler() -> None:
     """Run management profiler synthesis."""
     try:
         from agents.management_profiler import (
-            generate_and_load_management_facts, synthesize_profile,
-            build_profile, save_profile, load_existing_profile,
+            build_profile,
+            generate_and_load_management_facts,
+            load_existing_profile,
+            save_profile,
+            synthesize_profile,
         )
 
         facts = generate_and_load_management_facts()

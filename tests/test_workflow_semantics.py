@@ -1,11 +1,11 @@
 # ai-agents/tests/test_workflow_semantics.py
 """Validate workflow-semantics.yaml against demo-data/ corpus."""
+
 from __future__ import annotations
 
 from pathlib import Path
 
 import yaml
-
 
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent
 _WORKFLOW_SEMANTICS = _PROJECT_ROOT / "docs" / "workflow-semantics.yaml"
@@ -15,17 +15,12 @@ _DEMO_DATA = Path(__file__).resolve().parent.parent / "demo-data"
 class TestWorkflowSemanticsConsistency:
     def test_semantics_file_exists(self):
         """workflow-semantics.yaml exists."""
-        assert _WORKFLOW_SEMANTICS.is_file(), (
-            f"Missing {_WORKFLOW_SEMANTICS}"
-        )
+        assert _WORKFLOW_SEMANTICS.is_file(), f"Missing {_WORKFLOW_SEMANTICS}"
 
     def test_all_demo_data_types_have_semantics(self):
         """Every document type in demo-data/ has a workflow-semantics entry."""
         semantics = yaml.safe_load(_WORKFLOW_SEMANTICS.read_text())
-        defined_subdirs = {
-            w["subdirectory"].rstrip("/")
-            for w in semantics["workflows"].values()
-        }
+        defined_subdirs = {w["subdirectory"].rstrip("/") for w in semantics["workflows"].values()}
 
         # Subdirectories in demo-data that contain .md files with type: frontmatter
         data_subdirs = set()
@@ -35,8 +30,16 @@ class TestWorkflowSemanticsConsistency:
                 data_subdirs.add(rel.parts[0])
 
         # Exclude non-workflow directories
-        non_workflow = {"people", "references", "1on1-prep", "inbox", "processed",
-                        "briefings", "status-updates", "review-prep"}
+        non_workflow = {
+            "people",
+            "references",
+            "1on1-prep",
+            "inbox",
+            "processed",
+            "briefings",
+            "status-updates",
+            "review-prep",
+        }
         data_subdirs -= non_workflow
 
         missing = data_subdirs - defined_subdirs

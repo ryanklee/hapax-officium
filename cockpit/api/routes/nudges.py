@@ -1,4 +1,5 @@
 """Nudge action endpoints — act on or dismiss nudges."""
+
 from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException

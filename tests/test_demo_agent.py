@@ -1,17 +1,16 @@
 """Tests for the demo agent."""
+
 from __future__ import annotations
 
 import json
-from pathlib import Path
-from unittest.mock import AsyncMock, patch, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-
-from agents.demo_models import DemoScript, DemoScene, ScreenshotSpec, load_personas
 
 # Pre-import agents.demo at module level so the ~1s import cost falls during
 # pytest collection, not inside the test "call" phase where it inflates timings.
 import agents.demo as _agents_demo  # noqa: F401
+from agents.demo_models import load_personas
 
 
 class TestResolveAudience:
@@ -25,20 +24,19 @@ class TestResolveAudience:
         from agents.demo import resolve_audience
 
         # Unknown audience falls back to technical-peer
-        archetype, context = resolve_audience(
-            "a random stranger", load_personas()
-        )
+        archetype, context = resolve_audience("a random stranger", load_personas())
         assert archetype == "technical-peer"
         assert context == "a random stranger"
 
-
     def test_audience_hint_investor(self):
         from agents.demo import resolve_audience
+
         archetype, _ = resolve_audience("an investor", load_personas())
         assert archetype == "leadership"
 
     def test_audience_hint_no_substring_false_positive(self):
         from agents.demo import resolve_audience
+
         archetype, _ = resolve_audience("a friendly neighbor", load_personas())
         # "friendly" should NOT match "friend" due to word boundary
         assert archetype == "technical-peer"
@@ -190,14 +188,27 @@ class TestMetadata:
         out = tmp_path / "metadata.json"
         out.write_text(json.dumps(metadata, indent=2))
         loaded = json.loads(out.read_text())
-        expected_keys = {"title", "audience", "scope", "scenes", "format", "duration", "timestamp", "output_dir", "primary_file", "has_video", "has_audio"}
+        expected_keys = {
+            "title",
+            "audience",
+            "scope",
+            "scenes",
+            "format",
+            "duration",
+            "timestamp",
+            "output_dir",
+            "primary_file",
+            "has_video",
+            "has_audio",
+        }
         assert set(loaded.keys()) == expected_keys
         assert isinstance(loaded["scenes"], int)
         assert isinstance(loaded["duration"], float)
 
     def test_metadata_has_primary_file(self, tmp_path):
         metadata = {
-            "title": "Test", "format": "slides",
+            "title": "Test",
+            "format": "slides",
             "primary_file": "demo.html",
         }
         out = tmp_path / "metadata.json"
@@ -212,7 +223,7 @@ class TestSufficiencyIntegration:
     @pytest.mark.asyncio
     async def test_generate_demo_blocked_sufficiency(self):
         """When check_sufficiency returns 'blocked', generate_demo raises RuntimeError."""
-        from agents.demo_pipeline.sufficiency import SufficiencyResult, KnowledgeCheck
+        from agents.demo_pipeline.sufficiency import KnowledgeCheck, SufficiencyResult
 
         blocked_result = SufficiencyResult(
             confidence="blocked",
@@ -236,7 +247,9 @@ class TestSufficiencyIntegration:
 
         with (
             patch("agents.demo_pipeline.readiness.check_readiness", return_value=mock_readiness),
-            patch("agents.demo_pipeline.sufficiency.check_sufficiency", return_value=blocked_result),
+            patch(
+                "agents.demo_pipeline.sufficiency.check_sufficiency", return_value=blocked_result
+            ),
         ):
             from agents.demo import generate_demo
 
@@ -246,7 +259,7 @@ class TestSufficiencyIntegration:
     @pytest.mark.asyncio
     async def test_generate_demo_enrichment_threaded(self):
         """When sufficiency returns enrichment_actions, they are passed to gather_research."""
-        from agents.demo_pipeline.sufficiency import SufficiencyResult, KnowledgeCheck
+        from agents.demo_pipeline.sufficiency import KnowledgeCheck, SufficiencyResult
 
         low_result = SufficiencyResult(
             confidence="low",
@@ -282,7 +295,11 @@ class TestSufficiencyIntegration:
             patch("agents.demo_pipeline.readiness.check_readiness", return_value=mock_readiness),
             patch("agents.demo_pipeline.sufficiency.check_sufficiency", return_value=low_result),
             patch("agents.demo_pipeline.research.gather_research", mock_gather),
-            patch("agents.drift_detector.detect_drift", new_callable=AsyncMock, return_value=mock_drift_report),
+            patch(
+                "agents.drift_detector.detect_drift",
+                new_callable=AsyncMock,
+                return_value=mock_drift_report,
+            ),
             patch("agents.demo.content_agent") as mock_ca,
         ):
             mock_ca.run = AsyncMock(return_value=mock_content_result)
@@ -297,22 +314,78 @@ class TestSufficiencyIntegration:
 
             mock_gather.assert_called_once()
             call_kwargs = mock_gather.call_args
-            assert call_kwargs.kwargs.get("enrichment_actions") == ["briefing_stats", "profile_digest"]
+            assert call_kwargs.kwargs.get("enrichment_actions") == [
+                "briefing_stats",
+                "profile_digest",
+            ]
             assert call_kwargs.kwargs.get("audience_dossier") is None
 
     @pytest.mark.asyncio
     async def test_generate_demo_with_dimension_scores(self):
         """Sufficiency result with dimension_scores is threaded through pipeline."""
-        from agents.demo_pipeline.sufficiency import SufficiencyResult, KnowledgeCheck, DimensionScore
+        from agents.demo_pipeline.sufficiency import (
+            DimensionScore,
+            KnowledgeCheck,
+            SufficiencyResult,
+        )
 
         dim_scores = [
-            DimensionScore("prior_knowledge", "person", "Prior Knowledge & Expertise Level", "inferred", "Archetype 'family' provides defaults", "Run --gather-dossier for higher confidence"),
-            DimensionScore("goals_pain_points", "person", "Goals & Pain Points", "inferred", "Archetype 'family' provides defaults", "Run --gather-dossier for higher confidence"),
-            DimensionScore("attitudes_resistance", "person", "Attitudes & Resistance", "missing", "No dossier; not archetype-inferable", "Run --gather-dossier to collect"),
-            DimensionScore("decision_role", "person", "Decision Role & Authority", "missing", "No dossier; not archetype-inferable", "Run --gather-dossier to collect"),
-            DimensionScore("relevant_subset", "subject", "Relevant Subset Mapping", "high", "System knowledge + archetype persona available", ""),
-            DimensionScore("abstraction_vocabulary", "subject", "Appropriate Abstraction & Vocabulary", "high", "System knowledge + archetype persona available", ""),
-            DimensionScore("situational_constraints", "context", "Situational Constraints & Stakes", "missing", "No dossier; not archetype-inferable", "Run --gather-dossier to collect"),
+            DimensionScore(
+                "prior_knowledge",
+                "person",
+                "Prior Knowledge & Expertise Level",
+                "inferred",
+                "Archetype 'family' provides defaults",
+                "Run --gather-dossier for higher confidence",
+            ),
+            DimensionScore(
+                "goals_pain_points",
+                "person",
+                "Goals & Pain Points",
+                "inferred",
+                "Archetype 'family' provides defaults",
+                "Run --gather-dossier for higher confidence",
+            ),
+            DimensionScore(
+                "attitudes_resistance",
+                "person",
+                "Attitudes & Resistance",
+                "missing",
+                "No dossier; not archetype-inferable",
+                "Run --gather-dossier to collect",
+            ),
+            DimensionScore(
+                "decision_role",
+                "person",
+                "Decision Role & Authority",
+                "missing",
+                "No dossier; not archetype-inferable",
+                "Run --gather-dossier to collect",
+            ),
+            DimensionScore(
+                "relevant_subset",
+                "subject",
+                "Relevant Subset Mapping",
+                "high",
+                "System knowledge + archetype persona available",
+                "",
+            ),
+            DimensionScore(
+                "abstraction_vocabulary",
+                "subject",
+                "Appropriate Abstraction & Vocabulary",
+                "high",
+                "System knowledge + archetype persona available",
+                "",
+            ),
+            DimensionScore(
+                "situational_constraints",
+                "context",
+                "Situational Constraints & Stakes",
+                "missing",
+                "No dossier; not archetype-inferable",
+                "Run --gather-dossier to collect",
+            ),
         ]
 
         adequate_result = SufficiencyResult(
@@ -341,17 +414,19 @@ class TestSufficiencyIntegration:
 
     def test_gather_dossier_end_to_end(self, tmp_path):
         """Mock input_fn -> gather -> save -> load_audiences -> dossier found."""
-        from agents.demo_pipeline.dossier import gather_dossier_interactive, save_dossier
         from agents.demo_models import load_audiences
+        from agents.demo_pipeline.dossier import gather_dossier_interactive, save_dossier
 
-        responses = iter([
-            "Sarah",                          # name
-            "never seen it",                  # prior_knowledge
-            "wants to understand what I do",  # goals
-            "thinks I tinker too much",       # attitudes
-            "spouse, no technical role",      # relationship
-            "casual at home",                 # situational
-        ])
+        responses = iter(
+            [
+                "Sarah",  # name
+                "never seen it",  # prior_knowledge
+                "wants to understand what I do",  # goals
+                "thinks I tinker too much",  # attitudes
+                "spouse, no technical role",  # relationship
+                "casual at home",  # situational
+            ]
+        )
 
         dossier, _resp = gather_dossier_interactive(
             audience_key="family member",
@@ -376,16 +451,59 @@ class TestSufficiencyIntegration:
     @pytest.mark.asyncio
     async def test_sufficiency_hint_logged(self):
         """'adequate' confidence with missing PERSON dims -> progress includes --gather-dossier hint."""
-        from agents.demo_pipeline.sufficiency import SufficiencyResult, KnowledgeCheck, DimensionScore
+        from agents.demo_pipeline.sufficiency import (
+            DimensionScore,
+            KnowledgeCheck,
+            SufficiencyResult,
+        )
 
         dim_scores = [
-            DimensionScore("prior_knowledge", "person", "Prior Knowledge & Expertise Level", "inferred", "defaults", ""),
-            DimensionScore("goals_pain_points", "person", "Goals & Pain Points", "inferred", "defaults", ""),
-            DimensionScore("attitudes_resistance", "person", "Attitudes & Resistance", "missing", "No dossier", "Run --gather-dossier to collect"),
-            DimensionScore("decision_role", "person", "Decision Role & Authority", "missing", "No dossier", "Run --gather-dossier to collect"),
-            DimensionScore("relevant_subset", "subject", "Relevant Subset Mapping", "high", "ok", ""),
-            DimensionScore("abstraction_vocabulary", "subject", "Appropriate Abstraction & Vocabulary", "high", "ok", ""),
-            DimensionScore("situational_constraints", "context", "Situational Constraints & Stakes", "missing", "No dossier", "Run --gather-dossier to collect"),
+            DimensionScore(
+                "prior_knowledge",
+                "person",
+                "Prior Knowledge & Expertise Level",
+                "inferred",
+                "defaults",
+                "",
+            ),
+            DimensionScore(
+                "goals_pain_points", "person", "Goals & Pain Points", "inferred", "defaults", ""
+            ),
+            DimensionScore(
+                "attitudes_resistance",
+                "person",
+                "Attitudes & Resistance",
+                "missing",
+                "No dossier",
+                "Run --gather-dossier to collect",
+            ),
+            DimensionScore(
+                "decision_role",
+                "person",
+                "Decision Role & Authority",
+                "missing",
+                "No dossier",
+                "Run --gather-dossier to collect",
+            ),
+            DimensionScore(
+                "relevant_subset", "subject", "Relevant Subset Mapping", "high", "ok", ""
+            ),
+            DimensionScore(
+                "abstraction_vocabulary",
+                "subject",
+                "Appropriate Abstraction & Vocabulary",
+                "high",
+                "ok",
+                "",
+            ),
+            DimensionScore(
+                "situational_constraints",
+                "context",
+                "Situational Constraints & Stakes",
+                "missing",
+                "No dossier",
+                "Run --gather-dossier to collect",
+            ),
         ]
 
         adequate_result = SufficiencyResult(
@@ -423,9 +541,15 @@ class TestSufficiencyIntegration:
 
         with (
             patch("agents.demo_pipeline.readiness.check_readiness", return_value=mock_readiness),
-            patch("agents.demo_pipeline.sufficiency.check_sufficiency", return_value=adequate_result),
+            patch(
+                "agents.demo_pipeline.sufficiency.check_sufficiency", return_value=adequate_result
+            ),
             patch("agents.demo_pipeline.research.gather_research", mock_gather),
-            patch("agents.drift_detector.detect_drift", new_callable=AsyncMock, return_value=mock_drift_report),
+            patch(
+                "agents.drift_detector.detect_drift",
+                new_callable=AsyncMock,
+                return_value=mock_drift_report,
+            ),
             patch("agents.demo.content_agent") as mock_ca,
         ):
             mock_ca.run = AsyncMock(return_value=mock_content_result)
@@ -440,5 +564,7 @@ class TestSufficiencyIntegration:
                 pass  # Expected — no full pipeline mock
 
         hint_messages = [m for m in progress_messages if "--gather-dossier" in m]
-        assert len(hint_messages) >= 1, f"Expected --gather-dossier hint in progress messages, got: {progress_messages}"
+        assert len(hint_messages) >= 1, (
+            f"Expected --gather-dossier hint in progress messages, got: {progress_messages}"
+        )
         assert "Attitudes & Resistance" in hint_messages[0] or "Decision Role" in hint_messages[0]

@@ -4,18 +4,19 @@ Uses watchdog (inotify on Linux) to detect file changes recursively.
 Emits ChangeEvent instances via an async callback after debouncing
 rapid writes and filtering out dotfiles/processed/ paths.
 """
+
 from __future__ import annotations
 
 import asyncio
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Callable, Awaitable
+from typing import TYPE_CHECKING
 
 from watchdog.events import (
     FileCreatedEvent,
-    FileModifiedEvent,
     FileDeletedEvent,
+    FileModifiedEvent,
     FileSystemEvent,
     FileSystemEventHandler,
 )
@@ -23,6 +24,11 @@ from watchdog.observers import Observer
 
 from cockpit.engine.models import ChangeEvent
 from shared.frontmatter import parse_frontmatter_text
+
+if TYPE_CHECKING:
+    from collections.abc import Awaitable, Callable
+
+    from watchdog.observers.api import BaseObserver
 
 _log = logging.getLogger(__name__)
 
@@ -47,10 +53,7 @@ def _is_filtered(path: Path, data_dir: Path) -> bool:
             return True
 
     # Filter processed/ subdirectory
-    if rel.parts and rel.parts[0] == "processed":
-        return True
-
-    return False
+    return bool(rel.parts and rel.parts[0] == "processed")
 
 
 def _extract_subdirectory(path: Path, data_dir: Path) -> str:
@@ -103,7 +106,7 @@ class _Handler(FileSystemEventHandler):
         if event.is_directory:
             return
 
-        path = Path(event.src_path)
+        path = Path(str(event.src_path))
         event_type = _EVENT_TYPE_MAP.get(type(event))
         if event_type is None:
             return
@@ -112,9 +115,7 @@ class _Handler(FileSystemEventHandler):
             return
 
         # Bridge from watchdog thread to asyncio event loop
-        self._loop.call_soon_threadsafe(
-            self._schedule_debounce, path, event_type
-        )
+        self._loop.call_soon_threadsafe(self._schedule_debounce, path, event_type)
 
 
 class DataDirWatcher:
@@ -135,7 +136,7 @@ class DataDirWatcher:
         self._data_dir = data_dir
         self._on_change = on_change
         self._debounce_s = debounce_ms / 1000.0
-        self._observer: Observer | None = None
+        self._observer: BaseObserver | None = None
         self._loop: asyncio.AbstractEventLoop | None = None
         self._timers: dict[Path, asyncio.TimerHandle] = {}
         self._pending_event_types: dict[Path, str] = {}
@@ -153,9 +154,10 @@ class DataDirWatcher:
             loop=self._loop,
             schedule_debounce=self._schedule_debounce,
         )
-        self._observer = Observer()
-        self._observer.schedule(handler, str(self._data_dir), recursive=True)
-        self._observer.start()
+        observer = Observer()
+        observer.schedule(handler, str(self._data_dir), recursive=True)
+        observer.start()
+        self._observer = observer
         _log.info("DataDirWatcher started on %s", self._data_dir)
 
     async def stop(self) -> None:
@@ -228,9 +230,10 @@ class DataDirWatcher:
             subdirectory=subdirectory,
             event_type=event_type,
             doc_type=doc_type,
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
         )
 
         if self._loop is None:
             return
-        self._loop.create_task(self._on_change(event))
+        coro = self._on_change(event)
+        self._loop.create_task(coro)  # type: ignore[arg-type]  # Awaitable from async callback

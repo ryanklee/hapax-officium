@@ -1,11 +1,12 @@
 # ai-agents/tests/test_simulator_models.py
 """Tests for simulator pipeline models."""
+
 from __future__ import annotations
 
 from agents.simulator_pipeline.models import (
+    ContentPolicy,
     SimulatedEvent,
     TickResult,
-    ContentPolicy,
 )
 
 

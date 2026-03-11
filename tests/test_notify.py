@@ -2,28 +2,28 @@
 
 All I/O is mocked. No real HTTP requests or subprocess calls.
 """
+
 from __future__ import annotations
 
-from unittest.mock import patch, MagicMock, call
-
-import pytest
+import os
+from unittest.mock import MagicMock, patch
 
 from shared.notify import (
-    send_notification,
-    send_webhook,
-    _send_ntfy,
-    _send_desktop,
-    _NTFY_PRIORITIES,
     _DESKTOP_URGENCY,
+    _NTFY_PRIORITIES,
     NTFY_BASE_URL,
     NTFY_TOPIC,
-    obsidian_uri,
+    _send_desktop,
+    _send_ntfy,
     briefing_uri,
     nudges_uri,
+    obsidian_uri,
+    send_notification,
+    send_webhook,
 )
 
-
 # ── Configuration tests ──────────────────────────────────────────────────────
+
 
 def test_default_config():
     assert NTFY_BASE_URL == "http://localhost:8190"
@@ -45,6 +45,7 @@ def test_desktop_urgency_mapping():
 
 
 # ── _send_ntfy tests ─────────────────────────────────────────────────────────
+
 
 class TestSendNtfy:
     @patch("shared.notify.urlopen")
@@ -122,8 +123,10 @@ class TestSendNtfy:
 
 # ── _send_desktop tests ──────────────────────────────────────────────────────
 
+
 class TestSendDesktop:
     @patch("shared.notify.subprocess.run")
+    @patch.dict(os.environ, {"DISPLAY": ":0"})
     def test_success(self, mock_run):
         mock_run.return_value = MagicMock(returncode=0)
 
@@ -139,6 +142,7 @@ class TestSendDesktop:
         assert "Message" in cmd
 
     @patch("shared.notify.subprocess.run")
+    @patch.dict(os.environ, {"DISPLAY": ":0"})
     def test_high_priority_urgency(self, mock_run):
         mock_run.return_value = MagicMock(returncode=0)
 
@@ -159,6 +163,7 @@ class TestSendDesktop:
 
 
 # ── send_notification (unified) tests ────────────────────────────────────────
+
 
 class TestSendNotification:
     @patch("shared.notify._send_desktop", return_value=True)
@@ -192,7 +197,12 @@ class TestSendNotification:
     def test_passes_priority(self, mock_ntfy, mock_desktop):
         send_notification("T", "M", priority="urgent", tags=["skull"])
         mock_ntfy.assert_called_once_with(
-            "T", "M", priority="urgent", tags=["skull"], topic=None, click_url=None,
+            "T",
+            "M",
+            priority="urgent",
+            tags=["skull"],
+            topic=None,
+            click_url=None,
         )
         mock_desktop.assert_called_once_with("T", "M", priority="urgent")
 
@@ -204,6 +214,7 @@ class TestSendNotification:
 
 
 # ── send_webhook tests ───────────────────────────────────────────────────────
+
 
 class TestSendWebhook:
     @patch("shared.notify.urlopen")
@@ -228,6 +239,7 @@ class TestSendWebhook:
 
 
 # ── Obsidian URI helpers ────────────────────────────────────────────────────
+
 
 class TestObsidianUri:
     def test_obsidian_uri_basic(self):

@@ -1,7 +1,8 @@
 """Tests for system readiness gate."""
-from unittest.mock import patch, MagicMock, AsyncMock
 
-from agents.demo_pipeline.readiness import check_readiness, ReadinessResult
+from unittest.mock import AsyncMock, MagicMock, patch
+
+from agents.demo_pipeline.readiness import ReadinessResult, check_readiness
 
 
 def _make_check_results(ok_count: int = 4, total: int = 4):
@@ -28,7 +29,9 @@ class TestReadiness:
         mock_results = _make_check_results()
 
         with (
-            patch("agents.system_check.run_checks", new_callable=AsyncMock, return_value=mock_results) as mock_run,
+            patch(
+                "agents.system_check.run_checks", new_callable=AsyncMock, return_value=mock_results
+            ) as mock_run,
             patch("urllib.request.urlopen"),
         ):
             result = check_readiness()
@@ -41,7 +44,9 @@ class TestReadiness:
         mock_results = _make_check_results(ok_count=3, total=4)
 
         with (
-            patch("agents.system_check.run_checks", new_callable=AsyncMock, return_value=mock_results),
+            patch(
+                "agents.system_check.run_checks", new_callable=AsyncMock, return_value=mock_results
+            ),
             patch("urllib.request.urlopen"),
         ):
             result = check_readiness()
@@ -53,7 +58,9 @@ class TestReadiness:
         mock_results = _make_check_results(ok_count=3, total=4)
 
         with (
-            patch("agents.system_check.run_checks", new_callable=AsyncMock, return_value=mock_results),
+            patch(
+                "agents.system_check.run_checks", new_callable=AsyncMock, return_value=mock_results
+            ),
             patch("urllib.request.urlopen"),
         ):
             result = check_readiness(auto_fix=False)
@@ -70,7 +77,9 @@ class TestReadiness:
             return MagicMock()
 
         with (
-            patch("agents.system_check.run_checks", new_callable=AsyncMock, return_value=mock_results),
+            patch(
+                "agents.system_check.run_checks", new_callable=AsyncMock, return_value=mock_results
+            ),
             patch("urllib.request.urlopen", side_effect=urlopen_side_effect),
         ):
             result = check_readiness()
@@ -87,7 +96,9 @@ class TestReadiness:
             return MagicMock()
 
         with (
-            patch("agents.system_check.run_checks", new_callable=AsyncMock, return_value=mock_results),
+            patch(
+                "agents.system_check.run_checks", new_callable=AsyncMock, return_value=mock_results
+            ),
             patch("urllib.request.urlopen", side_effect=urlopen_side_effect),
         ):
             result = check_readiness()
@@ -99,7 +110,9 @@ class TestReadiness:
         mock_results = _make_check_results()
 
         with (
-            patch("agents.system_check.run_checks", new_callable=AsyncMock, return_value=mock_results),
+            patch(
+                "agents.system_check.run_checks", new_callable=AsyncMock, return_value=mock_results
+            ),
             patch("urllib.request.urlopen"),
         ):
             result = check_readiness(require_tts=False)
@@ -115,7 +128,9 @@ class TestReadiness:
             return MagicMock()
 
         with (
-            patch("agents.system_check.run_checks", new_callable=AsyncMock, return_value=mock_results),
+            patch(
+                "agents.system_check.run_checks", new_callable=AsyncMock, return_value=mock_results
+            ),
             patch("urllib.request.urlopen", side_effect=urlopen_side_effect),
             patch("pathlib.Path.exists", return_value=True),
         ):
@@ -128,7 +143,9 @@ class TestReadiness:
         mock_results = _make_check_results()
 
         with (
-            patch("agents.system_check.run_checks", new_callable=AsyncMock, return_value=mock_results),
+            patch(
+                "agents.system_check.run_checks", new_callable=AsyncMock, return_value=mock_results
+            ),
             patch("urllib.request.urlopen"),
             patch("pathlib.Path.exists", return_value=False),
         ):
@@ -156,7 +173,9 @@ class TestReadiness:
         progress_msgs: list[str] = []
 
         with (
-            patch("agents.system_check.run_checks", new_callable=AsyncMock, return_value=mock_results),
+            patch(
+                "agents.system_check.run_checks", new_callable=AsyncMock, return_value=mock_results
+            ),
             patch("urllib.request.urlopen"),
         ):
             check_readiness(on_progress=progress_msgs.append)

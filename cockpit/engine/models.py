@@ -3,13 +3,17 @@
 Four dataclasses representing the event-driven pipeline:
 ChangeEvent -> Action/ActionPlan -> DeliveryItem.
 """
+
 from __future__ import annotations
 
 from collections import defaultdict
 from dataclasses import dataclass, field
-from datetime import datetime
-from pathlib import Path
-from typing import Any, Callable
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+    from datetime import datetime
+    from pathlib import Path
 
 
 @dataclass

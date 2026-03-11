@@ -1,10 +1,11 @@
 """Reactive engine — filesystem-watching event loop for automated cascades."""
+
 from __future__ import annotations
 
 import logging
 import os
-from datetime import datetime, timezone
-from pathlib import Path
+from datetime import UTC, datetime
+from typing import TYPE_CHECKING
 
 from cockpit.engine.delivery import DeliveryQueue
 from cockpit.engine.executor import PhasedExecutor
@@ -13,6 +14,9 @@ from cockpit.engine.reactive_rules import build_default_rules
 from cockpit.engine.rules import evaluate_rules
 from cockpit.engine.synthesis import SynthesisScheduler
 from cockpit.engine.watcher import DataDirWatcher
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 _log = logging.getLogger(__name__)
 
@@ -48,17 +52,11 @@ class ReactiveEngine:
         if debounce_ms is None:
             debounce_ms = int(os.environ.get("ENGINE_DEBOUNCE_MS", "200"))
         if llm_concurrency is None:
-            llm_concurrency = int(
-                os.environ.get("ENGINE_LLM_CONCURRENCY", "2")
-            )
+            llm_concurrency = int(os.environ.get("ENGINE_LLM_CONCURRENCY", "2"))
         if delivery_interval_s is None:
-            delivery_interval_s = int(
-                os.environ.get("ENGINE_DELIVERY_INTERVAL_S", "300")
-            )
+            delivery_interval_s = int(os.environ.get("ENGINE_DELIVERY_INTERVAL_S", "300"))
         if action_timeout_s is None:
-            action_timeout_s = float(
-                os.environ.get("ENGINE_ACTION_TIMEOUT_S", "60")
-            )
+            action_timeout_s = float(os.environ.get("ENGINE_ACTION_TIMEOUT_S", "60"))
 
         self._enabled = enabled
         self._data_dir = data_dir
@@ -95,9 +93,7 @@ class ReactiveEngine:
             return
 
         if not self._data_dir.is_dir():
-            _log.warning(
-                "DATA_DIR %s does not exist, creating it", self._data_dir
-            )
+            _log.warning("DATA_DIR %s does not exist, creating it", self._data_dir)
             self._data_dir.mkdir(parents=True, exist_ok=True)
 
         await self._watcher.start()
@@ -161,7 +157,7 @@ class ReactiveEngine:
 
         await self._executor.execute(plan)
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         for action_name, result in plan.results.items():
             self._delivery.enqueue(
@@ -189,8 +185,8 @@ class ReactiveEngine:
 
         self._scheduler.signal(event.subdirectory)
 
-        from cockpit.engine.synthesis import HOT_PATH, WARM_PATH
         from cockpit.api.cache import cache as _cache
+        from cockpit.engine.synthesis import HOT_PATH, WARM_PATH
 
         if event.subdirectory in HOT_PATH:
             _cache.record_hot_change()
@@ -218,7 +214,4 @@ class ReactiveEngine:
 
     def rule_descriptions(self) -> list[dict]:
         """Return metadata for all registered rules."""
-        return [
-            {"name": r.name, "description": r.description}
-            for r in self._registry.rules
-        ]
+        return [{"name": r.name, "description": r.description} for r in self._registry.rules]

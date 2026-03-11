@@ -1,9 +1,10 @@
 # ai-agents/tests/test_engine_pause.py
 """Tests for engine pause/resume during simulation context switching."""
+
 from __future__ import annotations
 
 from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 from cockpit.engine import ReactiveEngine
 

@@ -1,5 +1,6 @@
 # ai-agents/shared/simulation.py
 """Simulation directory lifecycle — create, seed, manifest I/O, cleanup."""
+
 from __future__ import annotations
 
 import logging
@@ -10,15 +11,27 @@ from pathlib import Path
 
 import yaml
 
-from shared.simulation_models import SimManifest, SimStatus
+from shared.simulation_models import SimManifest
 
 _log = logging.getLogger(__name__)
 
 _SUBDIRS = (
-    "people", "coaching", "feedback", "meetings",
-    "okrs", "goals", "incidents", "postmortem-actions",
-    "review-cycles", "status-reports", "decisions", "references",
-    "1on1-prep", "briefings", "status-updates", "review-prep",
+    "people",
+    "coaching",
+    "feedback",
+    "meetings",
+    "okrs",
+    "goals",
+    "incidents",
+    "postmortem-actions",
+    "review-cycles",
+    "status-reports",
+    "decisions",
+    "references",
+    "1on1-prep",
+    "briefings",
+    "status-updates",
+    "review-prep",
 )
 
 _MANIFEST_FILE = ".sim-manifest.yaml"

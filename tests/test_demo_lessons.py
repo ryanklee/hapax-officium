@@ -1,11 +1,11 @@
 """Tests for agents.demo_pipeline.lessons — cross-run lesson accumulation."""
+
 from __future__ import annotations
 
 import copy
 from datetime import date
-from pathlib import Path
+from typing import TYPE_CHECKING
 
-import pytest
 import yaml
 
 from agents.demo_pipeline.lessons import (
@@ -15,9 +15,13 @@ from agents.demo_pipeline.lessons import (
     extract_lessons,
     format_lessons_block,
     load_lessons,
-    load_lessons_for_archetype,
     save_lessons,
 )
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from agents.demo_models import DemoEvalResult
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -32,7 +36,7 @@ def _make_eval_result(
     passed: bool = True,
     iterations: int = 2,
     adjustments: list[str] | None = None,
-) -> "DemoEvalResult":
+) -> DemoEvalResult:
     from agents.demo_models import DemoEvalDimension, DemoEvalReport, DemoEvalResult
 
     dim = DemoEvalDimension(

@@ -11,6 +11,7 @@ Usage:
     for tool_fn in get_axiom_tools():
         agent.tool(tool_fn)
 """
+
 from __future__ import annotations
 
 import json
@@ -20,7 +21,7 @@ import time
 from pathlib import Path
 from typing import Any
 
-from pydantic_ai import RunContext
+from pydantic_ai import RunContext  # noqa: TC002 — needed at runtime by get_type_hints
 
 log = logging.getLogger(__name__)
 
@@ -58,8 +59,8 @@ async def check_axiom_compliance(
             Constitutional axioms are always included (supremacy clause).
     """
     _log_tool_usage("check_axiom_compliance")
-    from shared.axiom_registry import load_axioms, load_implications
     from shared.axiom_precedents import PrecedentStore
+    from shared.axiom_registry import load_axioms, load_implications
 
     if domain:
         # Supremacy: constitutional always applies, plus the specified domain
@@ -81,8 +82,14 @@ async def check_axiom_compliance(
         log.warning("Could not connect to precedent store: %s", e)
         lines = ["Precedent database unavailable. Axiom text for reference:"]
         for axiom in axioms:
-            scope_label = f"[{axiom.scope}]" if axiom.scope == "constitutional" else f"[domain:{axiom.domain}]"
-            lines.append(f"\n**{axiom.id}** {scope_label} (weight={axiom.weight}, type={axiom.type}):")
+            scope_label = (
+                f"[{axiom.scope}]"
+                if axiom.scope == "constitutional"
+                else f"[domain:{axiom.domain}]"
+            )
+            lines.append(
+                f"\n**{axiom.id}** {scope_label} (weight={axiom.weight}, type={axiom.type}):"
+            )
             lines.append(axiom.text.strip())
         return "\n".join(lines)
 
@@ -90,10 +97,14 @@ async def check_axiom_compliance(
     for axiom in axioms:
         precedents = store.search(axiom.id, situation, limit=3)
 
-        scope_label = f"[{axiom.scope}]" if axiom.scope == "constitutional" else f"[domain:{axiom.domain}]"
+        scope_label = (
+            f"[{axiom.scope}]" if axiom.scope == "constitutional" else f"[domain:{axiom.domain}]"
+        )
 
         if precedents:
-            lines = [f"**Axiom: {axiom.id}** {scope_label} — {len(precedents)} relevant precedent(s):"]
+            lines = [
+                f"**Axiom: {axiom.id}** {scope_label} — {len(precedents)} relevant precedent(s):"
+            ]
             for p in precedents:
                 lines.append(f"\n  [{p.id}] ({p.authority} authority, {p.tier})")
                 lines.append(f"  Situation: {p.situation}")
@@ -147,7 +158,7 @@ async def record_axiom_decision(
         distinguishing_facts: JSON array of decisive facts.
     """
     _log_tool_usage("record_axiom_decision")
-    from shared.axiom_precedents import PrecedentStore, Precedent
+    from shared.axiom_precedents import Precedent, PrecedentStore
 
     try:
         facts = json.loads(distinguishing_facts)

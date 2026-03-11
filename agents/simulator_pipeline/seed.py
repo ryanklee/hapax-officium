@@ -4,12 +4,16 @@ Scans seed corpus files for ISO date strings in frontmatter and shifts
 them by a calculated offset so the seed represents 'existing history'
 at the simulation start_date.
 """
+
 from __future__ import annotations
 
 import logging
 import re
 from datetime import date, timedelta
-from pathlib import Path
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 _log = logging.getLogger(__name__)
 
@@ -56,8 +60,9 @@ def rebase_seed_dates(data_dir: Path, sim_start: date) -> None:
         _log.info("Seed dates already aligned with sim_start")
         return
 
-    _log.info("Rebasing seed dates by %d days (latest=%s, sim_start=%s)",
-              offset.days, latest, sim_start)
+    _log.info(
+        "Rebasing seed dates by %d days (latest=%s, sim_start=%s)", offset.days, latest, sim_start
+    )
 
     for md_file in data_dir.rglob("*.md"):
         content = md_file.read_text(encoding="utf-8")
@@ -66,9 +71,7 @@ def rebase_seed_dates(data_dir: Path, sim_start: date) -> None:
             continue
 
         frontmatter = parts[1]
-        new_frontmatter = _DATE_RE.sub(
-            lambda m: _shift_date(m.group(1), offset), frontmatter
-        )
+        new_frontmatter = _DATE_RE.sub(lambda m: _shift_date(m.group(1), offset), frontmatter)
 
         if new_frontmatter != frontmatter:
             md_file.write_text(

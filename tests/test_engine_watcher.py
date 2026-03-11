@@ -3,14 +3,19 @@
 Self-contained, no conftest. Uses tmp_path for isolated test directories.
 asyncio_mode = "auto" in pytest config — async tests work without decorator.
 """
+
 from __future__ import annotations
 
 import asyncio
-from pathlib import Path
+from typing import TYPE_CHECKING
 from unittest.mock import AsyncMock
 
-from cockpit.engine.models import ChangeEvent
 from cockpit.engine.watcher import DataDirWatcher
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from cockpit.engine.models import ChangeEvent
 
 
 async def test_file_creation_detected(tmp_path: Path):
@@ -139,9 +144,7 @@ async def test_frontmatter_type_enrichment(tmp_path: Path):
     watcher = DataDirWatcher(data_dir=tmp_path, on_change=callback, debounce_ms=50)
     await watcher.start()
     try:
-        (people_dir / "bob.md").write_text(
-            "---\ntype: person\nname: Bob\n---\n# Bob\n"
-        )
+        (people_dir / "bob.md").write_text("---\ntype: person\nname: Bob\n---\n# Bob\n")
         await asyncio.sleep(0.15)
     finally:
         await watcher.stop()

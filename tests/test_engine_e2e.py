@@ -3,15 +3,17 @@
 Write a file -> watcher detects -> rules evaluate -> actions execute -> delivery items queued.
 All downstream agent/collector functions are mocked — we test engine orchestration only.
 """
+
 from __future__ import annotations
 
 import asyncio
-from pathlib import Path
+from typing import TYPE_CHECKING
 from unittest.mock import AsyncMock, patch
 
-import pytest
-
 from cockpit.engine import ReactiveEngine
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def _write_md(path: Path, frontmatter: str, body: str = "") -> None:

@@ -1,11 +1,15 @@
 # ai-agents/tests/test_simulator_seed.py
 """Tests for seed date rebasing."""
+
 from __future__ import annotations
 
 from datetime import date
-from pathlib import Path
+from typing import TYPE_CHECKING
 
-from agents.simulator_pipeline.seed import rebase_seed_dates, find_latest_date
+from agents.simulator_pipeline.seed import find_latest_date, rebase_seed_dates
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 class TestFindLatestDate:
@@ -25,9 +29,7 @@ class TestFindLatestDate:
     def test_returns_none_for_no_dates(self, tmp_path: Path):
         """Returns None if no date fields found."""
         (tmp_path / "people").mkdir()
-        (tmp_path / "people" / "alice.md").write_text(
-            "---\ntype: person\nname: Alice\n---\n"
-        )
+        (tmp_path / "people" / "alice.md").write_text("---\ntype: person\nname: Alice\n---\n")
         result = find_latest_date(tmp_path)
         assert result is None
 
@@ -70,9 +72,7 @@ class TestRebaseSeedDates:
     def test_noop_when_no_dates(self, tmp_path: Path):
         """No-op if seed has no date fields."""
         (tmp_path / "people").mkdir()
-        (tmp_path / "people" / "alice.md").write_text(
-            "---\ntype: person\nname: Alice\n---\n"
-        )
+        (tmp_path / "people" / "alice.md").write_text("---\ntype: person\nname: Alice\n---\n")
         rebase_seed_dates(tmp_path, sim_start=date(2026, 1, 1))
         content = (tmp_path / "people" / "alice.md").read_text()
         assert "name: Alice" in content

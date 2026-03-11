@@ -1,25 +1,35 @@
 """Tests for post-simulation warm-up."""
+
 from __future__ import annotations
 
-from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, patch, call
+from typing import TYPE_CHECKING
+from unittest.mock import AsyncMock, patch
 
 from agents.simulator_pipeline.warmup import run_warmup
 from shared.config import config
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 class TestRunWarmup:
     async def test_calls_all_agents_in_order(self, tmp_path: Path):
         """Warm-up calls all 5 agents sequentially."""
-        with patch("agents.simulator_pipeline.warmup._run_activity") as mock_act, \
-             patch("agents.simulator_pipeline.warmup._run_profiler",
-                   new_callable=AsyncMock) as mock_prof, \
-             patch("agents.simulator_pipeline.warmup._run_briefing",
-                   new_callable=AsyncMock) as mock_brief, \
-             patch("agents.simulator_pipeline.warmup._run_digest",
-                   new_callable=AsyncMock) as mock_digest, \
-             patch("agents.simulator_pipeline.warmup._run_snapshot",
-                   new_callable=AsyncMock) as mock_snap:
+        with (
+            patch("agents.simulator_pipeline.warmup._run_activity") as mock_act,
+            patch(
+                "agents.simulator_pipeline.warmup._run_profiler", new_callable=AsyncMock
+            ) as mock_prof,
+            patch(
+                "agents.simulator_pipeline.warmup._run_briefing", new_callable=AsyncMock
+            ) as mock_brief,
+            patch(
+                "agents.simulator_pipeline.warmup._run_digest", new_callable=AsyncMock
+            ) as mock_digest,
+            patch(
+                "agents.simulator_pipeline.warmup._run_snapshot", new_callable=AsyncMock
+            ) as mock_snap,
+        ):
             await run_warmup(tmp_path)
             mock_act.assert_called_once()
             mock_prof.assert_called_once()
@@ -36,15 +46,17 @@ class TestRunWarmup:
             nonlocal captured_dir
             captured_dir = config.data_dir
 
-        with patch("agents.simulator_pipeline.warmup._run_activity"), \
-             patch("agents.simulator_pipeline.warmup._run_profiler",
-                   new_callable=AsyncMock, side_effect=capture_dir), \
-             patch("agents.simulator_pipeline.warmup._run_briefing",
-                   new_callable=AsyncMock), \
-             patch("agents.simulator_pipeline.warmup._run_digest",
-                   new_callable=AsyncMock), \
-             patch("agents.simulator_pipeline.warmup._run_snapshot",
-                   new_callable=AsyncMock):
+        with (
+            patch("agents.simulator_pipeline.warmup._run_activity"),
+            patch(
+                "agents.simulator_pipeline.warmup._run_profiler",
+                new_callable=AsyncMock,
+                side_effect=capture_dir,
+            ),
+            patch("agents.simulator_pipeline.warmup._run_briefing", new_callable=AsyncMock),
+            patch("agents.simulator_pipeline.warmup._run_digest", new_callable=AsyncMock),
+            patch("agents.simulator_pipeline.warmup._run_snapshot", new_callable=AsyncMock),
+        ):
             await run_warmup(tmp_path)
 
         assert captured_dir == tmp_path
@@ -52,16 +64,24 @@ class TestRunWarmup:
 
     async def test_individual_failure_does_not_abort(self, tmp_path: Path):
         """If one agent fails, the rest still run."""
-        with patch("agents.simulator_pipeline.warmup._run_activity",
-                   side_effect=RuntimeError("activity failed")), \
-             patch("agents.simulator_pipeline.warmup._run_profiler",
-                   new_callable=AsyncMock) as mock_prof, \
-             patch("agents.simulator_pipeline.warmup._run_briefing",
-                   new_callable=AsyncMock) as mock_brief, \
-             patch("agents.simulator_pipeline.warmup._run_digest",
-                   new_callable=AsyncMock) as mock_digest, \
-             patch("agents.simulator_pipeline.warmup._run_snapshot",
-                   new_callable=AsyncMock) as mock_snap:
+        with (
+            patch(
+                "agents.simulator_pipeline.warmup._run_activity",
+                side_effect=RuntimeError("activity failed"),
+            ),
+            patch(
+                "agents.simulator_pipeline.warmup._run_profiler", new_callable=AsyncMock
+            ) as mock_prof,
+            patch(
+                "agents.simulator_pipeline.warmup._run_briefing", new_callable=AsyncMock
+            ) as mock_brief,
+            patch(
+                "agents.simulator_pipeline.warmup._run_digest", new_callable=AsyncMock
+            ) as mock_digest,
+            patch(
+                "agents.simulator_pipeline.warmup._run_snapshot", new_callable=AsyncMock
+            ) as mock_snap,
+        ):
             await run_warmup(tmp_path)
             # All subsequent agents still called despite activity failure
             mock_prof.assert_called_once()

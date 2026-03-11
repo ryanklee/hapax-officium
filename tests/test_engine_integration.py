@@ -1,15 +1,17 @@
 """Integration tests for ReactiveEngine orchestrator."""
+
 from __future__ import annotations
 
 import asyncio
-from datetime import datetime, timezone
-from pathlib import Path
+from typing import TYPE_CHECKING
 from unittest.mock import AsyncMock, patch
 
 import pytest
 
 from cockpit.engine import ReactiveEngine
-from cockpit.engine.models import DeliveryItem
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 @pytest.fixture

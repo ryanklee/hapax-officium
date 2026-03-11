@@ -1,19 +1,23 @@
 # ai-agents/tests/test_simulation_context_api.py
 """Tests for POST /api/engine/simulation-context endpoint."""
+
 from __future__ import annotations
 
-from pathlib import Path
+from typing import TYPE_CHECKING
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
 from fastapi.testclient import TestClient
 
 from cockpit.api.routes.engine import router, set_engine
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 class TestSimulationContextEndpoint:
     def _make_client(self, engine=None):
         from fastapi import FastAPI
+
         app = FastAPI()
         app.include_router(router)
         if engine is not None:
@@ -34,8 +38,10 @@ class TestSimulationContextEndpoint:
         engine.pause = AsyncMock()
         client = self._make_client(engine)
 
-        with patch("cockpit.api.routes.engine.config") as mock_config, \
-             patch("cockpit.api.routes.engine.cache") as mock_cache:
+        with (
+            patch("cockpit.api.routes.engine.config"),
+            patch("cockpit.api.routes.engine.cache") as mock_cache,
+        ):
             mock_cache.refresh = AsyncMock()
             response = client.post(
                 "/api/engine/simulation-context",
@@ -52,8 +58,10 @@ class TestSimulationContextEndpoint:
         engine.resume = AsyncMock()
         client = self._make_client(engine)
 
-        with patch("cockpit.api.routes.engine.config") as mock_config, \
-             patch("cockpit.api.routes.engine.cache") as mock_cache:
+        with (
+            patch("cockpit.api.routes.engine.config"),
+            patch("cockpit.api.routes.engine.cache") as mock_cache,
+        ):
             mock_cache.refresh = AsyncMock()
             response = client.post(
                 "/api/engine/simulation-context",
@@ -93,6 +101,7 @@ class TestSimulationContextEndpoint:
         """POST when engine is None returns error."""
         set_engine(None)
         from fastapi import FastAPI
+
         app = FastAPI()
         app.include_router(router)
         client = TestClient(app)

@@ -1,10 +1,9 @@
 """Tests for literature-grounded knowledge dimensions in the sufficiency gate."""
+
 from __future__ import annotations
 
-from pathlib import Path
+from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
-
-import pytest
 
 from agents.demo_models import AudienceDossier, AudiencePersona
 from agents.demo_pipeline.sufficiency import (
@@ -13,6 +12,9 @@ from agents.demo_pipeline.sufficiency import (
     _audience_text_references_person,
     score_dimensions,
 )
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 # Note: score_dimensions() now takes has_system_knowledge as a parameter
 # instead of calling _system_knowledge_available() internally.
@@ -101,7 +103,9 @@ class TestScoreDimensionsArchetypeOnly:
 
     def test_inferable_dims_inferred(self):
         persona = _make_persona()
-        scores = score_dimensions("family", dossier=None, persona=persona, has_system_knowledge=False)
+        scores = score_dimensions(
+            "family", dossier=None, persona=persona, has_system_knowledge=False
+        )
 
         for s in scores:
             dim = next(d for d in KNOWLEDGE_DIMENSIONS if d["key"] == s.key)
@@ -116,7 +120,9 @@ class TestScoreDimensionsArchetypeOnly:
 
     def test_missing_dims_have_action(self):
         persona = _make_persona()
-        scores = score_dimensions("family", dossier=None, persona=persona, has_system_knowledge=False)
+        scores = score_dimensions(
+            "family", dossier=None, persona=persona, has_system_knowledge=False
+        )
 
         for s in scores:
             if s.confidence == "missing":
@@ -158,7 +164,9 @@ class TestSubjectDimensionsFromSystemKnowledge:
 
     def test_subject_high_with_system_knowledge_and_persona(self):
         persona = _make_persona()
-        scores = score_dimensions("family", dossier=None, persona=persona, has_system_knowledge=True)
+        scores = score_dimensions(
+            "family", dossier=None, persona=persona, has_system_knowledge=True
+        )
 
         subject_scores = [s for s in scores if s.category == "subject"]
         assert len(subject_scores) == 2
@@ -167,18 +175,20 @@ class TestSubjectDimensionsFromSystemKnowledge:
 
     def test_subject_inferred_without_system_knowledge(self):
         persona = _make_persona()
-        scores = score_dimensions("family", dossier=None, persona=persona, has_system_knowledge=False)
+        scores = score_dimensions(
+            "family", dossier=None, persona=persona, has_system_knowledge=False
+        )
 
         subject_scores = [s for s in scores if s.category == "subject"]
         for s in subject_scores:
-            assert s.confidence == "inferred", (
-                f"{s.key}: expected 'inferred', got '{s.confidence}'"
-            )
+            assert s.confidence == "inferred", f"{s.key}: expected 'inferred', got '{s.confidence}'"
 
     def test_subject_high_without_dossier(self):
         """SUBJECT dims reach 'high' even with no dossier — only need system knowledge + persona."""
         persona = _make_persona()
-        scores = score_dimensions("family", dossier=None, persona=persona, has_system_knowledge=True)
+        scores = score_dimensions(
+            "family", dossier=None, persona=persona, has_system_knowledge=True
+        )
 
         subject_scores = [s for s in scores if s.category == "subject"]
         for s in subject_scores:
@@ -206,8 +216,8 @@ class TestSufficiencyWithDimensionScores:
     def test_dimension_scores_populated(
         self, mock_personas, mock_audiences, mock_operator, mock_qdrant, mock_embed, tmp_path
     ):
-        from agents.demo_pipeline.sufficiency import check_sufficiency
         import agents.demo_pipeline.sufficiency as suf
+        from agents.demo_pipeline.sufficiency import check_sufficiency
 
         # Create real files
         profiles = _setup_profiles_dir(tmp_path)
@@ -254,8 +264,8 @@ class TestNamedPersonNoDossierCapsConfidence:
     def test_my_wife_caps_to_adequate(
         self, mock_personas, mock_audiences, mock_operator, mock_qdrant, mock_embed, tmp_path
     ):
-        from agents.demo_pipeline.sufficiency import check_sufficiency
         import agents.demo_pipeline.sufficiency as suf
+        from agents.demo_pipeline.sufficiency import check_sufficiency
 
         profiles = _setup_profiles_dir(tmp_path)
         claude_md = tmp_path / "CLAUDE.md"
@@ -283,9 +293,7 @@ class TestNamedPersonNoDossierCapsConfidence:
             suf.PROFILES_DIR = orig_profiles
 
         # No dossier matched → confidence capped at "adequate" despite system checks passing
-        assert result.confidence == "adequate", (
-            f"Expected 'adequate' but got '{result.confidence}'"
-        )
+        assert result.confidence == "adequate", f"Expected 'adequate' but got '{result.confidence}'"
 
     def test_person_reference_detection(self):
         assert _audience_text_references_person("my friend") is True

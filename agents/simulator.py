@@ -3,42 +3,45 @@
 Advances through simulated workdays, generating plausible events via LLM,
 running tiered checkpoints, and producing a complete DATA_DIR snapshot.
 """
+
 from __future__ import annotations
 
 import argparse
 import asyncio
 import logging
-import sys
-from datetime import date, datetime, timedelta, timezone
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
+from typing import TYPE_CHECKING
 
+from agents.simulator_pipeline.checkpoints import (
+    run_deterministic_checkpoint,
+    run_significant_event_checkpoint,
+    run_weekly_checkpoint,
+    should_run_weekly_checkpoint,
+)
+from agents.simulator_pipeline.context import (
+    build_tick_prompt,
+    compose_role_profile,
+    load_org_dossier,
+    load_role_matrix,
+    load_scenarios,
+    load_workflow_semantics,
+    validate_distribution,
+)
+from agents.simulator_pipeline.event_gen import generate_tick_events
+from agents.simulator_pipeline.renderer import render_events
+from agents.simulator_pipeline.seed import rebase_seed_dates
 from shared.config import config
 from shared.simulation import (
     create_simulation,
-    seed_simulation,
-    save_manifest,
     load_manifest,
+    save_manifest,
+    seed_simulation,
 )
 from shared.simulation_models import SimStatus
-from agents.simulator_pipeline.context import (
-    load_workflow_semantics,
-    load_role_matrix,
-    load_scenarios,
-    load_org_dossier,
-    compose_role_profile,
-    build_tick_prompt,
-    validate_distribution,
-)
-from agents.simulator_pipeline.models import SimulatedEvent
-from agents.simulator_pipeline.event_gen import generate_tick_events
-from agents.simulator_pipeline.renderer import render_events
-from agents.simulator_pipeline.checkpoints import (
-    should_run_weekly_checkpoint,
-    run_deterministic_checkpoint,
-    run_weekly_checkpoint,
-    run_significant_event_checkpoint,
-)
-from agents.simulator_pipeline.seed import rebase_seed_dates
+
+if TYPE_CHECKING:
+    from agents.simulator_pipeline.models import SimulatedEvent
 
 _log = logging.getLogger(__name__)
 
@@ -122,8 +125,7 @@ async def run_simulation(
         manifest = load_manifest(sim_dir)
         role = manifest.role
         variant = manifest.variant or variant
-        _log.info("Resuming simulation %s from tick %s",
-                   manifest.id, manifest.last_completed_tick)
+        _log.info("Resuming simulation %s from tick %s", manifest.id, manifest.last_completed_tick)
     else:
         window_days = _parse_window(window)
         start_date, end_date = _compute_dates(window_days)
@@ -179,10 +181,12 @@ async def run_simulation(
 
     try:
         for tick_date in all_days:
-            _log.info("Tick: %s (%d/%d)",
-                       tick_date.isoformat(),
-                       manifest.ticks_completed + 1,
-                       manifest.ticks_total)
+            _log.info(
+                "Tick: %s (%d/%d)",
+                tick_date.isoformat(),
+                manifest.ticks_completed + 1,
+                manifest.ticks_total,
+            )
 
             # Build prompt and generate events
             state_summary = _summarize_state(sim_dir)
@@ -227,7 +231,7 @@ async def run_simulation(
 
         # Mark completed
         manifest.status = SimStatus.COMPLETED
-        manifest.completed_at = datetime.now(timezone.utc)
+        manifest.completed_at = datetime.now(UTC)
         save_manifest(sim_dir, manifest)
 
         # Distribution validation
@@ -239,14 +243,17 @@ async def run_simulation(
             for w in dist_warnings:
                 _log.warning("Distribution outlier: %s", w)
 
-        _log.info("Simulation %s completed: %d ticks, %d checkpoints",
-                   manifest.id, manifest.ticks_completed, manifest.checkpoints_run)
+        _log.info(
+            "Simulation %s completed: %d ticks, %d checkpoints",
+            manifest.id,
+            manifest.ticks_completed,
+            manifest.checkpoints_run,
+        )
 
     except Exception:
         manifest.status = SimStatus.FAILED
         save_manifest(sim_dir, manifest)
-        _log.exception("Simulation %s failed at tick %s",
-                        manifest.id, manifest.last_completed_tick)
+        _log.exception("Simulation %s failed at tick %s", manifest.id, manifest.last_completed_tick)
         raise
     finally:
         config.reset_data_dir()
@@ -262,14 +269,20 @@ async def main() -> None:
     )
     parser.add_argument("--role", type=str, help="Role key (e.g. engineering-manager)")
     parser.add_argument("--variant", type=str, default=None, help="Role variant")
-    parser.add_argument("--window", type=str, default="30d", help="Simulation window (e.g. 7d, 30d, 90d)")
+    parser.add_argument(
+        "--window", type=str, default="30d", help="Simulation window (e.g. 7d, 30d, 90d)"
+    )
     parser.add_argument("--seed", type=str, default="demo-data/", help="Seed corpus path")
     parser.add_argument("--scenario", type=str, default=None, help="Scenario modifier")
     parser.add_argument("--audience", type=str, default=None, help="Audience archetype")
     parser.add_argument("--output", type=str, default=None, help="Output directory")
     parser.add_argument("--resume", type=str, default=None, help="Resume from existing sim dir")
-    parser.add_argument("--org-dossier", type=str, default=None,
-                        help="Path to org-dossier.yaml (default: config/org-dossier.yaml)")
+    parser.add_argument(
+        "--org-dossier",
+        type=str,
+        default=None,
+        help="Path to org-dossier.yaml (default: config/org-dossier.yaml)",
+    )
     parser.add_argument("--json", action="store_true", help="JSON output")
     args = parser.parse_args()
 

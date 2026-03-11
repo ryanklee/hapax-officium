@@ -13,6 +13,7 @@ Usage:
     uv run python -m agents.ingest --type transcript <file>  # Skip classification
     uv run python -m agents.ingest --watch             # Start watch daemon
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -20,8 +21,8 @@ import logging
 import re
 import shutil
 from dataclasses import dataclass
-from datetime import datetime, timezone
-from enum import Enum
+from datetime import UTC, datetime
+from enum import StrEnum
 from pathlib import Path
 
 import yaml
@@ -41,7 +42,8 @@ _SPEAKER_RE = re.compile(r"^[A-Z][A-Za-z\s]+:\s", re.MULTILINE)
 
 # ── Document types ───────────────────────────────────────────────────────
 
-class DocumentType(str, Enum):
+
+class DocumentType(StrEnum):
     TRANSCRIPT = "transcript"
     MEETING = "meeting"
     PERSON = "person"
@@ -67,6 +69,7 @@ _TYPE_TO_DIR: dict[DocumentType, str] = {
 @dataclass
 class ProcessResult:
     """Result of processing a single document."""
+
     success: bool
     doc_type: DocumentType
     destination: Path | None = None
@@ -166,16 +169,11 @@ def _convert_transcript_to_md(path: Path) -> str:
     except OSError as exc:
         raise RuntimeError(f"Cannot read transcript {path}: {exc}") from exc
 
-    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    today = datetime.now(UTC).strftime("%Y-%m-%d")
     stem = path.stem
 
     frontmatter = (
-        f"---\n"
-        f"type: meeting\n"
-        f"date: {today}\n"
-        f"source: transcript\n"
-        f"original: {path.name}\n"
-        f"---\n"
+        f"---\ntype: meeting\ndate: {today}\nsource: transcript\noriginal: {path.name}\n---\n"
     )
 
     return f"{frontmatter}\n# Transcript: {stem}\n\n{text}"
@@ -293,7 +291,7 @@ async def _watch_inbox(poll_interval: float = 30.0) -> None:
                 result = await process_document(file_path)
 
                 # Move original to processed/ with timestamp prefix
-                ts = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
+                ts = datetime.now(UTC).strftime("%Y%m%d-%H%M%S")
                 processed_name = f"{ts}_{file_path.name}"
                 processed_dest = processed_dir / processed_name
                 shutil.move(str(file_path), str(processed_dest))

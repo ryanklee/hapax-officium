@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { IncidentBanner } from "./dashboard/IncidentBanner";
 import { NudgeList } from "./dashboard/NudgeList";
 import { AgentGrid } from "./dashboard/AgentGrid";
@@ -9,11 +9,11 @@ import type { AgentInfo } from "../api/types";
 export function MainPanel() {
   const sse = useSSE();
   const [agentName, setAgentName] = useState<string | null>(null);
-  const startedAtRef = useRef<number | null>(null);
+  const [startedAt, setStartedAt] = useState<number | null>(null);
 
   function handleRunAgent(agent: AgentInfo, flags: string[]) {
     setAgentName(agent.name);
-    startedAtRef.current = Date.now();
+    setStartedAt(Date.now());
     sse.start(`/api/agents/${agent.name}/run`, { flags });
   }
 
@@ -28,7 +28,7 @@ export function MainPanel() {
         lines={sse.lines}
         isRunning={sse.isRunning}
         agentName={agentName ?? undefined}
-        startedAt={startedAtRef.current ?? undefined}
+        startedAt={startedAt ?? undefined}
         onCancel={sse.cancel}
       />
       {sse.error && (

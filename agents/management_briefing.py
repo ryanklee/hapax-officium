@@ -12,21 +12,21 @@ Usage:
     uv run python -m agents.management_briefing --json           # Machine-readable JSON
     uv run python -m agents.management_briefing --notify         # Send notification
 """
+
 from __future__ import annotations
 
 import argparse
 import asyncio
-import json
 import logging
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 log = logging.getLogger(__name__)
 
 from pydantic import BaseModel, Field
 from pydantic_ai import Agent
 
-from shared.config import get_model, PROFILES_DIR
+from shared.config import PROFILES_DIR, get_model
 from shared.operator import get_system_prompt_fragment
 
 # Import Langfuse OTel config (side-effect: configures exporter)
@@ -35,14 +35,15 @@ try:
 except ImportError:
     pass
 
-from cockpit.data.management import collect_management_state, ManagementSnapshot
-from cockpit.data.goals import collect_goals, GoalSnapshot
-
+from cockpit.data.goals import GoalSnapshot, collect_goals
+from cockpit.data.management import ManagementSnapshot, collect_management_state
 
 # ── Schemas ──────────────────────────────────────────────────────────────────
 
+
 class ManagementBriefingStats(BaseModel):
     """Key numbers for the management briefing."""
+
     people_count: int = 0
     stale_1on1_count: int = 0
     overdue_coaching_count: int = 0
@@ -54,6 +55,7 @@ class ManagementBriefingStats(BaseModel):
 
 class ActionItem(BaseModel):
     """A specific recommended action for the operator."""
+
     priority: str = Field(description="high, medium, or low")
     action: str = Field(description="What to do, in imperative form")
     reason: str = Field(description="Why this matters, one sentence")
@@ -61,6 +63,7 @@ class ActionItem(BaseModel):
 
 class ManagementBriefing(BaseModel):
     """The synthesized management briefing."""
+
     generated_at: str = Field(description="ISO timestamp")
     headline: str = Field(description="One-line management status summary")
     body: str = Field(description="3-5 sentence narrative briefing")
@@ -102,10 +105,12 @@ management_briefing_agent = Agent(
 
 # Register on-demand operator context tools
 from shared.context_tools import get_context_tools
+
 for _tool_fn in get_context_tools():
     management_briefing_agent.tool(_tool_fn)
 
 from shared.axiom_tools import get_axiom_tools
+
 for _tool_fn in get_axiom_tools():
     management_briefing_agent.tool(_tool_fn)
 
@@ -143,7 +148,9 @@ def _format_management_state(mgmt: ManagementSnapshot) -> str:
         lines.append("")
         lines.append("### Overdue Feedback Follow-ups")
         for f in overdue_feedback:
-            lines.append(f"- {f.title} (person: {f.person}): {f.days_overdue}d overdue, {f.direction}/{f.category}")
+            lines.append(
+                f"- {f.title} (person: {f.person}): {f.days_overdue}d overdue, {f.direction}/{f.category}"
+            )
 
     # Detail high cognitive load
     high_load = [p for p in mgmt.people if p.cognitive_load is not None and p.cognitive_load >= 4]
@@ -166,8 +173,12 @@ def _format_goals(goals_snap: GoalSnapshot) -> str:
 
     for g in goals_snap.goals:
         stale_tag = " [STALE]" if g.stale else ""
-        activity = f"{g.last_activity_h:.0f}h ago" if g.last_activity_h is not None else "no activity"
-        lines.append(f"- [{g.category}/{g.status}]{stale_tag} {g.name}: {g.description} ({activity})")
+        activity = (
+            f"{g.last_activity_h:.0f}h ago" if g.last_activity_h is not None else "no activity"
+        )
+        lines.append(
+            f"- [{g.category}/{g.status}]{stale_tag} {g.name}: {g.description} ({activity})"
+        )
         if g.progress_summary:
             lines.append(f"  Progress: {g.progress_summary}")
 
@@ -229,7 +240,7 @@ async def generate_briefing() -> ManagementBriefing:
 
 {goals_text}
 
-Generate a management briefing. The timestamp is {datetime.now(timezone.utc).isoformat()[:19]}Z."""
+Generate a management briefing. The timestamp is {datetime.now(UTC).isoformat()[:19]}Z."""
 
     try:
         result = await management_briefing_agent.run(prompt)
@@ -237,18 +248,19 @@ Generate a management briefing. The timestamp is {datetime.now(timezone.utc).iso
     except Exception as e:
         log.error("LLM synthesis failed: %s", e)
         briefing = ManagementBriefing(
-            generated_at=datetime.now(timezone.utc).isoformat()[:19] + "Z",
+            generated_at=datetime.now(UTC).isoformat()[:19] + "Z",
             headline="Briefing unavailable -- LLM error",
             body=str(e),
             action_items=[],
         )
-    briefing.generated_at = datetime.now(timezone.utc).isoformat()[:19] + "Z"
+    briefing.generated_at = datetime.now(UTC).isoformat()[:19] + "Z"
     briefing.stats = stats
 
     return briefing
 
 
 # ── Formatters ───────────────────────────────────────────────────────────────
+
 
 def format_briefing_md(briefing: ManagementBriefing) -> str:
     """Format briefing as markdown for file storage."""
@@ -283,7 +295,10 @@ def format_briefing_md(briefing: ManagementBriefing) -> str:
     if briefing.action_items:
         date_str = briefing.generated_at[:10]
         lines.append("## Action Items")
-        for item in sorted(briefing.action_items, key=lambda a: {"high": 0, "medium": 1, "low": 2}.get(a.priority, 3)):
+        for item in sorted(
+            briefing.action_items,
+            key=lambda a: {"high": 0, "medium": 1, "low": 2}.get(a.priority, 3),
+        ):
             pri_emoji = {"high": " !!!", "medium": " !!", "low": " !"}.get(item.priority, "")
             lines.append(f"- [ ] {item.action}{pri_emoji} [{date_str}]")
             lines.append(f"  - {item.reason}")
@@ -318,7 +333,10 @@ def format_briefing_human(briefing: ManagementBriefing) -> str:
     if briefing.action_items:
         lines.append("")
         lines.append("Action Items:")
-        for item in sorted(briefing.action_items, key=lambda a: {"high": 0, "medium": 1, "low": 2}.get(a.priority, 3)):
+        for item in sorted(
+            briefing.action_items,
+            key=lambda a: {"high": 0, "medium": 1, "low": 2}.get(a.priority, 3),
+        ):
             icon = {"high": "!!", "medium": "! ", "low": ".."}
             lines.append(f"  [{icon.get(item.priority, '??')}] {item.action}")
 
@@ -326,6 +344,7 @@ def format_briefing_human(briefing: ManagementBriefing) -> str:
 
 
 # ── Notification ─────────────────────────────────────────────────────────────
+
 
 def send_notification(briefing: ManagementBriefing) -> None:
     """Send briefing notification via ntfy (shared.notify)."""
@@ -361,7 +380,9 @@ async def main() -> None:
         prog="python -m agents.management_briefing",
     )
     parser.add_argument("--json", action="store_true", help="Machine-readable JSON output")
-    parser.add_argument("--save", action="store_true", help="Save to profiles/management-briefing.md")
+    parser.add_argument(
+        "--save", action="store_true", help="Save to profiles/management-briefing.md"
+    )
     parser.add_argument("--notify", action="store_true", help="Send notification")
     args = parser.parse_args()
 
@@ -376,6 +397,7 @@ async def main() -> None:
 
         # Also write to Obsidian vault for Sync
         from shared.vault_writer import write_briefing_to_vault
+
         vault_path = write_briefing_to_vault(briefing_md)
         if vault_path:
             print(f"Vault: {vault_path}", file=sys.stderr)

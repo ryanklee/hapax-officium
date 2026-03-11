@@ -14,14 +14,14 @@ Usage:
     uv run python -m agents.management_prep --team-snapshot
     uv run python -m agents.management_prep --overview
 """
+
 from __future__ import annotations
 
 import argparse
 import asyncio
 import logging
 import sys
-from datetime import datetime, timezone
-from pathlib import Path
+from datetime import UTC, datetime
 
 log = logging.getLogger("management_prep")
 
@@ -38,18 +38,21 @@ except ImportError:
     pass
 
 from cockpit.data.management import (
-    collect_management_state,
-    PersonState,
     ManagementSnapshot,
+    PersonState,
+    collect_management_state,
 )
-
 
 # ── Schemas ──────────────────────────────────────────────────────────────────
 
+
 class PrepDocument(BaseModel):
     """LLM-synthesized 1:1 preparation document."""
+
     summary: str = Field(description="2-3 sentence context summary for this person")
-    rolling_themes: list[str] = Field(default_factory=list, description="Patterns across recent meetings")
+    rolling_themes: list[str] = Field(
+        default_factory=list, description="Patterns across recent meetings"
+    )
     open_items: list[str] = Field(default_factory=list, description="Unresolved action items")
     coaching_status: str = Field(default="", description="Status of active coaching experiments")
     suggested_topics: list[str] = Field(default_factory=list, description="Topics worth covering")
@@ -58,16 +61,20 @@ class PrepDocument(BaseModel):
 
 class TeamSnapshot(BaseModel):
     """LLM-synthesized team state snapshot."""
+
     headline: str = Field(description="One-line team state summary")
     people_summaries: list[str] = Field(default_factory=list, description="One-line per person")
     load_assessment: str = Field(default="", description="Cognitive load distribution narrative")
-    active_experiments: list[str] = Field(default_factory=list, description="Active coaching/feedback")
+    active_experiments: list[str] = Field(
+        default_factory=list, description="Active coaching/feedback"
+    )
     topology_observations: str = Field(default="", description="Team interaction patterns")
     themes: list[str] = Field(default_factory=list, description="Recurring strategic themes")
 
 
 class ManagementOverview(BaseModel):
     """Condensed management overview for system folder."""
+
     headline: str = Field(description="One-line management state summary")
     body: str = Field(description="3-5 sentence management overview")
     key_actions: list[str] = Field(default_factory=list, description="Top actions needed")
@@ -143,12 +150,14 @@ overview_agent = Agent(
 
 # Register on-demand operator context tools on all LLM agents
 from shared.context_tools import get_context_tools
+
 for _tool_fn in get_context_tools():
     prep_agent.tool(_tool_fn)
     snapshot_agent.tool(_tool_fn)
     overview_agent.tool(_tool_fn)
 
 from shared.axiom_tools import get_axiom_tools
+
 for _tool_fn in get_axiom_tools():
     prep_agent.tool(_tool_fn)
     snapshot_agent.tool(_tool_fn)
@@ -156,6 +165,7 @@ for _tool_fn in get_axiom_tools():
 
 
 # ── Data collection ──────────────────────────────────────────────────────────
+
 
 def _find_person(snapshot: ManagementSnapshot, name: str) -> PersonState | None:
     """Find a person in the snapshot by name (case-insensitive)."""
@@ -265,6 +275,7 @@ def _collect_team_context(snapshot: ManagementSnapshot) -> str:
 
 # ── Prep generation ──────────────────────────────────────────────────────────
 
+
 async def generate_1on1_prep(person_name: str) -> PrepDocument:
     """Generate 1:1 preparation for a specific person."""
     snapshot = collect_management_state()
@@ -291,7 +302,9 @@ Generate the preparation document now."""
         log.error("LLM 1:1 prep failed for %s: %s", person_name, exc)
         return PrepDocument(
             summary=f"1:1 prep generation failed: {exc}",
-            suggested_topics=["Retry with: uv run python -m agents.management_prep --person " + person_name],
+            suggested_topics=[
+                "Retry with: uv run python -m agents.management_prep --person " + person_name
+            ],
         )
     return result.output
 
@@ -347,12 +360,13 @@ Generate the overview now."""
 
 # ── Formatters ───────────────────────────────────────────────────────────────
 
+
 def format_prep_md(person_name: str, prep: PrepDocument) -> str:
     """Format 1:1 prep as markdown."""
     lines = [
         f"# 1:1 Prep — {person_name}",
         "",
-        f"## Context Summary",
+        "## Context Summary",
         prep.summary,
         "",
     ]
@@ -391,7 +405,7 @@ def format_prep_md(person_name: str, prep: PrepDocument) -> str:
 def format_snapshot_md(snap: TeamSnapshot) -> str:
     """Format team snapshot as markdown."""
     lines = [
-        f"# Team State Snapshot",
+        "# Team State Snapshot",
         "",
         f"## {snap.headline}",
         "",
@@ -430,9 +444,9 @@ def format_snapshot_md(snap: TeamSnapshot) -> str:
 
 def format_overview_md(overview: ManagementOverview) -> str:
     """Format management overview as markdown."""
-    now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    now = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
     lines = [
-        f"# Management Overview",
+        "# Management Overview",
         f"*Updated {now}*",
         "",
         f"## {overview.headline}",
@@ -451,6 +465,7 @@ def format_overview_md(overview: ManagementOverview) -> str:
 
 
 # ── CLI ──────────────────────────────────────────────────────────────────────
+
 
 async def main() -> None:
     parser = argparse.ArgumentParser(
@@ -471,6 +486,7 @@ async def main() -> None:
 
         if args.save:
             from shared.vault_writer import write_1on1_prep_to_vault
+
             md = format_prep_md(args.person, prep)
             path = write_1on1_prep_to_vault(args.person, md)
             if path:
@@ -487,6 +503,7 @@ async def main() -> None:
 
         if args.save:
             from shared.vault_writer import write_team_snapshot_to_vault
+
             md = format_snapshot_md(snap)
             path = write_team_snapshot_to_vault(md)
             if path:
@@ -503,6 +520,7 @@ async def main() -> None:
 
         if args.save:
             from shared.vault_writer import write_management_overview_to_vault
+
             md = format_overview_md(overview)
             path = write_management_overview_to_vault(md)
             if path:

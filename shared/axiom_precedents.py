@@ -22,18 +22,22 @@ Usage:
     # Record a new precedent
     store.record(Precedent(...))
 """
+
 from __future__ import annotations
 
 import json
 import logging
 import uuid
 from dataclasses import dataclass
-from datetime import datetime, timezone
-from pathlib import Path
+from datetime import UTC, datetime
+from typing import TYPE_CHECKING
 
 import yaml
 
 from shared.config import get_qdrant
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 log = logging.getLogger(__name__)
 
@@ -79,7 +83,7 @@ class PrecedentStore:
 
     def _generate_id(self) -> str:
         """Generate a unique precedent ID."""
-        ts = datetime.now(timezone.utc).strftime("%Y%m%d")
+        ts = datetime.now(UTC).strftime("%Y%m%d")
         short = uuid.uuid4().hex[:6]
         return f"PRE-{ts}-{short}"
 
@@ -98,8 +102,10 @@ class PrecedentStore:
             "superseded_by": precedent.superseded_by or "",
         }
 
-    def _from_payload(self, point_id: str, payload: dict) -> Precedent:
+    def _from_payload(self, point_id: str | object, payload: dict | None) -> Precedent:
         """Convert a Qdrant payload back to a Precedent."""
+        if payload is None:
+            payload = {}
         facts = payload.get("distinguishing_facts", "[]")
         if isinstance(facts, str):
             try:
@@ -127,15 +133,18 @@ class PrecedentStore:
         limit: int = 5,
     ) -> list[Precedent]:
         """Semantic search for precedents relevant to a situation."""
+        from qdrant_client.models import FieldCondition, Filter, MatchValue
+
         from shared.config import embed
-        from qdrant_client.models import Filter, FieldCondition, MatchValue
 
         query_vec = embed(situation, prefix="search_query")
 
-        query_filter = Filter(must=[
-            FieldCondition(key="axiom_id", match=MatchValue(value=axiom_id)),
-            FieldCondition(key="superseded_by", match=MatchValue(value="")),
-        ])
+        query_filter = Filter(
+            must=[
+                FieldCondition(key="axiom_id", match=MatchValue(value=axiom_id)),
+                FieldCondition(key="superseded_by", match=MatchValue(value="")),
+            ]
+        )
 
         results = self.client.query_points(
             COLLECTION,
@@ -148,13 +157,14 @@ class PrecedentStore:
 
     def record(self, precedent: Precedent) -> str:
         """Record a new precedent. Returns the precedent ID."""
-        from shared.config import embed
         from qdrant_client.models import PointStruct
+
+        from shared.config import embed
 
         if not precedent.id:
             precedent.id = self._generate_id()
         if not precedent.created:
-            precedent.created = datetime.now(timezone.utc).isoformat()
+            precedent.created = datetime.now(UTC).isoformat()
 
         vec = embed(precedent.situation, prefix="search_document")
         point_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, f"axiom-precedent-{precedent.id}"))
@@ -164,8 +174,12 @@ class PrecedentStore:
             [PointStruct(id=point_id, vector=vec, payload=self._to_payload(precedent))],
         )
 
-        log.info("Recorded precedent %s (axiom=%s, decision=%s)",
-                 precedent.id, precedent.axiom_id, precedent.decision)
+        log.info(
+            "Recorded precedent %s (axiom=%s, decision=%s)",
+            precedent.id,
+            precedent.axiom_id,
+            precedent.decision,
+        )
         return precedent.id
 
     def load_seeds(self, axioms_path: Path) -> int:
@@ -195,28 +209,32 @@ class PrecedentStore:
         default_axiom_id = data.get("axiom_id", "")
         precedents = []
         for entry in data.get("precedents", []):
-            precedents.append(Precedent(
-                id=entry["id"],
-                axiom_id=entry.get("axiom_id", default_axiom_id),
-                situation=entry.get("situation", ""),
-                decision=entry.get("decision", ""),
-                reasoning=entry.get("reasoning", ""),
-                tier=entry.get("tier", "T2"),
-                distinguishing_facts=entry.get("distinguishing_facts", []),
-                authority=entry.get("authority", "derived"),
-                created=entry.get("created", ""),
-                superseded_by=None,
-            ))
+            precedents.append(
+                Precedent(
+                    id=entry["id"],
+                    axiom_id=entry.get("axiom_id", default_axiom_id),
+                    situation=entry.get("situation", ""),
+                    decision=entry.get("decision", ""),
+                    reasoning=entry.get("reasoning", ""),
+                    tier=entry.get("tier", "T2"),
+                    distinguishing_facts=entry.get("distinguishing_facts", []),
+                    authority=entry.get("authority", "derived"),
+                    created=entry.get("created", ""),
+                    superseded_by=None,
+                )
+            )
         return precedents
 
     def get_by_axiom(self, axiom_id: str, *, limit: int = 20) -> list[Precedent]:
         """Get all precedents for an axiom, sorted by authority then date."""
-        from qdrant_client.models import Filter, FieldCondition, MatchValue
+        from qdrant_client.models import FieldCondition, Filter, MatchValue
 
-        query_filter = Filter(must=[
-            FieldCondition(key="axiom_id", match=MatchValue(value=axiom_id)),
-            FieldCondition(key="superseded_by", match=MatchValue(value="")),
-        ])
+        query_filter = Filter(
+            must=[
+                FieldCondition(key="axiom_id", match=MatchValue(value=axiom_id)),
+                FieldCondition(key="superseded_by", match=MatchValue(value="")),
+            ]
+        )
 
         results = self.client.scroll(
             COLLECTION,
@@ -231,12 +249,14 @@ class PrecedentStore:
 
     def get_pending_review(self, *, limit: int = 20) -> list[Precedent]:
         """Get agent-created precedents awaiting operator review."""
-        from qdrant_client.models import Filter, FieldCondition, MatchValue
+        from qdrant_client.models import FieldCondition, Filter, MatchValue
 
-        query_filter = Filter(must=[
-            FieldCondition(key="authority", match=MatchValue(value="agent")),
-            FieldCondition(key="superseded_by", match=MatchValue(value="")),
-        ])
+        query_filter = Filter(
+            must=[
+                FieldCondition(key="authority", match=MatchValue(value="agent")),
+                FieldCondition(key="superseded_by", match=MatchValue(value="")),
+            ]
+        )
 
         results = self.client.scroll(
             COLLECTION,
@@ -248,36 +268,40 @@ class PrecedentStore:
 
     def promote(self, precedent_id: str) -> None:
         """Promote an agent precedent to operator authority."""
-        from qdrant_client.models import Filter, FieldCondition, MatchValue, PointStruct
+        from qdrant_client.models import FieldCondition, Filter, MatchValue, PointStruct
 
         results = self.client.scroll(
             COLLECTION,
-            scroll_filter=Filter(must=[
-                FieldCondition(key="precedent_id", match=MatchValue(value=precedent_id)),
-            ]),
+            scroll_filter=Filter(
+                must=[
+                    FieldCondition(key="precedent_id", match=MatchValue(value=precedent_id)),
+                ]
+            ),
             limit=1,
         )
 
         if results[0]:
             point = results[0][0]
-            payload = dict(point.payload)
+            payload: dict[str, object] = dict(point.payload or {})
             payload["authority"] = "operator"
             self.client.upsert(
                 COLLECTION,
-                [PointStruct(id=point.id, vector=point.vector, payload=payload)],
+                [PointStruct(id=point.id, vector=point.vector, payload=payload)],  # type: ignore[arg-type]  # qdrant SDK VectorStructOutput vs VectorStruct mismatch
             )
             log.info("Promoted precedent %s to operator authority", precedent_id)
 
     def supersede(self, old_id: str, new_precedent: Precedent) -> str:
         """Supersede an existing precedent with a new one."""
-        from qdrant_client.models import Filter, FieldCondition, MatchValue, PointStruct
+        from qdrant_client.models import FieldCondition, Filter, MatchValue, PointStruct
 
         # Find old precedent
         results = self.client.scroll(
             COLLECTION,
-            scroll_filter=Filter(must=[
-                FieldCondition(key="precedent_id", match=MatchValue(value=old_id)),
-            ]),
+            scroll_filter=Filter(
+                must=[
+                    FieldCondition(key="precedent_id", match=MatchValue(value=old_id)),
+                ]
+            ),
             limit=1,
         )
 
@@ -285,11 +309,11 @@ class PrecedentStore:
 
         if results[0]:
             point = results[0][0]
-            payload = dict(point.payload)
+            payload: dict[str, object] = dict(point.payload or {})
             payload["superseded_by"] = new_id
             self.client.upsert(
                 COLLECTION,
-                [PointStruct(id=point.id, vector=point.vector, payload=payload)],
+                [PointStruct(id=point.id, vector=point.vector, payload=payload)],  # type: ignore[arg-type]  # qdrant SDK VectorStructOutput vs VectorStruct mismatch
             )
 
         log.info("Superseded precedent %s with %s", old_id, new_id)

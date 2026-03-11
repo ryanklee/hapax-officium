@@ -12,7 +12,10 @@ select = [
     "TCH",   # flake8-type-checking
 ]
 ignore = [
+    "E402",  # import not at top (langfuse try/except pattern)
     "E501",  # line too long (handled by formatter)
+    "E741",  # ambiguous variable name (single-letter vars in comprehensions)
+    "SIM105", # contextlib.suppress (try/except/pass is clearer for imports)
     "SIM108", # ternary operator (readability preference)
 ]
 

@@ -11,6 +11,7 @@ Usage:
     uv run python -m agents.drift_detector --fix        # Generate corrected doc fragments
     uv run python -m agents.drift_detector --json       # Machine-readable output
 """
+
 from __future__ import annotations
 
 import argparse
@@ -18,15 +19,20 @@ import asyncio
 import json
 import logging
 import sys
+from datetime import datetime
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 log = logging.getLogger("drift_detector")
 
 from pydantic import BaseModel, Field
+
+if TYPE_CHECKING:
+    from shared.document_registry import DocumentRegistry
 from pydantic_ai import Agent
 from pydantic_ai.usage import UsageLimits
 
-from shared.config import get_model, PROFILES_DIR, DATA_DIR
+from shared.config import PROFILES_DIR, get_model
 from shared.operator import get_system_prompt_fragment
 
 # Import Langfuse OTel config (side-effect: configures exporter)
@@ -38,15 +44,18 @@ except ImportError:
 # Project root for local documentation
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
-from agents.introspect import generate_manifest, InfrastructureManifest
-
+from agents.introspect import InfrastructureManifest, generate_manifest
 
 # ── Schemas ──────────────────────────────────────────────────────────────────
 
+
 class DriftItem(BaseModel):
     """A single discrepancy between documentation and reality."""
+
     severity: str = Field(description="high, medium, or low")
-    category: str = Field(description="Category: missing_service, extra_service, wrong_port, wrong_version, stale_reference, missing_doc, config_mismatch, goal-gap, axiom-violation, axiom-sufficiency-gap, stale_doc")
+    category: str = Field(
+        description="Category: missing_service, extra_service, wrong_port, wrong_version, stale_reference, missing_doc, config_mismatch, goal-gap, axiom-violation, axiom-sufficiency-gap, stale_doc"
+    )
     doc_file: str = Field(description="Which documentation file contains the drift")
     doc_claim: str = Field(description="What the documentation says")
     reality: str = Field(description="What the actual system state is")
@@ -55,6 +64,7 @@ class DriftItem(BaseModel):
 
 class DriftReport(BaseModel):
     """Complete drift analysis."""
+
     drift_items: list[DriftItem] = Field(default_factory=list)
     docs_analyzed: list[str] = Field(default_factory=list)
     summary: str = Field(description="One-paragraph summary of overall drift state")
@@ -132,10 +142,14 @@ drift_agent = Agent(
 
 # Register on-demand operator context tools
 from shared.context_tools import get_context_tools
+
 for _tool_fn in get_context_tools():
     drift_agent.tool(_tool_fn)
 
+from datetime import UTC
+
 from shared.axiom_tools import get_axiom_tools
+
 for _tool_fn in get_axiom_tools():
     drift_agent.tool(_tool_fn)
 
@@ -156,14 +170,16 @@ def scan_axiom_violations() -> list[DriftItem]:
             continue
         for match in scan_directory(repo, patterns):
             rel_path = match.file.replace(home, "~")
-            violations.append(DriftItem(
-                severity="high",
-                category="axiom-violation",
-                doc_file=rel_path,
-                doc_claim=f"T0 pattern match at line {match.line}",
-                reality=f"Code contains: {match.content}",
-                suggestion=f"Remove or refactor: {rel_path}:{match.line}",
-            ))
+            violations.append(
+                DriftItem(
+                    severity="high",
+                    category="axiom-violation",
+                    doc_file=rel_path,
+                    doc_claim=f"T0 pattern match at line {match.line}",
+                    reality=f"Code contains: {match.content}",
+                    suggestion=f"Remove or refactor: {rel_path}:{match.line}",
+                )
+            )
 
     return violations
 
@@ -171,7 +187,9 @@ def scan_axiom_violations() -> list[DriftItem]:
 def scan_sufficiency_gaps() -> list[DriftItem]:
     """Run sufficiency probes and convert failures to DriftItems."""
     try:
-        from shared.sufficiency_probes import run_probes
+        from shared.sufficiency_probes import (
+            run_probes,  # type: ignore[import-not-found]  # optional module
+        )
     except ImportError:
         return []
 
@@ -183,7 +201,14 @@ def scan_sufficiency_gaps() -> list[DriftItem]:
             continue
 
         # Map probe to severity based on implication tier
-        probe = next((p for p in __import__("shared.sufficiency_probes", fromlist=["PROBES"]).PROBES if p.id == r.probe_id), None)
+        probe = next(
+            (
+                p
+                for p in __import__("shared.sufficiency_probes", fromlist=["PROBES"]).PROBES
+                if p.id == r.probe_id
+            ),
+            None,
+        )
         if probe:
             severity = {"T0": "high", "T1": "medium", "T2": "low"}.get(
                 _get_implication_tier(probe.implication_id), "low"
@@ -191,14 +216,16 @@ def scan_sufficiency_gaps() -> list[DriftItem]:
         else:
             severity = "low"
 
-        items.append(DriftItem(
-            severity=severity,
-            category="axiom-sufficiency-gap",
-            doc_file=f"probe:{r.probe_id}",
-            doc_claim=probe.question if probe else r.probe_id,
-            reality=r.evidence,
-            suggestion=f"Address sufficiency gap: {r.evidence}",
-        ))
+        items.append(
+            DriftItem(
+                severity=severity,
+                category="axiom-sufficiency-gap",
+                doc_file=f"probe:{r.probe_id}",
+                doc_claim=probe.question if probe else r.probe_id,
+                reality=r.evidence,
+                suggestion=f"Address sufficiency gap: {r.evidence}",
+            )
+        )
 
     return items
 
@@ -234,26 +261,30 @@ def check_project_memory() -> list[DriftItem]:
         short_path = str(repo_dir).replace(home, "~")
 
         if not claude_md.is_file():
-            items.append(DriftItem(
-                severity="medium",
-                category="missing_project_memory",
-                doc_file=f"{short_path}/CLAUDE.md",
-                doc_claim="File does not exist",
-                reality="All hapax repos must have a CLAUDE.md with ## Project Memory section",
-                suggestion=f"Create {short_path}/CLAUDE.md with a ## Project Memory section",
-            ))
+            items.append(
+                DriftItem(
+                    severity="medium",
+                    category="missing_project_memory",
+                    doc_file=f"{short_path}/CLAUDE.md",
+                    doc_claim="File does not exist",
+                    reality="All hapax repos must have a CLAUDE.md with ## Project Memory section",
+                    suggestion=f"Create {short_path}/CLAUDE.md with a ## Project Memory section",
+                )
+            )
             continue
 
         content = claude_md.read_text(errors="replace")
         if "## Project Memory" not in content:
-            items.append(DriftItem(
-                severity="medium",
-                category="missing_project_memory",
-                doc_file=f"{short_path}/CLAUDE.md",
-                doc_claim="No ## Project Memory section found",
-                reality="All hapax repos must have a ## Project Memory section for cross-session learning",
-                suggestion=f"Add a ## Project Memory section to {short_path}/CLAUDE.md with stable patterns and conventions",
-            ))
+            items.append(
+                DriftItem(
+                    severity="medium",
+                    category="missing_project_memory",
+                    doc_file=f"{short_path}/CLAUDE.md",
+                    doc_claim="No ## Project Memory section found",
+                    reality="All hapax repos must have a ## Project Memory section for cross-session learning",
+                    suggestion=f"Add a ## Project Memory section to {short_path}/CLAUDE.md with stable patterns and conventions",
+                )
+            )
 
     return items
 
@@ -268,10 +299,10 @@ def check_doc_freshness() -> list[DriftItem]:
        have been modified more recently than the document (the core drift signal).
     """
     import subprocess
-    from datetime import datetime, timedelta, timezone
+    from datetime import datetime, timedelta
 
     stale_threshold = timedelta(days=30)
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     items: list[DriftItem] = []
     home = str(Path.home())
 
@@ -302,7 +333,9 @@ def check_doc_freshness() -> list[DriftItem]:
     try:
         result = subprocess.run(
             ["docker", "ps", "--format", "{{.CreatedAt}}"],
-            capture_output=True, text=True, timeout=5,
+            capture_output=True,
+            text=True,
+            timeout=5,
         )
         if result.returncode == 0:
             for line in result.stdout.strip().splitlines():
@@ -329,7 +362,9 @@ def check_doc_freshness() -> list[DriftItem]:
             try:
                 result = subprocess.run(
                     ["git", "log", "-1", "--format=%aI", "--", str(path)],
-                    capture_output=True, text=True, timeout=5,
+                    capture_output=True,
+                    text=True,
+                    timeout=5,
                     cwd=str(path.parent),
                 )
                 if result.returncode == 0 and result.stdout.strip():
@@ -340,7 +375,7 @@ def check_doc_freshness() -> list[DriftItem]:
             if doc_last_modified is None:
                 try:
                     mtime = path.stat().st_mtime
-                    doc_last_modified = datetime.fromtimestamp(mtime, tz=timezone.utc)
+                    doc_last_modified = datetime.fromtimestamp(mtime, tz=UTC)
                 except OSError:
                     continue
 
@@ -348,14 +383,16 @@ def check_doc_freshness() -> list[DriftItem]:
             if age > stale_threshold and latest_system_change > doc_last_modified:
                 short_path = str(path).replace(home, "~")
                 days_old = age.days
-                items.append(DriftItem(
-                    severity="low",
-                    category="stale_doc",
-                    doc_file=short_path,
-                    doc_claim=f"Last updated {days_old} days ago ({doc_last_modified.strftime('%Y-%m-%d')})",
-                    reality=f"System state changed more recently ({latest_system_change.strftime('%Y-%m-%d')})",
-                    suggestion=f"Review {short_path} for accuracy — not updated in {days_old} days",
-                ))
+                items.append(
+                    DriftItem(
+                        severity="low",
+                        category="stale_doc",
+                        doc_file=short_path,
+                        doc_claim=f"Last updated {days_old} days ago ({doc_last_modified.strftime('%Y-%m-%d')})",
+                        reality=f"System state changed more recently ({latest_system_change.strftime('%Y-%m-%d')})",
+                        suggestion=f"Review {short_path} for accuracy — not updated in {days_old} days",
+                    )
+                )
 
     # --- Layer 2: Registry-driven drift (document-registry.yaml) ---
 
@@ -374,17 +411,18 @@ def check_doc_freshness() -> list[DriftItem]:
 
 
 def _check_registry_freshness(
-    registry: object,
-    now: object,
+    registry: DocumentRegistry,
+    now: datetime,
     home: str,
 ) -> list[DriftItem]:
     """Check registered documents for staleness and code-covers drift."""
     import subprocess
-    from datetime import datetime, timedelta, timezone
+    from datetime import datetime, timedelta
 
     items: list[DriftItem] = []
 
-    for repo_name, repo in registry.repos.items():
+    repos: dict = getattr(registry, "repos", {})
+    for _repo_name, repo in repos.items():
         repo_path = Path(repo.path.replace("~", str(Path.home())))
         if not repo_path.is_dir():
             continue
@@ -404,7 +442,9 @@ def _check_registry_freshness(
             try:
                 result = subprocess.run(
                     ["git", "log", "-1", "--format=%aI", "--", str(doc_path)],
-                    capture_output=True, text=True, timeout=5,
+                    capture_output=True,
+                    text=True,
+                    timeout=5,
                     cwd=str(repo_path),
                 )
                 if result.returncode == 0 and result.stdout.strip():
@@ -414,9 +454,7 @@ def _check_registry_freshness(
 
             if doc_mtime is None:
                 try:
-                    doc_mtime = datetime.fromtimestamp(
-                        doc_path.stat().st_mtime, tz=timezone.utc
-                    )
+                    doc_mtime = datetime.fromtimestamp(doc_path.stat().st_mtime, tz=UTC)
                 except OSError:
                     continue
 
@@ -426,14 +464,16 @@ def _check_registry_freshness(
             threshold_days = doc_info.get("staleness_days", 30)
             age = now - doc_mtime
             if age > timedelta(days=threshold_days):
-                items.append(DriftItem(
-                    severity="low",
-                    category="stale_doc",
-                    doc_file=short_doc,
-                    doc_claim=f"Registry staleness threshold: {threshold_days}d; last updated {age.days}d ago",
-                    reality=f"Document exceeds its registered staleness threshold",
-                    suggestion=f"Review and update {short_doc}",
-                ))
+                items.append(
+                    DriftItem(
+                        severity="low",
+                        category="stale_doc",
+                        doc_file=short_doc,
+                        doc_claim=f"Registry staleness threshold: {threshold_days}d; last updated {age.days}d ago",
+                        reality="Document exceeds its registered staleness threshold",
+                        suggestion=f"Review and update {short_doc}",
+                    )
+                )
 
             # Check "covers" paths — core drift signal: code changed after doc
             covers = doc_info.get("covers", [])
@@ -448,7 +488,9 @@ def _check_registry_freshness(
                     git_target = str(cover_path)
                     result = subprocess.run(
                         ["git", "log", "-1", "--format=%aI", "--", git_target],
-                        capture_output=True, text=True, timeout=10,
+                        capture_output=True,
+                        text=True,
+                        timeout=10,
                         cwd=str(repo_path),
                     )
                     if result.returncode == 0 and result.stdout.strip():
@@ -458,14 +500,16 @@ def _check_registry_freshness(
 
                 if latest_code_change is not None and latest_code_change > doc_mtime:
                     drift_days = (latest_code_change - doc_mtime).days
-                    items.append(DriftItem(
-                        severity="medium",
-                        category="stale_doc",
-                        doc_file=short_doc,
-                        doc_claim=f"Documents code path: {cover_path_str}",
-                        reality=f"Code changed {drift_days}d after doc ({latest_code_change.strftime('%Y-%m-%d')} vs {doc_mtime.strftime('%Y-%m-%d')})",
-                        suggestion=f"Update {short_doc} — covered code path '{cover_path_str}' has drifted",
-                    ))
+                    items.append(
+                        DriftItem(
+                            severity="medium",
+                            category="stale_doc",
+                            doc_file=short_doc,
+                            doc_claim=f"Documents code path: {cover_path_str}",
+                            reality=f"Code changed {drift_days}d after doc ({latest_code_change.strftime('%Y-%m-%d')} vs {doc_mtime.strftime('%Y-%m-%d')})",
+                            suggestion=f"Update {short_doc} — covered code path '{cover_path_str}' has drifted",
+                        )
+                    )
 
     return items
 
@@ -489,6 +533,7 @@ async def detect_drift(manifest: InfrastructureManifest | None = None) -> DriftR
 
     # Run document registry checks (coverage gaps, section validation, mutual awareness)
     from shared.registry_checks import check_document_registry
+
     registry_drift = check_document_registry()
 
     docs = load_docs()
@@ -510,6 +555,7 @@ async def detect_drift(manifest: InfrastructureManifest | None = None) -> DriftR
 
     # Build goals context for goal-capability gap detection
     from shared.operator import get_goals
+
     goals = get_goals()[:5]
     goals_section = ""
     if goals:
@@ -523,19 +569,26 @@ async def detect_drift(manifest: InfrastructureManifest | None = None) -> DriftR
     axiom_section = ""
     try:
         from shared.axiom_registry import load_axioms, load_implications
+
         active_axioms = load_axioms()
         if active_axioms:
             axiom_lines = ["\n\n## Active Axioms (check for compliance)"]
             for ax in active_axioms:
-                scope_label = f"[{ax.scope}]" if ax.scope == "constitutional" else f"[domain:{ax.domain}]"
-                axiom_lines.append(f"\n### {ax.id} {scope_label} (weight={ax.weight}, type={ax.type})")
+                scope_label = (
+                    f"[{ax.scope}]" if ax.scope == "constitutional" else f"[domain:{ax.domain}]"
+                )
+                axiom_lines.append(
+                    f"\n### {ax.id} {scope_label} (weight={ax.weight}, type={ax.type})"
+                )
                 axiom_lines.append(ax.text.strip())
                 impls = load_implications(ax.id)
                 blocking = [i for i in impls if i.enforcement in ("block", "review")]
                 if blocking:
                     axiom_lines.append("Key implications to check:")
                     for impl in blocking:
-                        axiom_lines.append(f"  - [{impl.tier}/{impl.mode}/{impl.level}] {impl.text}")
+                        axiom_lines.append(
+                            f"  - [{impl.tier}/{impl.mode}/{impl.level}] {impl.text}"
+                        )
                 sufficiency = [i for i in impls if i.mode == "sufficiency"]
                 if sufficiency:
                     axiom_lines.append("Sufficiency requirements (check active support):")
@@ -563,18 +616,26 @@ string differences and wildcard model expansions."""
         result = await drift_agent.run(prompt, usage_limits=UsageLimits(request_limit=200))
     except Exception as exc:
         log.error("LLM drift analysis failed: %s", exc)
-        deterministic = axiom_violations + sufficiency_gaps + stale_docs + memory_drift + registry_drift
+        deterministic = (
+            axiom_violations + sufficiency_gaps + stale_docs + memory_drift + registry_drift
+        )
         return DriftReport(
             drift_items=deterministic,
             docs_analyzed=list(docs.keys()),
             summary=f"Drift analysis failed: {exc}"
-            + (f" ({len(deterministic)} deterministic finding(s) from code scan)" if deterministic else ""),
+            + (
+                f" ({len(deterministic)} deterministic finding(s) from code scan)"
+                if deterministic
+                else ""
+            ),
         )
     report = result.output
     report.docs_analyzed = list(docs.keys())
 
     # Merge deterministic findings into the report
-    deterministic_items = axiom_violations + sufficiency_gaps + stale_docs + memory_drift + registry_drift
+    deterministic_items = (
+        axiom_violations + sufficiency_gaps + stale_docs + memory_drift + registry_drift
+    )
     if deterministic_items:
         report.drift_items = deterministic_items + report.drift_items
         parts = []
@@ -607,10 +668,14 @@ def format_human(report: DriftReport) -> str:
         high = sum(1 for d in report.drift_items if d.severity == "high")
         med = sum(1 for d in report.drift_items if d.severity == "medium")
         low = sum(1 for d in report.drift_items if d.severity == "low")
-        lines.append(f"Drift Report: {len(report.drift_items)} items ({high} high, {med} medium, {low} low)")
+        lines.append(
+            f"Drift Report: {len(report.drift_items)} items ({high} high, {med} medium, {low} low)"
+        )
         lines.append("")
 
-        for item in sorted(report.drift_items, key=lambda d: {"high": 0, "medium": 1, "low": 2}.get(d.severity, 3)):
+        for item in sorted(
+            report.drift_items, key=lambda d: {"high": 0, "medium": 1, "low": 2}.get(d.severity, 3)
+        ):
             icon = _SEVERITY_ICON.get(item.severity, "[??]")
             lines.append(f"{icon} [{item.category}] {item.doc_file}")
             lines.append(f"     Doc says:  {item.doc_claim}")
@@ -627,17 +692,22 @@ def format_human(report: DriftReport) -> str:
 
 # ── Fix mode ────────────────────────────────────────────────────────────────
 
+
 class DocFix(BaseModel):
     """A corrected section of a documentation file."""
+
     doc_file: str = Field(description="Which documentation file this fix applies to")
     section_title: str = Field(description="The section or table being corrected")
-    original: str = Field(description="The original text that needs changing (exact match from the doc)")
+    original: str = Field(
+        description="The original text that needs changing (exact match from the doc)"
+    )
     corrected: str = Field(description="The corrected replacement text")
     explanation: str = Field(description="Brief explanation of what changed and why")
 
 
 class FixReport(BaseModel):
     """Collection of documentation fixes."""
+
     fixes: list[DocFix] = Field(default_factory=list)
     summary: str = Field(description="One-line summary of all changes")
 
@@ -682,17 +752,23 @@ for _fix_tool_fn in get_context_tools():
     fix_agent.tool(_fix_tool_fn)
 
 
-REGISTRY_CATEGORIES = frozenset({
-    "missing-required-doc", "missing-section", "coverage-gap",
-    "repo-awareness-gap", "spec-reference-gap", "boundary-mismatch",
-})
+REGISTRY_CATEGORIES = frozenset(
+    {
+        "missing-required-doc",
+        "missing-section",
+        "coverage-gap",
+        "repo-awareness-gap",
+        "spec-reference-gap",
+        "boundary-mismatch",
+    }
+)
 
 
 def _build_fix_context(
     doc_path: str,
     items: list[DriftItem],
     *,
-    registry: object | None = None,
+    registry: DocumentRegistry | None = None,
 ) -> str:
     """Build archetype/registry context for the fix agent when registry items are present."""
     if not any(d.category in REGISTRY_CATEGORIES for d in items):
@@ -701,6 +777,7 @@ def _build_fix_context(
     if registry is None:
         try:
             from shared.document_registry import load_registry
+
             registry = load_registry(path=_PROJECT_ROOT / "docs" / "document-registry.yaml")
         except Exception:
             return ""
@@ -740,7 +817,10 @@ def _build_fix_context(
         lines.append("### Coverage context")
         for rule in registry.coverage_rules:
             for ci in coverage_items:
-                if rule.reference_doc.replace("~", str(Path.home())) in ci.doc_file or ci.doc_file in rule.reference_doc:
+                if (
+                    rule.reference_doc.replace("~", str(Path.home())) in ci.doc_file
+                    or ci.doc_file in rule.reference_doc
+                ):
                     lines.append(f"- Rule: {rule.description}")
                     if rule.reference_section:
                         lines.append(f"  Target section: {rule.reference_section}")
@@ -768,7 +848,7 @@ async def generate_fixes(report: DriftReport, docs: dict[str, str]) -> FixReport
             continue
 
         items_desc = "\n".join(
-            f"- [{d.severity}] {d.category}: Doc says \"{d.doc_claim}\" but reality is \"{d.reality}\". Suggestion: {d.suggestion}"
+            f'- [{d.severity}] {d.category}: Doc says "{d.doc_claim}" but reality is "{d.reality}". Suggestion: {d.suggestion}'
             for d in items
         )
 
@@ -826,8 +906,10 @@ def format_fixes(fix_report: FixReport) -> str:
 
 # ── Apply mode ───────────────────────────────────────────────────────────────
 
+
 class ApplyResult(BaseModel):
     """Result of applying fixes to documentation files."""
+
     applied: int = 0
     skipped: int = 0
     errors: list[str] = Field(default_factory=list)
@@ -871,8 +953,7 @@ def apply_fixes(fix_report: FixReport) -> ApplyResult:
         if count == 0:
             result.skipped += 1
             result.errors.append(
-                f"Original text not found in {fix.doc_file}: "
-                f"{fix.original[:60]}..."
+                f"Original text not found in {fix.doc_file}: {fix.original[:60]}..."
             )
             continue
         if count > 1:
@@ -909,7 +990,9 @@ def _git_commit_fixes(changed_files: list[str], fix_count: int) -> bool:
             git_root = subprocess.run(
                 ["git", "rev-parse", "--show-toplevel"],
                 cwd=str(Path(fpath).parent),
-                capture_output=True, text=True, timeout=5,
+                capture_output=True,
+                text=True,
+                timeout=5,
             )
             if git_root.returncode == 0:
                 root = git_root.stdout.strip()
@@ -924,7 +1007,10 @@ def _git_commit_fixes(changed_files: list[str], fix_count: int) -> bool:
         try:
             subprocess.run(
                 ["git", "add"] + files,
-                cwd=root, capture_output=True, text=True, timeout=10,
+                cwd=root,
+                capture_output=True,
+                text=True,
+                timeout=10,
             )
             msg = (
                 f"docs: auto-fix {len(files)} documentation drift item(s)\n\n"
@@ -934,7 +1020,10 @@ def _git_commit_fixes(changed_files: list[str], fix_count: int) -> bool:
             )
             result = subprocess.run(
                 ["git", "commit", "-m", msg],
-                cwd=root, capture_output=True, text=True, timeout=15,
+                cwd=root,
+                capture_output=True,
+                text=True,
+                timeout=15,
             )
             if result.returncode == 0:
                 committed = True
@@ -968,12 +1057,13 @@ def _notify_fixes(apply_result: ApplyResult, committed: bool) -> None:
     body_parts.append("Files: " + ", ".join(Path(f).name for f in apply_result.changed_files))
 
     try:
-        send_notification(title=title, body=" ".join(body_parts), priority="default")
+        send_notification(title=title, message=" ".join(body_parts), priority="default")
     except Exception:
         log.debug("Notification send failed (non-critical)")
 
 
 # ── CLI ──────────────────────────────────────────────────────────────────────
+
 
 async def main() -> None:
     parser = argparse.ArgumentParser(
@@ -981,8 +1071,12 @@ async def main() -> None:
         prog="python -m agents.drift_detector",
     )
     parser.add_argument("--json", action="store_true", help="Machine-readable JSON output")
-    parser.add_argument("--fix", action="store_true", help="Generate corrected documentation fragments")
-    parser.add_argument("--apply", action="store_true", help="Apply fixes directly to files (requires --fix)")
+    parser.add_argument(
+        "--fix", action="store_true", help="Generate corrected documentation fragments"
+    )
+    parser.add_argument(
+        "--apply", action="store_true", help="Apply fixes directly to files (requires --fix)"
+    )
     args = parser.parse_args()
 
     if args.apply and not args.fix:
@@ -1007,7 +1101,9 @@ async def main() -> None:
             committed = _git_commit_fixes(apply_result.changed_files, apply_result.applied)
             _notify_fixes(apply_result, committed)
 
-            print(f"Applied: {apply_result.applied}, Skipped: {apply_result.skipped}", file=sys.stderr)
+            print(
+                f"Applied: {apply_result.applied}, Skipped: {apply_result.skipped}", file=sys.stderr
+            )
             if apply_result.errors:
                 for err in apply_result.errors:
                     print(f"  Skip: {err}", file=sys.stderr)
@@ -1020,12 +1116,17 @@ async def main() -> None:
                 report = await detect_drift(manifest)
                 report_path = PROFILES_DIR / "drift-report.json"
                 report_path.write_text(report.model_dump_json(indent=2))
-                print(f"Updated {report_path.name}: {len(report.drift_items)} items remaining", file=sys.stderr)
+                print(
+                    f"Updated {report_path.name}: {len(report.drift_items)} items remaining",
+                    file=sys.stderr,
+                )
 
             if args.json:
                 print(apply_result.model_dump_json(indent=2))
             else:
-                print(f"\nDrift auto-fix complete. {apply_result.applied} applied, {len(report.drift_items)} remaining.")
+                print(
+                    f"\nDrift auto-fix complete. {apply_result.applied} applied, {len(report.drift_items)} remaining."
+                )
                 if apply_result.changed_files:
                     for f in apply_result.changed_files:
                         short = f.replace(str(Path.home()), "~")

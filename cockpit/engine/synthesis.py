@@ -3,27 +3,34 @@
 Accumulates filesystem change signals, waits for a quiet window,
 then submits synthesis ActionPlans to the executor.
 """
+
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import logging
 import os
 import time
-from datetime import datetime, timezone
-from pathlib import Path
-from typing import Callable
+from datetime import UTC, datetime
+from typing import TYPE_CHECKING
 
-from cockpit.engine.delivery import DeliveryQueue
-from cockpit.engine.executor import PhasedExecutor
 from cockpit.engine.models import Action, ActionPlan, DeliveryItem
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+    from pathlib import Path
+
+    from cockpit.engine.delivery import DeliveryQueue
+    from cockpit.engine.executor import PhasedExecutor
 
 _log = logging.getLogger(__name__)
 
 # ── Path classification ──────────────────────────────────────────────
 
 HOT_PATH = frozenset({"people", "coaching", "feedback"})
-WARM_PATH = frozenset({"meetings", "okrs", "goals", "incidents",
-                        "postmortem-actions", "review-cycles"})
+WARM_PATH = frozenset(
+    {"meetings", "okrs", "goals", "incidents", "postmortem-actions", "review-cycles"}
+)
 SYNTHESIS_RELEVANT = HOT_PATH | WARM_PATH
 
 # Reschedule delay when suppressed (seconds)
@@ -32,22 +39,21 @@ _SUPPRESSION_DELAY = 60.0
 
 # ── Synthesis handlers ───────────────────────────────────────────────
 
+
 async def _synthesize_briefing() -> str:
-    from agents.management_briefing import generate_briefing, format_briefing_md
-    from shared.vault_writer import write_briefing_to_vault
+    from agents.management_briefing import format_briefing_md, generate_briefing
     from shared.config import PROFILES_DIR
+    from shared.vault_writer import write_briefing_to_vault
 
     briefing = await generate_briefing()
     md = format_briefing_md(briefing)
     write_briefing_to_vault(md)
-    (PROFILES_DIR / "management-briefing.json").write_text(
-        briefing.model_dump_json(indent=2)
-    )
+    (PROFILES_DIR / "management-briefing.json").write_text(briefing.model_dump_json(indent=2))
     return f"briefing: {briefing.headline}"
 
 
 async def _synthesize_snapshot() -> str:
-    from agents.management_prep import generate_team_snapshot, format_snapshot_md
+    from agents.management_prep import format_snapshot_md, generate_team_snapshot
     from shared.vault_writer import write_team_snapshot_to_vault
 
     snapshot = await generate_team_snapshot()
@@ -56,7 +62,7 @@ async def _synthesize_snapshot() -> str:
 
 
 async def _synthesize_overview() -> str:
-    from agents.management_prep import generate_overview, format_overview_md
+    from agents.management_prep import format_overview_md, generate_overview
     from shared.vault_writer import write_management_overview_to_vault
 
     overview = await generate_overview()
@@ -66,12 +72,15 @@ async def _synthesize_overview() -> str:
 
 async def _synthesize_profile_light() -> str:
     from agents.management_profiler import (
-        generate_and_load_management_facts, synthesize_profile,
-        build_profile, save_profile, load_profile,
+        build_profile,
+        generate_and_load_management_facts,
+        load_existing_profile,
+        save_profile,
+        synthesize_profile,
     )
 
     facts = generate_and_load_management_facts()
-    existing = load_profile()
+    existing = load_existing_profile()
     synthesis = await synthesize_profile(facts)
     sources = (existing.sources_processed if existing else []) + ["management-bridge"]
     profile = build_profile(facts, synthesis, sorted(set(sources)), existing)
@@ -80,6 +89,7 @@ async def _synthesize_profile_light() -> str:
 
 
 # ── Scheduler ────────────────────────────────────────────────────────
+
 
 class SynthesisScheduler:
     """Accumulate change signals, wait for quiet, trigger LLM synthesis."""
@@ -100,17 +110,15 @@ class SynthesisScheduler:
         self._ignore_fn = ignore_fn
 
         if quiet_window_s is None:
-            quiet_window_s = float(
-                os.environ.get("ENGINE_SYNTHESIS_QUIET_S", "180")
-            )
+            quiet_window_s = float(os.environ.get("ENGINE_SYNTHESIS_QUIET_S", "180"))
         if profiler_interval_s is None:
-            profiler_interval_s = float(
-                os.environ.get("ENGINE_PROFILER_INTERVAL_S", "86400")
-            )
+            profiler_interval_s = float(os.environ.get("ENGINE_PROFILER_INTERVAL_S", "86400"))
         if enabled is None:
-            enabled = os.environ.get(
-                "ENGINE_SYNTHESIS_ENABLED", "true"
-            ).lower() in ("true", "1", "yes")
+            enabled = os.environ.get("ENGINE_SYNTHESIS_ENABLED", "true").lower() in (
+                "true",
+                "1",
+                "yes",
+            )
 
         self._quiet_window_s = quiet_window_s
         self._profiler_interval_s = profiler_interval_s
@@ -144,10 +152,8 @@ class SynthesisScheduler:
             self._timer = None
         if self._profiler_task is not None:
             self._profiler_task.cancel()
-            try:
+            with contextlib.suppress(asyncio.CancelledError):
                 await self._profiler_task
-            except asyncio.CancelledError:
-                pass
             self._profiler_task = None
         _log.info("SynthesisScheduler stopped (dirty lost: %s)", self._dirty)
 
@@ -165,9 +171,7 @@ class SynthesisScheduler:
         if self._timer is not None:
             self._timer.cancel()
         loop = asyncio.get_running_loop()
-        self._timer = loop.call_later(
-            self._quiet_window_s, self._schedule_synthesis
-        )
+        self._timer = loop.call_later(self._quiet_window_s, self._schedule_synthesis)
 
     async def force(self) -> None:
         """Force immediate synthesis, bypassing quiet window."""
@@ -186,7 +190,7 @@ class SynthesisScheduler:
             "last_synthesis_at": (
                 datetime.fromtimestamp(
                     time.time() - (time.monotonic() - self._last_synthesis_at),
-                    tz=timezone.utc,
+                    tz=UTC,
                 ).isoformat()
                 if self._last_synthesis_at > 0
                 else None
@@ -194,7 +198,7 @@ class SynthesisScheduler:
             "last_profiler_at": (
                 datetime.fromtimestamp(
                     time.time() - (time.monotonic() - self._last_profiler_at),
-                    tz=timezone.utc,
+                    tz=UTC,
                 ).isoformat()
                 if self._last_profiler_at > 0
                 else None
@@ -234,7 +238,7 @@ class SynthesisScheduler:
     async def _run_reactive_synthesis(self, snapshot: frozenset[str]) -> None:
         """Build and execute the reactive synthesis plan."""
         plan = ActionPlan(
-            created_at=datetime.now(timezone.utc),
+            created_at=datetime.now(UTC),
             trigger=None,
             actions=[
                 Action(
@@ -272,29 +276,34 @@ class SynthesisScheduler:
             self._dirty |= HOT_PATH
 
         # Enqueue delivery items
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         for name, result in plan.results.items():
-            self._delivery.enqueue(DeliveryItem(
-                title=name,
-                detail=str(result),
-                priority="medium",
-                category="generated",
-                source_action=name,
-                timestamp=now,
-            ))
+            self._delivery.enqueue(
+                DeliveryItem(
+                    title=name,
+                    detail=str(result),
+                    priority="medium",
+                    category="generated",
+                    source_action=name,
+                    timestamp=now,
+                )
+            )
         for name, error in plan.errors.items():
-            self._delivery.enqueue(DeliveryItem(
-                title=f"{name} failed",
-                detail=error,
-                priority="high",
-                category="error",
-                source_action=name,
-                timestamp=now,
-            ))
+            self._delivery.enqueue(
+                DeliveryItem(
+                    title=f"{name} failed",
+                    detail=error,
+                    priority="high",
+                    category="error",
+                    source_action=name,
+                    timestamp=now,
+                )
+            )
 
         # Refresh cache so API serves fresh artifacts
         try:
             from cockpit.api.cache import cache
+
             await cache.refresh()
         except Exception:
             _log.exception("Post-synthesis cache refresh failed")
@@ -337,7 +346,7 @@ class SynthesisScheduler:
         self._running_synthesis = True
         try:
             plan = ActionPlan(
-                created_at=datetime.now(timezone.utc),
+                created_at=datetime.now(UTC),
                 trigger=None,
                 actions=[
                     Action(
@@ -354,16 +363,18 @@ class SynthesisScheduler:
                 self._profiler_dirty = False
                 self._last_profiler_at = time.monotonic()
 
-            now = datetime.now(timezone.utc)
+            now = datetime.now(UTC)
             for name, result in plan.results.items():
-                self._delivery.enqueue(DeliveryItem(
-                    title=name,
-                    detail=str(result),
-                    priority="medium",
-                    category="generated",
-                    source_action=name,
-                    timestamp=now,
-                ))
+                self._delivery.enqueue(
+                    DeliveryItem(
+                        title=name,
+                        detail=str(result),
+                        priority="medium",
+                        category="generated",
+                        source_action=name,
+                        timestamp=now,
+                    )
+                )
         except Exception:
             _log.exception("Profiler synthesis failed")
         finally:
@@ -372,8 +383,9 @@ class SynthesisScheduler:
     def _load_profiler_timestamp(self) -> float:
         """Load last profiler run time from existing profile file."""
         try:
-            from shared.config import PROFILES_DIR
             import json
+
+            from shared.config import PROFILES_DIR
 
             profile_path = PROFILES_DIR / "management-profile.json"
             if profile_path.is_file():
@@ -382,7 +394,7 @@ class SynthesisScheduler:
                 if updated:
                     dt = datetime.fromisoformat(updated)
                     # Convert to monotonic-compatible offset
-                    age = (datetime.now(timezone.utc) - dt).total_seconds()
+                    age = (datetime.now(UTC) - dt).total_seconds()
                     return max(0.0, time.monotonic() - age)
         except Exception:
             _log.debug("Could not load profiler timestamp, starting fresh")

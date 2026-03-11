@@ -1,15 +1,16 @@
 """Cockpit API routes for cycle mode switching."""
+
 from __future__ import annotations
 
 import asyncio
 import shutil
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, field_validator
 
-from shared.cycle_mode import CycleMode, MODE_FILE
+from shared.cycle_mode import MODE_FILE, CycleMode
 
 router = APIRouter(prefix="/api", tags=["system"])
 
@@ -32,7 +33,8 @@ async def _run_hapax_mode(mode: str) -> tuple[int, str]:
     """Run hapax-mode script asynchronously."""
     script = shutil.which("hapax-mode") or str(_SCRIPT)
     proc = await asyncio.create_subprocess_exec(
-        script, mode,
+        script,
+        mode,
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.STDOUT,
     )
@@ -49,7 +51,7 @@ async def get_cycle_mode():
 
     try:
         mtime = MODE_FILE.stat().st_mtime
-        switched_at = datetime.fromtimestamp(mtime, tz=timezone.utc).isoformat()
+        switched_at = datetime.fromtimestamp(mtime, tz=UTC).isoformat()
     except FileNotFoundError:
         switched_at = None
 

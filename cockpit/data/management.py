@@ -4,15 +4,19 @@ Scans DATA_DIR subdirectories (people/, coaching/, feedback/) for markdown
 files with YAML frontmatter. Computes staleness, overdue status, and
 aggregates into a ManagementSnapshot for the cockpit API.
 """
+
 from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
 from datetime import date, datetime
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 from shared.config import config
 from shared.frontmatter import parse_frontmatter as _parse_frontmatter
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 _log = logging.getLogger(__name__)
 
@@ -41,6 +45,7 @@ _LOAD_MAP: dict[str, int] = {
 @dataclass
 class PersonState:
     """State of a single team member."""
+
     name: str
     team: str = ""
     role: str = ""
@@ -69,6 +74,7 @@ class PersonState:
 @dataclass
 class CoachingState:
     """State of a coaching hypothesis."""
+
     title: str
     person: str = ""
     status: str = "active"
@@ -81,6 +87,7 @@ class CoachingState:
 @dataclass
 class FeedbackState:
     """State of a feedback record."""
+
     title: str
     person: str = ""
     direction: str = "given"
@@ -95,6 +102,7 @@ class FeedbackState:
 @dataclass
 class ManagementSnapshot:
     """Aggregated management state."""
+
     people: list[PersonState] = field(default_factory=list)
     coaching: list[CoachingState] = field(default_factory=list)
     feedback: list[FeedbackState] = field(default_factory=list)
@@ -171,7 +179,7 @@ def _collect_people() -> list[PersonState]:
             role=str(fm.get("role", "")),
             cadence=cadence,
             status=status,
-            cognitive_load=_LOAD_MAP.get(str(fm.get("cognitive-load", "")).lower(), None),
+            cognitive_load=_LOAD_MAP.get(str(fm.get("cognitive-load", "")).lower()),
             growth_vector=str(fm.get("growth-vector", "")),
             feedback_style=str(fm.get("feedback-style", "")),
             last_1on1=last_1on1_raw,
@@ -289,8 +297,7 @@ def collect_management_state() -> ManagementSnapshot:
         overdue_coaching_count=sum(1 for c in coaching if c.overdue),
         overdue_feedback_count=sum(1 for f in feedback if f.overdue),
         high_load_count=sum(
-            1 for p in active_people
-            if p.cognitive_load is not None and p.cognitive_load >= 4
+            1 for p in active_people if p.cognitive_load is not None and p.cognitive_load >= 4
         ),
         active_people_count=len(active_people),
     )

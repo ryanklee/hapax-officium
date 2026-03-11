@@ -1,8 +1,9 @@
 # ai-agents/tests/test_simulation_models.py
 """Tests for simulation Pydantic models."""
+
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from shared.simulation_models import SimManifest, SimStatus
 
@@ -59,7 +60,7 @@ class TestSimManifest:
             start_date="2026-02-08",
             end_date="2026-03-10",
             seed="demo-data/",
-            created_at=datetime(2026, 3, 10, 14, 30, tzinfo=timezone.utc),
+            created_at=datetime(2026, 3, 10, 14, 30, tzinfo=UTC),
         )
         json_str = m.model_dump_json(indent=2)
         m2 = SimManifest.model_validate_json(json_str)
@@ -69,6 +70,7 @@ class TestSimManifest:
     def test_yaml_roundtrip(self):
         """Manifest can serialize to YAML for .sim-manifest.yaml."""
         import yaml
+
         m = SimManifest(
             id="test-yaml",
             role="engineering-manager",

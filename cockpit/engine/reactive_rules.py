@@ -8,10 +8,11 @@ Self-trigger prevention: handlers that write to DATA_DIR accept an optional
 ignore_fn callable. When provided, they call ignore_fn(path) before each write
 so the watcher suppresses the resulting filesystem event.
 """
+
 from __future__ import annotations
 
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable
 
 from cockpit.engine.models import Action, ChangeEvent
 from cockpit.engine.rules import Rule, RuleRegistry
@@ -40,15 +41,19 @@ async def _ingest_document(path: Path, ignore_fn: IgnoreFn = None) -> str:
     destinations are suppressed to avoid redundant cache refreshes.
     """
     import shutil
+
     from agents.ingest import DocumentType, classify_document, process_document
 
     doc_type = classify_document(path)
     result = await process_document(path, doc_type)
 
     # Suppress non-transcript destinations (transcripts need meeting_cascade)
-    if ignore_fn and result.destination:
-        if result.doc_type not in (DocumentType.TRANSCRIPT, DocumentType.MEETING):
-            ignore_fn(result.destination)
+    if (
+        ignore_fn
+        and result.destination
+        and result.doc_type not in (DocumentType.TRANSCRIPT, DocumentType.MEETING)
+    ):
+        ignore_fn(result.destination)
 
     # Move original to processed/ (mirroring watch daemon behavior)
     if result.success and result.destination:
@@ -115,15 +120,14 @@ def _rule_meeting_cascade(ignore_fn: IgnoreFn = None) -> Rule:
     Skips generated prep files (prep-*.md) to avoid re-extraction loops.
     Phase 0: refresh cache. Phase 1: extract meeting data (LLM).
     """
+
     def _filter(e: ChangeEvent) -> bool:
         if e.subdirectory != "meetings":
             return False
         if e.event_type not in ("created", "modified"):
             return False
         # Skip generated prep files to prevent extraction loops
-        if e.path.name.startswith("prep-"):
-            return False
-        return True
+        return not e.path.name.startswith("prep-")
 
     def _produce(e: ChangeEvent) -> list[Action]:
         return [
@@ -160,7 +164,9 @@ def _rule_person_changed() -> Rule:
     return Rule(
         name="person_changed",
         description="Refresh cache on person changes (includes nudges + team health)",
-        trigger_filter=lambda e: e.subdirectory == "people" and e.event_type in ("created", "modified"),
+        trigger_filter=lambda e: (
+            e.subdirectory == "people" and e.event_type in ("created", "modified")
+        ),
         produce=lambda e: [
             Action(
                 name="refresh_cache",
@@ -177,7 +183,9 @@ def _rule_coaching_changed() -> Rule:
     return Rule(
         name="coaching_changed",
         description="Refresh cache on coaching changes (includes nudges)",
-        trigger_filter=lambda e: e.subdirectory == "coaching" and e.event_type in ("created", "modified"),
+        trigger_filter=lambda e: (
+            e.subdirectory == "coaching" and e.event_type in ("created", "modified")
+        ),
         produce=lambda e: [
             Action(
                 name="refresh_cache",
@@ -194,7 +202,9 @@ def _rule_feedback_changed() -> Rule:
     return Rule(
         name="feedback_changed",
         description="Refresh cache on feedback changes (includes nudges)",
-        trigger_filter=lambda e: e.subdirectory == "feedback" and e.event_type in ("created", "modified"),
+        trigger_filter=lambda e: (
+            e.subdirectory == "feedback" and e.event_type in ("created", "modified")
+        ),
         produce=lambda e: [
             Action(
                 name="refresh_cache",
@@ -228,8 +238,12 @@ def _rule_okr_changed() -> Rule:
     return Rule(
         name="okr_changed",
         description="Refresh cache on OKR changes",
-        trigger_filter=lambda e: e.subdirectory == "okrs" and e.event_type in ("created", "modified"),
-        produce=lambda e: [Action(name="refresh_cache", handler=_refresh_cache, phase=0, priority=0)],
+        trigger_filter=lambda e: (
+            e.subdirectory == "okrs" and e.event_type in ("created", "modified")
+        ),
+        produce=lambda e: [
+            Action(name="refresh_cache", handler=_refresh_cache, phase=0, priority=0)
+        ],
     )
 
 
@@ -238,8 +252,12 @@ def _rule_smart_goal_changed() -> Rule:
     return Rule(
         name="smart_goal_changed",
         description="Refresh cache on SMART goal changes",
-        trigger_filter=lambda e: e.subdirectory == "goals" and e.event_type in ("created", "modified"),
-        produce=lambda e: [Action(name="refresh_cache", handler=_refresh_cache, phase=0, priority=0)],
+        trigger_filter=lambda e: (
+            e.subdirectory == "goals" and e.event_type in ("created", "modified")
+        ),
+        produce=lambda e: [
+            Action(name="refresh_cache", handler=_refresh_cache, phase=0, priority=0)
+        ],
     )
 
 
@@ -248,8 +266,12 @@ def _rule_incident_changed() -> Rule:
     return Rule(
         name="incident_changed",
         description="Refresh cache on incident changes",
-        trigger_filter=lambda e: e.subdirectory == "incidents" and e.event_type in ("created", "modified"),
-        produce=lambda e: [Action(name="refresh_cache", handler=_refresh_cache, phase=0, priority=0)],
+        trigger_filter=lambda e: (
+            e.subdirectory == "incidents" and e.event_type in ("created", "modified")
+        ),
+        produce=lambda e: [
+            Action(name="refresh_cache", handler=_refresh_cache, phase=0, priority=0)
+        ],
     )
 
 
@@ -258,8 +280,12 @@ def _rule_postmortem_action_changed() -> Rule:
     return Rule(
         name="postmortem_action_changed",
         description="Refresh cache on postmortem action changes",
-        trigger_filter=lambda e: e.subdirectory == "postmortem-actions" and e.event_type in ("created", "modified"),
-        produce=lambda e: [Action(name="refresh_cache", handler=_refresh_cache, phase=0, priority=0)],
+        trigger_filter=lambda e: (
+            e.subdirectory == "postmortem-actions" and e.event_type in ("created", "modified")
+        ),
+        produce=lambda e: [
+            Action(name="refresh_cache", handler=_refresh_cache, phase=0, priority=0)
+        ],
     )
 
 
@@ -268,8 +294,12 @@ def _rule_review_cycle_changed() -> Rule:
     return Rule(
         name="review_cycle_changed",
         description="Refresh cache on review cycle changes",
-        trigger_filter=lambda e: e.subdirectory == "review-cycles" and e.event_type in ("created", "modified"),
-        produce=lambda e: [Action(name="refresh_cache", handler=_refresh_cache, phase=0, priority=0)],
+        trigger_filter=lambda e: (
+            e.subdirectory == "review-cycles" and e.event_type in ("created", "modified")
+        ),
+        produce=lambda e: [
+            Action(name="refresh_cache", handler=_refresh_cache, phase=0, priority=0)
+        ],
     )
 
 
@@ -278,8 +308,12 @@ def _rule_status_report_changed() -> Rule:
     return Rule(
         name="status_report_changed",
         description="Refresh cache on status report changes",
-        trigger_filter=lambda e: e.subdirectory == "status-reports" and e.event_type in ("created", "modified"),
-        produce=lambda e: [Action(name="refresh_cache", handler=_refresh_cache, phase=0, priority=0)],
+        trigger_filter=lambda e: (
+            e.subdirectory == "status-reports" and e.event_type in ("created", "modified")
+        ),
+        produce=lambda e: [
+            Action(name="refresh_cache", handler=_refresh_cache, phase=0, priority=0)
+        ],
     )
 
 

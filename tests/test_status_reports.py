@@ -1,10 +1,15 @@
 """Tests for cockpit/data/status_reports.py."""
+
 from __future__ import annotations
 
-from pathlib import Path
-from shared.config import config
+from typing import TYPE_CHECKING
 
 import yaml
+
+from shared.config import config
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def _write_md(path: Path, frontmatter: dict, body: str = "") -> None:
@@ -15,15 +20,22 @@ def _write_md(path: Path, frontmatter: dict, body: str = "") -> None:
 
 class TestCollectStatusReports:
     def test_current_report(self, tmp_path: Path):
-        from cockpit.data.status_reports import collect_status_report_state
         from datetime import date
 
+        from cockpit.data.status_reports import collect_status_report_state
+
         today = date.today().isoformat()
-        _write_md(tmp_path / "status-reports" / f"{today}-weekly.md", {
-            "type": "status-report", "date": today,
-            "cadence": "weekly", "direction": "upward",
-            "generated": True, "edited": True,
-        })
+        _write_md(
+            tmp_path / "status-reports" / f"{today}-weekly.md",
+            {
+                "type": "status-report",
+                "date": today,
+                "cadence": "weekly",
+                "direction": "upward",
+                "generated": True,
+                "edited": True,
+            },
+        )
 
         config.set_data_dir(tmp_path)
         try:
@@ -38,10 +50,15 @@ class TestCollectStatusReports:
     def test_stale_weekly(self, tmp_path: Path):
         from cockpit.data.status_reports import collect_status_report_state
 
-        _write_md(tmp_path / "status-reports" / "2026-01-01-weekly.md", {
-            "type": "status-report", "date": "2026-01-01",
-            "cadence": "weekly", "direction": "upward",
-        })
+        _write_md(
+            tmp_path / "status-reports" / "2026-01-01-weekly.md",
+            {
+                "type": "status-report",
+                "date": "2026-01-01",
+                "cadence": "weekly",
+                "direction": "upward",
+            },
+        )
 
         config.set_data_dir(tmp_path)
         try:
@@ -67,12 +84,22 @@ class TestCollectStatusReports:
     def test_latest_date_is_most_recent(self, tmp_path: Path):
         from cockpit.data.status_reports import collect_status_report_state
 
-        _write_md(tmp_path / "status-reports" / "2026-02-01-weekly.md", {
-            "type": "status-report", "date": "2026-02-01", "cadence": "weekly",
-        })
-        _write_md(tmp_path / "status-reports" / "2026-03-01-weekly.md", {
-            "type": "status-report", "date": "2026-03-01", "cadence": "weekly",
-        })
+        _write_md(
+            tmp_path / "status-reports" / "2026-02-01-weekly.md",
+            {
+                "type": "status-report",
+                "date": "2026-02-01",
+                "cadence": "weekly",
+            },
+        )
+        _write_md(
+            tmp_path / "status-reports" / "2026-03-01-weekly.md",
+            {
+                "type": "status-report",
+                "date": "2026-03-01",
+                "cadence": "weekly",
+            },
+        )
 
         config.set_data_dir(tmp_path)
         try:

@@ -9,6 +9,7 @@ Usage:
     patterns = load_t0_patterns()
     violations = scan_file(Path("some_file.py"), patterns)
 """
+
 from __future__ import annotations
 
 import re
@@ -19,16 +20,31 @@ from pathlib import Path
 _PATTERNS_FILE = Path(__file__).parent / "axiom_patterns.txt"
 
 # Directories and files to skip during scanning
-EXCLUDE_DIRS = frozenset({
-    ".venv", "venv", "node_modules", ".git", "__pycache__",
-    ".mypy_cache", "dist", "build", ".eggs",
-})
+EXCLUDE_DIRS = frozenset(
+    {
+        ".venv",
+        "venv",
+        "node_modules",
+        ".git",
+        "__pycache__",
+        ".mypy_cache",
+        "dist",
+        "build",
+        ".eggs",
+    }
+)
 
-EXCLUDE_FILES = frozenset({
-    "axiom-patterns.sh", "axiom-scan.sh", "axiom-commit-scan.sh",
-    "test_axiom_hooks.py", "axiom-sweep.sh", "axiom_patterns.py",
-    "axiom_patterns.txt",
-})
+EXCLUDE_FILES = frozenset(
+    {
+        "axiom-patterns.sh",
+        "axiom-scan.sh",
+        "axiom-commit-scan.sh",
+        "test_axiom_hooks.py",
+        "axiom-sweep.sh",
+        "axiom_patterns.py",
+        "axiom_patterns.txt",
+    }
+)
 
 SOURCE_EXTS = frozenset({".py", ".ts", ".js", ".sh"})
 
@@ -71,13 +87,15 @@ def scan_file(
     matches = []
     for pat in patterns:
         for m in pat.finditer(content):
-            line_num = content[:m.start()].count("\n") + 1
-            matches.append(PatternMatch(
-                file=str(path),
-                line=line_num,
-                pattern=pat.pattern,
-                content=m.group(0)[:80],
-            ))
+            line_num = content[: m.start()].count("\n") + 1
+            matches.append(
+                PatternMatch(
+                    file=str(path),
+                    line=line_num,
+                    pattern=pat.pattern,
+                    content=m.group(0)[:80],
+                )
+            )
     return matches
 
 
@@ -87,6 +105,7 @@ def scan_directory(
 ) -> list[PatternMatch]:
     """Recursively scan a directory for T0 pattern violations."""
     import os
+
     all_matches = []
     for dirpath, dirs, files in os.walk(root):
         dirs[:] = [d for d in dirs if d not in EXCLUDE_DIRS]

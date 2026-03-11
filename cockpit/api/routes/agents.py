@@ -1,4 +1,5 @@
 """Agent execution endpoints — run agents with SSE streaming output."""
+
 from __future__ import annotations
 
 import json
@@ -46,7 +47,7 @@ async def run_agent(name: str, req: AgentRunRequest):
     try:
         queue = await agent_run_manager.run(name, args)
     except RuntimeError as e:
-        raise HTTPException(status_code=409, detail=str(e))
+        raise HTTPException(status_code=409, detail=str(e)) from e
 
     async def event_generator():
         while True:

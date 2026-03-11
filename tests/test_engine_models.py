@@ -3,13 +3,12 @@
 Covers construction, default values, actions_by_phase grouping/sorting,
 and edge cases for all four dataclasses.
 """
+
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from unittest.mock import AsyncMock
-
-import pytest
 
 from cockpit.engine.models import Action, ActionPlan, ChangeEvent, DeliveryItem
 
@@ -122,9 +121,7 @@ class TestActionPlan:
             Action(name="c", handler=h, phase=1, priority=2),
             Action(name="d", handler=h, phase=2, priority=0),
         ]
-        plan = ActionPlan(
-            trigger=ev, actions=actions, created_at=datetime.now()
-        )
+        plan = ActionPlan(trigger=ev, actions=actions, created_at=datetime.now())
         by_phase = plan.actions_by_phase()
 
         # Phases should be sorted by phase number
@@ -151,9 +148,7 @@ class TestActionPlan:
             Action(name="x", handler=h, phase=0, priority=10),
             Action(name="y", handler=h, phase=0, priority=1),
         ]
-        plan = ActionPlan(
-            trigger=ev, actions=actions, created_at=datetime.now()
-        )
+        plan = ActionPlan(trigger=ev, actions=actions, created_at=datetime.now())
         by_phase = plan.actions_by_phase()
         assert list(by_phase.keys()) == [0]
         assert [a.name for a in by_phase[0]] == ["y", "x"]
@@ -177,7 +172,7 @@ class TestActionPlan:
 
 class TestActionPlanTriggerOptional:
     def test_action_plan_without_trigger(self):
-        plan = ActionPlan(created_at=datetime.now(timezone.utc))
+        plan = ActionPlan(created_at=datetime.now(UTC))
         assert plan.trigger is None
         assert plan.actions == []
 
@@ -187,9 +182,9 @@ class TestActionPlanTriggerOptional:
             subdirectory="people",
             event_type="modified",
             doc_type="person",
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
         )
-        plan = ActionPlan(created_at=datetime.now(timezone.utc), trigger=event)
+        plan = ActionPlan(created_at=datetime.now(UTC), trigger=event)
         assert plan.trigger is event
 
 
@@ -230,12 +225,20 @@ class TestDeliveryItem:
 
     def test_default_artifacts_are_independent(self):
         d1 = DeliveryItem(
-            title="a", detail="b", priority="low", category="detected",
-            source_action="x", timestamp=datetime.now(),
+            title="a",
+            detail="b",
+            priority="low",
+            category="detected",
+            source_action="x",
+            timestamp=datetime.now(),
         )
         d2 = DeliveryItem(
-            title="c", detail="d", priority="low", category="detected",
-            source_action="y", timestamp=datetime.now(),
+            title="c",
+            detail="d",
+            priority="low",
+            category="detected",
+            source_action="y",
+            timestamp=datetime.now(),
         )
         d1.artifacts.append(Path("/tmp/f"))
         assert d2.artifacts == []

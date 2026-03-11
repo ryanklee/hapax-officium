@@ -1,4 +1,5 @@
 """Engine endpoints — expose reactive engine status and configuration."""
+
 from __future__ import annotations
 
 from dataclasses import asdict
@@ -9,8 +10,8 @@ from typing import Any
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from shared.config import config
 from cockpit.api.cache import cache
+from shared.config import config
 
 router = APIRouter(prefix="/api/engine", tags=["engine"])
 
@@ -41,11 +42,7 @@ def _serialize_item(item: Any) -> dict:
     """Convert a DeliveryItem dataclass to a JSON-safe dict."""
     raw = asdict(item)
     return {
-        k: (
-            [_serialize_value(x) for x in v]
-            if isinstance(v, list)
-            else _serialize_value(v)
-        )
+        k: ([_serialize_value(x) for x in v] if isinstance(v, list) else _serialize_value(v))
         for k, v in raw.items()
     }
 
@@ -116,7 +113,9 @@ async def set_simulation_context(req: SimulationContextRequest) -> dict:
     if not sim_path.is_dir():
         raise HTTPException(status_code=400, detail=f"Directory does not exist: {req.sim_dir}")
     if not (sim_path / ".sim-manifest.yaml").is_file():
-        raise HTTPException(status_code=400, detail="Not a simulation directory (no .sim-manifest.yaml)")
+        raise HTTPException(
+            status_code=400, detail="Not a simulation directory (no .sim-manifest.yaml)"
+        )
 
     await engine.pause()
     config.set_data_dir(sim_path)

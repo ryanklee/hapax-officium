@@ -2,25 +2,27 @@
 
 Stdlib-only. No external dependencies.
 """
+
 from __future__ import annotations
 
-from pathlib import Path
+from typing import TYPE_CHECKING
 
-import pytest
+if TYPE_CHECKING:
+    from pathlib import Path
 
 from shared.transcript_parser import (
     TranscriptSegment,
-    parse_transcript,
     _detect_format,
-    _parse_vtt,
-    _parse_srt,
     _parse_speaker_labeled,
+    _parse_srt,
+    _parse_vtt,
     format_as_text,
     map_speakers_to_people,
+    parse_transcript,
 )
 
-
 # ── _detect_format ──────────────────────────────────────────────────────────
+
 
 class TestDetectFormat:
     def test_vtt(self):
@@ -38,6 +40,7 @@ class TestDetectFormat:
 
 
 # ── _parse_vtt ──────────────────────────────────────────────────────────────
+
 
 class TestParseVtt:
     def test_basic(self):
@@ -79,6 +82,7 @@ how are you doing today?"""
 
 # ── _parse_srt ──────────────────────────────────────────────────────────────
 
+
 class TestParseSrt:
     def test_basic(self):
         content = """1
@@ -105,6 +109,7 @@ Alice: Hello world"""
 
 # ── _parse_speaker_labeled ──────────────────────────────────────────────────
 
+
 class TestParseSpeakerLabeled:
     def test_basic(self):
         content = "Alice: Hello\nBob: Hi there\nAlice: How are you?"
@@ -126,6 +131,7 @@ class TestParseSpeakerLabeled:
 
 # ── parse_transcript (integration) ──────────────────────────────────────────
 
+
 class TestParseTranscript:
     def test_vtt_file(self, tmp_path: Path):
         vtt = tmp_path / "meeting.vtt"
@@ -140,6 +146,7 @@ class TestParseTranscript:
 
 
 # ── format_as_text ──────────────────────────────────────────────────────────
+
 
 class TestFormatAsText:
     def test_with_speakers(self):
@@ -159,9 +166,11 @@ class TestFormatAsText:
 
 # ── map_speakers_to_people ──────────────────────────────────────────────────
 
+
 class TestMapSpeakers:
     def test_exact_match(self):
         from cockpit.data.management import PersonState
+
         segments = [TranscriptSegment(speaker="Alice Smith", text="hi")]
         people = [PersonState(name="Alice Smith")]
         mapping = map_speakers_to_people(segments, people)
@@ -169,6 +178,7 @@ class TestMapSpeakers:
 
     def test_first_name_match(self):
         from cockpit.data.management import PersonState
+
         segments = [TranscriptSegment(speaker="Alice", text="hi")]
         people = [PersonState(name="Alice Smith")]
         mapping = map_speakers_to_people(segments, people)
@@ -176,6 +186,7 @@ class TestMapSpeakers:
 
     def test_no_match_keeps_original(self):
         from cockpit.data.management import PersonState
+
         segments = [TranscriptSegment(speaker="Unknown Person", text="hi")]
         people = [PersonState(name="Alice Smith")]
         mapping = map_speakers_to_people(segments, people)

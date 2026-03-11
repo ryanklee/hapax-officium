@@ -20,6 +20,7 @@ Usage:
     uv run python -m agents.meeting_lifecycle --transcript 10-work/meetings/standup.vtt
     uv run python -m agents.meeting_lifecycle --weekly-review
 """
+
 from __future__ import annotations
 
 import argparse
@@ -27,7 +28,7 @@ import asyncio
 import logging
 import re
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from pydantic import BaseModel, Field
@@ -42,17 +43,15 @@ try:
 except ImportError:
     pass
 
+from agents.management_prep import (
+    PrepDocument,
+    format_prep_md,
+    generate_1on1_prep,
+)
 from cockpit.data.management import (
     collect_management_state,
-    PersonState,
-    ManagementSnapshot,
 )
 from shared.vault_utils import parse_frontmatter as _parse_frontmatter
-from agents.management_prep import (
-    generate_1on1_prep,
-    format_prep_md,
-    PrepDocument,
-)
 from shared.vault_writer import write_1on1_prep_to_vault, write_to_vault
 
 log = logging.getLogger("meeting_lifecycle")
@@ -68,8 +67,10 @@ _PREP_THRESHOLDS = {
 
 # ── Schemas ────────────────────────────────────────────────────────────────
 
+
 class MeetingDue(BaseModel):
     """A meeting that needs preparation."""
+
     person_name: str
     cadence: str
     days_since_1on1: int | None
@@ -78,6 +79,7 @@ class MeetingDue(BaseModel):
 
 class PrepResult(BaseModel):
     """Result of preparing for one meeting."""
+
     person_name: str
     prep: PrepDocument
     saved_path: str = ""
@@ -85,6 +87,7 @@ class PrepResult(BaseModel):
 
 class PrepSummary(BaseModel):
     """Summary of all prep generated in one run."""
+
     meetings_due: int = 0
     preps_generated: int = 0
     preps_failed: int = 0
@@ -93,6 +96,7 @@ class PrepSummary(BaseModel):
 
 class ActionItemExtracted(BaseModel):
     """An action item extracted from meeting notes."""
+
     text: str
     assignee: str = ""
     due_date: str = ""
@@ -100,13 +104,15 @@ class ActionItemExtracted(BaseModel):
 
 class FeedbackMoment(BaseModel):
     """A feedback moment noted in meeting notes."""
+
     description: str
     direction: str = "given"  # given | received
-    category: str = ""        # growth | recognition | correction
+    category: str = ""  # growth | recognition | correction
 
 
 class MeetingExtraction(BaseModel):
     """LLM-extracted structured data from a meeting note."""
+
     action_items: list[ActionItemExtracted] = Field(default_factory=list)
     coaching_observations: list[str] = Field(default_factory=list)
     feedback_moments: list[FeedbackMoment] = Field(default_factory=list)
@@ -117,6 +123,7 @@ class MeetingExtraction(BaseModel):
 
 class WeeklyReviewData(BaseModel):
     """Pre-populated data for weekly review."""
+
     cognitive_load_table: list[dict] = Field(default_factory=list)
     key_outcomes: list[str] = Field(default_factory=list)
     wins: list[str] = Field(default_factory=list)
@@ -151,6 +158,7 @@ extract_agent = Agent(
 
 # ── Prepare mode ──────────────────────────────────────────────────────────
 
+
 def discover_due_meetings(person_filter: str | None = None) -> list[MeetingDue]:
     """Find people whose 1:1 is coming due based on cadence thresholds.
 
@@ -173,12 +181,14 @@ def discover_due_meetings(person_filter: str | None = None) -> list[MeetingDue]:
         if person.days_since_1on1 < threshold:
             continue
 
-        due.append(MeetingDue(
-            person_name=person.name,
-            cadence=person.cadence,
-            days_since_1on1=person.days_since_1on1,
-            prep_threshold=threshold,
-        ))
+        due.append(
+            MeetingDue(
+                person_name=person.name,
+                cadence=person.cadence,
+                days_since_1on1=person.days_since_1on1,
+                prep_threshold=threshold,
+            )
+        )
 
     return due
 
@@ -194,8 +204,10 @@ async def prepare_all(
 
     if dry_run:
         for m in meetings:
-            print(f"  Would prepare: {m.person_name} "
-                  f"(cadence={m.cadence}, {m.days_since_1on1}d since last 1:1)")
+            print(
+                f"  Would prepare: {m.person_name} "
+                f"(cadence={m.cadence}, {m.days_since_1on1}d since last 1:1)"
+            )
         return summary
 
     for meeting in meetings:
@@ -209,11 +221,13 @@ async def prepare_all(
                     saved_path = str(path)
                     log.info("Saved prep for %s to %s", meeting.person_name, path)
 
-            summary.results.append(PrepResult(
-                person_name=meeting.person_name,
-                prep=prep,
-                saved_path=saved_path,
-            ))
+            summary.results.append(
+                PrepResult(
+                    person_name=meeting.person_name,
+                    prep=prep,
+                    saved_path=saved_path,
+                )
+            )
             summary.preps_generated += 1
         except Exception as exc:
             log.error("Failed to prepare for %s: %s", meeting.person_name, exc)
@@ -223,6 +237,7 @@ async def prepare_all(
 
 
 # ── Process mode ──────────────────────────────────────────────────────────
+
 
 async def process_meeting(path: Path) -> MeetingExtraction:
     """Extract structured data from a meeting note using LLM."""
@@ -251,8 +266,8 @@ def route_extractions(extraction: MeetingExtraction, meeting_path: Path) -> list
     """Route extracted data to appropriate vault locations. Returns created paths."""
     from shared.vault_writer import (
         create_coaching_starter,
-        create_fb_record_starter,
         create_decision_starter,
+        create_fb_record_starter,
     )
 
     created: list[Path] = []
@@ -318,13 +333,14 @@ def _person_from_meeting_path(path: Path) -> str:
 
 # ── Transcript mode ───────────────────────────────────────────────────────
 
+
 async def process_transcript(
     path: Path,
     dry_run: bool = False,
     save: bool = True,
 ) -> MeetingExtraction:
     """Parse transcript, extract data, create meeting note."""
-    from shared.transcript_parser import parse_transcript, format_as_text
+    from shared.transcript_parser import format_as_text, parse_transcript
 
     segments = parse_transcript(path)
     if not segments:
@@ -347,7 +363,7 @@ key themes, and a brief summary."""
         return MeetingExtraction()
 
     if save and not dry_run:
-        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        today = datetime.now(UTC).strftime("%Y-%m-%d")
         slug = re.sub(r"[^a-z0-9]+", "-", path.stem.lower()).strip("-")
         meeting_md = _format_meeting_from_extraction(extraction, transcript_text)
         meeting_path = write_to_vault(
@@ -406,6 +422,7 @@ def _format_meeting_from_extraction(extraction: MeetingExtraction, transcript: s
 
 # ── Weekly review mode ─────────────────────────────────────────────────────
 
+
 def generate_weekly_review() -> WeeklyReviewData:
     """Deterministic data collection for weekly review pre-population."""
     snapshot = collect_management_state()
@@ -425,12 +442,14 @@ def generate_weekly_review() -> WeeklyReviewData:
         elif p.stale_1on1:
             action = "schedule 1:1"
 
-        data.cognitive_load_table.append({
-            "person": p.name,
-            "load": p.cognitive_load or "?",
-            "signals": ", ".join(signals) if signals else "none",
-            "action": action,
-        })
+        data.cognitive_load_table.append(
+            {
+                "person": p.name,
+                "load": p.cognitive_load or "?",
+                "signals": ", ".join(signals) if signals else "none",
+                "action": action,
+            }
+        )
 
     # Meeting count this week — vault excised, no meeting files to scan
 
@@ -456,7 +475,7 @@ def generate_weekly_review() -> WeeklyReviewData:
 
 def format_weekly_review_md(data: WeeklyReviewData) -> str:
     """Format weekly review as markdown."""
-    today = datetime.now(timezone.utc)
+    today = datetime.now(UTC)
     week_num = today.isocalendar()[1]
     year = today.year
 
@@ -510,7 +529,7 @@ def format_weekly_review_md(data: WeeklyReviewData) -> str:
 
 def write_weekly_review_to_vault(data: WeeklyReviewData) -> Path | None:
     """Write weekly review to vault."""
-    today = datetime.now(timezone.utc)
+    today = datetime.now(UTC)
     week_num = today.isocalendar()[1]
     year = today.year
     md = format_weekly_review_md(data)
@@ -529,6 +548,7 @@ def write_weekly_review_to_vault(data: WeeklyReviewData) -> Path | None:
 
 
 # ── CLI ────────────────────────────────────────────────────────────────────
+
 
 async def main() -> None:
     parser = argparse.ArgumentParser(
@@ -554,14 +574,17 @@ async def main() -> None:
             dry_run=args.dry_run,
             save=args.save or not args.dry_run,
         )
-        print(f"Due: {summary.meetings_due}, "
-              f"Generated: {summary.preps_generated}, "
-              f"Failed: {summary.preps_failed}", file=sys.stderr)
+        print(
+            f"Due: {summary.meetings_due}, "
+            f"Generated: {summary.preps_generated}, "
+            f"Failed: {summary.preps_failed}",
+            file=sys.stderr,
+        )
         if args.json:
             print(summary.model_dump_json(indent=2))
         elif not args.dry_run:
             for r in summary.results:
-                print(f"\n{'='*60}")
+                print(f"\n{'=' * 60}")
                 print(format_prep_md(r.person_name, r.prep))
 
     elif args.process:
@@ -585,7 +608,9 @@ async def main() -> None:
         path = Path(args.transcript)
         print(f"Processing transcript: {path}", file=sys.stderr)
         extraction = await process_transcript(
-            path, dry_run=args.dry_run, save=args.save or not args.dry_run,
+            path,
+            dry_run=args.dry_run,
+            save=args.save or not args.dry_run,
         )
         if args.json:
             print(extraction.model_dump_json(indent=2))

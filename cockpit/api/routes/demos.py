@@ -1,4 +1,5 @@
 """Demo history and management API endpoints."""
+
 from __future__ import annotations
 
 import shutil
@@ -7,7 +8,7 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse
 
 from agents.demo import OUTPUT_DIR
-from agents.demo_pipeline.history import list_demos, get_demo
+from agents.demo_pipeline.history import get_demo, list_demos
 
 router = APIRouter(prefix="/api/demos", tags=["demos"])
 

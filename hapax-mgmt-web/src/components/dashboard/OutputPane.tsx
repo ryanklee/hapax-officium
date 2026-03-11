@@ -28,18 +28,16 @@ export function OutputPane({ lines, isRunning, agentName, startedAt, onCancel }:
     }
   }, [lines]);
 
-  // Elapsed timer
+  // Elapsed timer — interval callback updates state; derive display from running state
   useEffect(() => {
-    if (!isRunning || !startedAt) {
-      setElapsed(0);
-      return;
-    }
-    setElapsed(Math.floor((Date.now() - startedAt) / 1000));
+    if (!isRunning || !startedAt) return;
     const interval = setInterval(() => {
       setElapsed(Math.floor((Date.now() - startedAt) / 1000));
     }, 1000);
     return () => clearInterval(interval);
   }, [isRunning, startedAt]);
+
+  const displayElapsed = isRunning ? elapsed : 0;
 
   if (lines.length === 0 && !isRunning) return null;
 
@@ -55,7 +53,7 @@ export function OutputPane({ lines, isRunning, agentName, startedAt, onCancel }:
           )}
           {isRunning && (
             <span className="text-blue-400">
-              running{elapsed > 0 ? ` ${elapsed}s` : "..."}
+              running{displayElapsed > 0 ? ` ${displayElapsed}s` : "..."}
             </span>
           )}
         </h3>

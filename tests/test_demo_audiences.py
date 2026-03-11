@@ -1,12 +1,15 @@
 """Tests for audience dossier loading."""
+
 from __future__ import annotations
 
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import yaml
-import pytest
 
-from agents.demo_models import AudienceDossier, AudiencePersona, load_audiences, load_personas
+from agents.demo_models import AudienceDossier, load_audiences, load_personas
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 class TestLoadAudiences:

@@ -1,7 +1,8 @@
 """Tests for cockpit API — management-focused endpoints."""
+
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 
 import pytest
@@ -13,12 +14,14 @@ from cockpit.api.cache import cache
 @pytest.fixture
 async def client():
     from cockpit.api.app import app
+
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as c:
         yield c
 
 
 # ── Mock data classes ────────────────────────────────────────────────────────
+
 
 @dataclass
 class MockManagement:
@@ -56,6 +59,7 @@ class MockTeamHealth:
 
 # ── App skeleton tests ───────────────────────────────────────────────────────
 
+
 class TestAppSkeleton:
     async def test_root_returns_info(self, client):
         resp = await client.get("/")
@@ -74,6 +78,7 @@ class TestAppSkeleton:
 
 
 # ── Management data endpoints ────────────────────────────────────────────────
+
 
 class TestManagementEndpoint:
     async def test_management_returns_data(self, client):
@@ -180,6 +185,7 @@ class TestStatusEndpoint:
 
 # ── Cache age headers ────────────────────────────────────────────────────────
 
+
 class TestCacheAgeHeaders:
     """All data endpoints should include X-Cache-Age header."""
 
@@ -201,6 +207,7 @@ class TestCacheAgeHeaders:
 
 
 # ── Path serialization ──────────────────────────────────────────────────────
+
 
 class TestPathSerialization:
     """Verify Path objects don't cause TypeError."""

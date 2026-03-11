@@ -3,6 +3,7 @@
 Serves data from cockpit/data/ collectors over HTTP.
 Designed to be consumed by the React SPA at cockpit-web/.
 """
+
 from __future__ import annotations
 
 from contextlib import asynccontextmanager
@@ -18,6 +19,7 @@ from cockpit.api.sessions import agent_run_manager
 async def lifespan(app: FastAPI):
     await start_refresh_loop()
     from cockpit.engine import ReactiveEngine
+
     engine = ReactiveEngine(agent_run_manager=agent_run_manager)
     set_engine(engine)
     await engine.start()
@@ -36,8 +38,8 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:5173",   # Vite dev server
-        "http://localhost:8050",   # Production (self-hosted SPA)
+        "http://localhost:5173",  # Vite dev server
+        "http://localhost:8050",  # Production (self-hosted SPA)
         "http://127.0.0.1:5173",
         "http://127.0.0.1:8050",
     ],
@@ -46,13 +48,14 @@ app.add_middleware(
     allow_headers=["Content-Type"],
 )
 
-from cockpit.api.routes.data import router as data_router
-from cockpit.api.routes.nudges import router as nudges_router
 from cockpit.api.routes.agents import router as agents_router
-from cockpit.api.routes.profile import router as profile_router
-from cockpit.api.routes.demos import router as demos_router
-from cockpit.api.routes.engine import router as engine_router, set_engine
 from cockpit.api.routes.cycle_mode import router as cycle_mode_router
+from cockpit.api.routes.data import router as data_router
+from cockpit.api.routes.demos import router as demos_router
+from cockpit.api.routes.engine import router as engine_router
+from cockpit.api.routes.engine import set_engine
+from cockpit.api.routes.nudges import router as nudges_router
+from cockpit.api.routes.profile import router as profile_router
 from cockpit.api.routes.scout import router as scout_router
 
 app.include_router(data_router)
@@ -71,10 +74,11 @@ async def root():
 
 
 from pathlib import Path
+
 SPA_DIR = Path(__file__).parent / "static"
 if SPA_DIR.is_dir():
-    from starlette.staticfiles import StaticFiles
     from starlette.responses import FileResponse, JSONResponse
+    from starlette.staticfiles import StaticFiles
 
     @app.get("/app/{path:path}")
     async def spa_catchall(path: str):

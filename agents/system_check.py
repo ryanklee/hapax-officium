@@ -7,6 +7,7 @@ Usage:
     uv run python -m agents.system_check              # Human output
     uv run python -m agents.system_check --json        # Machine-readable JSON
 """
+
 from __future__ import annotations
 
 import argparse
@@ -16,9 +17,7 @@ import logging
 import os
 import socket
 import sys
-import time
-from datetime import datetime, timezone
-from enum import Enum
+from datetime import UTC, datetime
 from urllib.error import URLError
 from urllib.request import Request, urlopen
 
@@ -26,6 +25,7 @@ log = logging.getLogger("agents.system_check")
 
 
 # -- Schemas ------------------------------------------------------------------
+
 
 class CheckResult:
     __slots__ = ("name", "ok", "message")
@@ -41,8 +41,10 @@ class CheckResult:
 
 # -- HTTP helper --------------------------------------------------------------
 
+
 async def _http_get(url: str, timeout: float = 5.0) -> tuple[int, str]:
     """HTTP GET returning (status_code, body). Runs in executor."""
+
     def _fetch() -> tuple[int, str]:
         req = Request(url)
         try:
@@ -52,11 +54,13 @@ async def _http_get(url: str, timeout: float = 5.0) -> tuple[int, str]:
             return (0, str(e))
         except Exception as e:
             return (0, str(e))
+
     loop = asyncio.get_running_loop()
     return await loop.run_in_executor(None, _fetch)
 
 
 # -- Checks -------------------------------------------------------------------
+
 
 async def check_cockpit_api() -> CheckResult:
     """Check if the cockpit API is responding."""
@@ -65,7 +69,6 @@ async def check_cockpit_api() -> CheckResult:
         return CheckResult("cockpit_api", code == 200, f"status {code}")
     except Exception as e:
         return CheckResult("cockpit_api", False, str(e))
-
 
 
 async def check_qdrant() -> CheckResult:
@@ -92,6 +95,7 @@ ALL_CHECKS = [check_cockpit_api, check_qdrant, check_litellm]
 
 
 # -- Runner -------------------------------------------------------------------
+
 
 async def run_checks() -> list[CheckResult]:
     """Run all checks in parallel."""
@@ -137,7 +141,9 @@ def format_human(results: list[CheckResult], color: bool = True) -> str:
 
     if color:
         c = _GREEN if all_ok else _RED
-        header = f"System Check: {c}{'OK' if all_ok else 'FAILED'}{_RESET} ({ok_count}/{total} passed)"
+        header = (
+            f"System Check: {c}{'OK' if all_ok else 'FAILED'}{_RESET} ({ok_count}/{total} passed)"
+        )
     else:
         header = f"System Check: {'OK' if all_ok else 'FAILED'} ({ok_count}/{total} passed)"
     lines.append(header)
@@ -158,13 +164,15 @@ def format_human(results: list[CheckResult], color: bool = True) -> str:
 
 # -- CLI ----------------------------------------------------------------------
 
+
 async def main() -> None:
     parser = argparse.ArgumentParser(
         description="Management system health checks",
         prog="python -m agents.system_check",
     )
     parser.add_argument(
-        "--json", action="store_true",
+        "--json",
+        action="store_true",
         help="Output machine-readable JSON",
     )
 
@@ -173,7 +181,7 @@ async def main() -> None:
 
     if args.json:
         output = {
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "hostname": socket.gethostname(),
             "all_ok": all(r.ok for r in results),
             "checks": [r.to_dict() for r in results],

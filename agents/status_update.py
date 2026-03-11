@@ -12,22 +12,25 @@ Usage:
     uv run python -m agents.status_update --save       # Save to DATA_DIR/references/
     uv run python -m agents.status_update --json       # Machine-readable JSON
 """
+
 from __future__ import annotations
 
 import argparse
 import asyncio
-import json
 import logging
 import re
 import sys
-from datetime import datetime, timezone, timedelta
-from pathlib import Path
+from datetime import UTC, datetime, timedelta
+from typing import TYPE_CHECKING
 
 import yaml
 from pydantic import BaseModel, Field
 from pydantic_ai import Agent
 
 from shared.config import config, get_model
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 log = logging.getLogger(__name__)
 
@@ -68,6 +71,7 @@ def _parse_frontmatter(path: Path) -> tuple[dict, str]:
 
 class StatusReport(BaseModel):
     """Upward-facing status report (Lara Hogan Week in Review pattern)."""
+
     headline: str = Field(description="One-sentence summary of the week/period")
     themes: list[str] = Field(
         default_factory=list,
@@ -97,12 +101,10 @@ def _file_date(fm: dict, path: Path) -> datetime | None:
     if date_val:
         if isinstance(date_val, datetime):
             if date_val.tzinfo is None:
-                return date_val.replace(tzinfo=timezone.utc)
+                return date_val.replace(tzinfo=UTC)
             return date_val
         try:
-            return datetime.strptime(str(date_val), "%Y-%m-%d").replace(
-                tzinfo=timezone.utc
-            )
+            return datetime.strptime(str(date_val), "%Y-%m-%d").replace(tzinfo=UTC)
         except ValueError:
             pass
 
@@ -113,7 +115,7 @@ def _file_date(fm: dict, path: Path) -> datetime | None:
             try:
                 dt = datetime.fromisoformat(str(val).replace("Z", "+00:00"))
                 if dt.tzinfo is None:
-                    dt = dt.replace(tzinfo=timezone.utc)
+                    dt = dt.replace(tzinfo=UTC)
                 return dt
             except (ValueError, TypeError):
                 pass
@@ -122,9 +124,7 @@ def _file_date(fm: dict, path: Path) -> datetime | None:
     date_match = re.match(r"(\d{4}-\d{2}-\d{2})", path.stem)
     if date_match:
         try:
-            return datetime.strptime(date_match.group(1), "%Y-%m-%d").replace(
-                tzinfo=timezone.utc
-            )
+            return datetime.strptime(date_match.group(1), "%Y-%m-%d").replace(tzinfo=UTC)
         except ValueError:
             pass
 
@@ -145,7 +145,7 @@ def _gather_week_context(days: int = 7) -> dict[str, list[dict]]:
     Returns dict with keys: meetings, coaching, feedback — each a list of
     dicts with 'filename', 'frontmatter', 'excerpt' fields.
     """
-    cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+    cutoff = datetime.now(UTC) - timedelta(days=days)
     context: dict[str, list[dict]] = {
         "meetings": [],
         "coaching": [],
@@ -171,11 +171,13 @@ def _gather_week_context(days: int = 7) -> dict[str, list[dict]]:
             if file_dt is not None and file_dt < cutoff:
                 continue
 
-            context[category].append({
-                "filename": path.name,
-                "frontmatter": fm,
-                "excerpt": _body_excerpt(body),
-            })
+            context[category].append(
+                {
+                    "filename": path.name,
+                    "frontmatter": fm,
+                    "excerpt": _body_excerpt(body),
+                }
+            )
 
     return context
 
@@ -237,8 +239,7 @@ def _format_context_for_prompt(context: dict[str, list[dict]], days: int) -> str
     total = sum(len(v) for v in context.values())
     if total == 0:
         lines.append(
-            "No data files found for this period. Generate a minimal report "
-            "noting the data gap."
+            "No data files found for this period. Generate a minimal report noting the data gap."
         )
 
     return "\n".join(lines)
@@ -281,14 +282,14 @@ def _save_report(report: StatusReport, days: int) -> Path:
     refs_dir = config.data_dir / "references"
     refs_dir.mkdir(parents=True, exist_ok=True)
 
-    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    today = datetime.now(UTC).strftime("%Y-%m-%d")
     period = "daily" if days == 1 else "weekly"
     filename = f"status-{period}-{today}.md"
     path = refs_dir / filename
 
     lines = [
         "---",
-        f"type: status-report",
+        "type: status-report",
         f"period: {period}",
         f"date: {today}",
         f"days: {days}",
@@ -370,15 +371,18 @@ async def main() -> None:
         prog="python -m agents.status_update",
     )
     parser.add_argument(
-        "--daily", action="store_true",
+        "--daily",
+        action="store_true",
         help="Daily report (1-day lookback instead of 7)",
     )
     parser.add_argument(
-        "--save", action="store_true",
+        "--save",
+        action="store_true",
         help="Save report to DATA_DIR/references/",
     )
     parser.add_argument(
-        "--json", action="store_true",
+        "--json",
+        action="store_true",
         help="Machine-readable JSON output",
     )
     args = parser.parse_args()

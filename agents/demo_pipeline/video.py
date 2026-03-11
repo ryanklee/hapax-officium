@@ -1,16 +1,25 @@
 """Video assembly pipeline — screenshots + audio -> MP4."""
+
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import logging
-from collections.abc import Callable
-from pathlib import Path
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+    from pathlib import Path
 
 try:
-    from moviepy import (
-        AudioFileClip, ImageClip, VideoFileClip,
-        concatenate_videoclips, vfx,
+    from moviepy import (  # type: ignore[import-not-found]  # optional dep
+        AudioFileClip,
+        ImageClip,
+        VideoFileClip,
+        concatenate_videoclips,
+        vfx,
     )
+
     _HAS_MOVIEPY = True
 except ModuleNotFoundError:  # pragma: no cover — moviepy is optional
     _HAS_MOVIEPY = False
@@ -180,8 +189,6 @@ async def assemble_video(
 
     finally:
         if final is not None:
-            try:
+            with contextlib.suppress(Exception):
                 final.close()
-            except Exception:
-                pass
         _close_clips(all_clips)

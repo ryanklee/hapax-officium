@@ -1,16 +1,20 @@
 """Screencast recording pipeline using Playwright video capture."""
+
 from __future__ import annotations
 
 import asyncio
 import logging
 import shutil
-from collections.abc import Callable
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-from playwright.async_api import async_playwright, Page
+from playwright.async_api import Page, async_playwright
 
 from agents.demo_models import InteractionSpec, InteractionStep
-from agents.demo_pipeline.screenshots import fix_localhost_url, _preflight_check
+from agents.demo_pipeline.screenshots import _preflight_check, fix_localhost_url
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 log = logging.getLogger(__name__)
 
@@ -82,6 +86,7 @@ RECIPES: dict[str, InteractionSpec] = {
 def _url_to_default_recipe(url: str) -> str:
     """Map a URL to the best default recipe name."""
     from urllib.parse import urlparse
+
     path = urlparse(url).path.rstrip("/") or "/"
     if path == "/chat":
         return "chat-health-query"
@@ -117,10 +122,14 @@ def resolve_recipe(spec: InteractionSpec) -> InteractionSpec:
     fallback = _url_to_default_recipe(spec.url)
     log.warning(
         "Unknown recipe '%s', falling back to '%s'. Available: %s",
-        recipe_name, fallback, list(RECIPES.keys()),
+        recipe_name,
+        fallback,
+        list(RECIPES.keys()),
     )
     recipe = RECIPES[fallback]
-    return recipe.model_copy(update={"viewport_width": spec.viewport_width, "viewport_height": spec.viewport_height})
+    return recipe.model_copy(
+        update={"viewport_width": spec.viewport_width, "viewport_height": spec.viewport_height}
+    )
 
 
 async def _execute_step(page: Page, step: InteractionStep) -> None:
@@ -165,9 +174,17 @@ async def _webm_to_mp4(webm_path: Path, mp4_path: Path) -> Path:
         return webm_path
 
     proc = await asyncio.create_subprocess_exec(
-        "ffmpeg", "-y", "-i", str(webm_path),
-        "-c:v", "libx264", "-preset", "fast",
-        "-crf", "23", "-an",
+        "ffmpeg",
+        "-y",
+        "-i",
+        str(webm_path),
+        "-c:v",
+        "libx264",
+        "-preset",
+        "fast",
+        "-crf",
+        "23",
+        "-an",
         str(mp4_path),
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
@@ -216,7 +233,7 @@ async def record_screencasts(
 
     # Preflight check — reuse screenshot infrastructure
     preflight_specs = [(name, type("_", (), {"url": spec.url})()) for name, spec in resolved]
-    await _preflight_check(preflight_specs)
+    await _preflight_check(preflight_specs)  # type: ignore[arg-type]  # duck-typed .url attr
 
     paths: list[Path] = []
     video_tmp_dir = output_dir / "_video_tmp"
@@ -243,30 +260,33 @@ async def record_screencasts(
 
                 try:
                     import time as _time
+
                     record_start = _time.monotonic()
 
                     # Navigate — use domcontentloaded for faster start
                     await page.goto(spec.url, wait_until="domcontentloaded")
 
                     # Execute interaction steps with a safety timeout
-                    async def run_steps() -> None:
-                        for step in spec.steps:
+                    async def run_steps(_spec=spec, _page=page, _name=name) -> None:
+                        for step in _spec.steps:
                             try:
-                                await _execute_step(page, step)
+                                await _execute_step(_page, step)
                             except Exception as e:
                                 log.warning(
                                     "Step %s/%s failed in %s: %s, continuing",
-                                    step.action, step.target or step.value, name, e,
+                                    step.action,
+                                    step.target or step.value,
+                                    _name,
+                                    e,
                                 )
 
                     try:
-                        await asyncio.wait_for(
-                            run_steps(), timeout=spec.max_duration
-                        )
-                    except asyncio.TimeoutError:
+                        await asyncio.wait_for(run_steps(), timeout=spec.max_duration)
+                    except TimeoutError:
                         log.warning(
                             "Screencast %s hit max_duration (%.0fs), stopping",
-                            name, spec.max_duration,
+                            name,
+                            spec.max_duration,
                         )
 
                     # Enforce minimum recording duration

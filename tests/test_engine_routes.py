@@ -1,7 +1,8 @@
 """Tests for engine API routes."""
+
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -66,7 +67,7 @@ class TestEngineRecent:
         mock = _mock_engine()
         from cockpit.engine.models import DeliveryItem
 
-        ts = datetime(2026, 3, 9, 12, 0, 0, tzinfo=timezone.utc)
+        ts = datetime(2026, 3, 9, 12, 0, 0, tzinfo=UTC)
         item = DeliveryItem(
             title="prep_refresh",
             detail="Refreshed prep for Alice",

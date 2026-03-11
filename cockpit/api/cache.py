@@ -2,6 +2,7 @@
 
 Refreshes management data collectors on a 5-minute interval.
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -115,12 +116,17 @@ class DataCache:
             ("okrs", "cockpit.data.okrs", "collect_okr_state"),
             ("smart_goals", "cockpit.data.smart_goals", "collect_smart_goal_state"),
             ("incidents", "cockpit.data.incidents", "collect_incident_state"),
-            ("postmortem_actions", "cockpit.data.postmortem_actions", "collect_postmortem_action_state"),
+            (
+                "postmortem_actions",
+                "cockpit.data.postmortem_actions",
+                "collect_postmortem_action_state",
+            ),
             ("review_cycles", "cockpit.data.review_cycles", "collect_review_cycle_state"),
             ("status_reports", "cockpit.data.status_reports", "collect_status_report_state"),
         ]:
             try:
                 import importlib
+
                 mod = importlib.import_module(import_path)
                 setattr(self, name, getattr(mod, fn_name)())
             except Exception as e:

@@ -2,21 +2,21 @@
 
 Updated for management-only dimensions (management_practice, team_leadership, etc.).
 """
+
 import json
 import uuid
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
 
-from shared.profile_store import ProfileStore, COLLECTION, VECTOR_DIM, MANAGEMENT_DIMENSIONS
-
+from shared.profile_store import COLLECTION, VECTOR_DIM, ProfileStore
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
+
 def _make_profile(facts_per_dim=2):
     """Build a minimal ManagementProfile for testing with valid management dimensions."""
-    from agents.management_profiler import ProfileFact, ProfileDimension, ManagementProfile
+    from agents.management_profiler import ManagementProfile, ProfileDimension, ProfileFact
 
     dim_names = ["management_practice", "team_leadership"]
     dims = []
@@ -53,6 +53,7 @@ def _mock_store():
 
 # ── Collection management ────────────────────────────────────────────────────
 
+
 def test_ensure_collection_creates_when_missing():
     store = _mock_store()
     mock_collections = MagicMock()
@@ -79,6 +80,7 @@ def test_ensure_collection_skips_when_exists():
 
 # ── Index profile ────────────────────────────────────────────────────────────
 
+
 @patch("shared.config.embed_batch")
 def test_index_profile_upserts_facts(mock_embed):
     store = _mock_store()
@@ -98,8 +100,11 @@ def test_index_profile_upserts_facts(mock_embed):
 @patch("shared.config.embed_batch")
 def test_index_profile_empty(mock_embed):
     from agents.management_profiler import ManagementProfile
+
     store = _mock_store()
-    profile = ManagementProfile(name="Empty", summary="", dimensions=[], sources_processed=[], version=1, updated_at="")
+    profile = ManagementProfile(
+        name="Empty", summary="", dimensions=[], sources_processed=[], version=1, updated_at=""
+    )
 
     count = store.index_profile(profile)
     assert count == 0
@@ -109,13 +114,25 @@ def test_index_profile_empty(mock_embed):
 @patch("shared.config.embed_batch")
 def test_index_profile_skips_non_management_dimensions(mock_embed):
     """Non-management dimensions (e.g., 'workflow') are skipped."""
-    from agents.management_profiler import ProfileFact, ProfileDimension, ManagementProfile
+    from agents.management_profiler import ManagementProfile, ProfileDimension, ProfileFact
+
     store = _mock_store()
 
-    facts = [ProfileFact(dimension="workflow", key="f1", value="v1",
-                         confidence=0.8, source="test", evidence="test")]
+    facts = [
+        ProfileFact(
+            dimension="workflow",
+            key="f1",
+            value="v1",
+            confidence=0.8,
+            source="test",
+            evidence="test",
+        )
+    ]
     profile = ManagementProfile(
-        name="Test", summary="", version=1, updated_at="",
+        name="Test",
+        summary="",
+        version=1,
+        updated_at="",
         dimensions=[ProfileDimension(name="workflow", summary="", facts=facts)],
         sources_processed=[],
     )
@@ -146,12 +163,16 @@ def test_index_profile_deterministic_ids(mock_embed):
 def test_index_profile_batches_large_profiles(mock_embed):
     """Profiles with >100 facts are upserted in batches."""
     store = _mock_store()
-    from agents.management_profiler import ProfileFact, ProfileDimension, ManagementProfile
+    from agents.management_profiler import ManagementProfile, ProfileDimension, ProfileFact
 
     facts = [
         ProfileFact(
-            dimension="management_practice", key=f"fact_{i}", value=f"v{i}",
-            confidence=0.5, source="test", evidence="test",
+            dimension="management_practice",
+            key=f"fact_{i}",
+            value=f"v{i}",
+            confidence=0.5,
+            source="test",
+            evidence="test",
         )
         for i in range(150)
     ]
@@ -173,6 +194,7 @@ def test_index_profile_batches_large_profiles(mock_embed):
 
 
 # ── Search ───────────────────────────────────────────────────────────────────
+
 
 @patch("shared.config.embed")
 def test_search_returns_results(mock_embed):
@@ -256,6 +278,7 @@ def test_search_empty_results(mock_embed):
 
 # ── Digest access ────────────────────────────────────────────────────────────
 
+
 def test_get_digest_returns_none_when_missing(tmp_path, monkeypatch):
     monkeypatch.setattr("shared.profile_store.PROFILES_DIR", tmp_path)
     store = _mock_store()
@@ -270,7 +293,11 @@ def test_get_digest_loads_valid_file(tmp_path, monkeypatch):
         "total_facts": 100,
         "overall_summary": "Test summary",
         "dimensions": {
-            "management_practice": {"summary": "Practice summary", "fact_count": 50, "avg_confidence": 0.8},
+            "management_practice": {
+                "summary": "Practice summary",
+                "fact_count": 50,
+                "avg_confidence": 0.8,
+            },
         },
     }
     (tmp_path / "operator-digest.json").write_text(json.dumps(digest))
@@ -321,6 +348,7 @@ def test_get_dimension_summary_returns_none_without_digest(tmp_path, monkeypatch
 
 # ── Digest generation ────────────────────────────────────────────────────────
 
+
 @pytest.mark.asyncio
 async def test_generate_digest_structure(tmp_path, monkeypatch):
     """generate_digest produces correct structure."""
@@ -355,6 +383,7 @@ async def test_generate_digest_structure(tmp_path, monkeypatch):
 
 
 # ── Stale point cleanup ────────────────────────────────────────────────────
+
 
 def test_cleanup_stale_points_removes_orphans():
     store = _mock_store()

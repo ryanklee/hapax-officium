@@ -1,12 +1,16 @@
 """Voice generation pipeline using Chatterbox TTS API."""
+
 from __future__ import annotations
 
 import logging
-from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import httpx
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 log = logging.getLogger(__name__)
 
@@ -91,7 +95,10 @@ def generate_all_voice_segments(
     def _generate_one(i: int, name: str, text: str) -> tuple[int, Path]:
         output_path = output_dir / f"{name}.wav"
         generate_voice_segment(
-            text, output_path, voice_sample=voice_sample, voice_bytes=voice_bytes,
+            text,
+            output_path,
+            voice_sample=voice_sample,
+            voice_bytes=voice_bytes,
         )
         return i, output_path
 

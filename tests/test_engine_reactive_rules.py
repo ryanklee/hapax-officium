@@ -1,4 +1,5 @@
 """Tests for cockpit.engine.reactive_rules — 12 concrete reactive rules."""
+
 from __future__ import annotations
 
 from datetime import datetime

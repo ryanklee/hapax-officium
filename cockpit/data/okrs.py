@@ -3,15 +3,19 @@
 Deterministic, no LLM calls. Parses OKR markdown files with nested
 key-results in YAML frontmatter. Computes at-risk and stale KR counts.
 """
+
 from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
 from datetime import date
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 from shared.config import config
 from shared.frontmatter import parse_frontmatter as _parse_frontmatter
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 _log = logging.getLogger(__name__)
 
@@ -76,17 +80,19 @@ def _parse_key_results(raw: list | None) -> list[KeyResultState]:
         conf_raw = item.get("confidence")
         confidence = float(conf_raw) if conf_raw is not None else None
 
-        results.append(KeyResultState(
-            id=str(item.get("id", "")),
-            description=str(item.get("description", "")),
-            target=float(item.get("target", 0)),
-            current=float(item.get("current", 0)),
-            unit=str(item.get("unit", "")),
-            direction=str(item.get("direction", "increase")),
-            confidence=confidence,
-            last_updated=last_updated,
-            stale=stale,
-        ))
+        results.append(
+            KeyResultState(
+                id=str(item.get("id", "")),
+                description=str(item.get("description", "")),
+                target=float(item.get("target", 0)),
+                current=float(item.get("current", 0)),
+                unit=str(item.get("unit", "")),
+                direction=str(item.get("direction", "increase")),
+                confidence=confidence,
+                last_updated=last_updated,
+                stale=stale,
+            )
+        )
     return results
 
 

@@ -3,18 +3,19 @@
 Uses mock operator data injected into the cache so tests don't depend
 on the gitignored profiles/operator.json file.
 """
+
 import copy
 import json
 
 import pytest
 
 from shared.operator import (
+    get_agent_context,
     get_axioms,
     get_constraints,
-    get_patterns,
     get_goals,
-    get_agent_context,
     get_operator,
+    get_patterns,
     get_system_prompt_fragment,
     reload_operator,
 )
@@ -95,12 +96,28 @@ MOCK_OPERATOR = {
     },
     "goals": {
         "primary": [
-            {"id": "llm-first-environment", "description": "LLM-first development environment", "domain": "management"},
-            {"id": "agent-coverage", "description": "Full agent coverage for management workflows", "domain": "management"},
-            {"id": "decision-quality", "description": "Improve decision quality through data", "domain": "management"},
+            {
+                "id": "llm-first-environment",
+                "description": "LLM-first development environment",
+                "domain": "management",
+            },
+            {
+                "id": "agent-coverage",
+                "description": "Full agent coverage for management workflows",
+                "domain": "management",
+            },
+            {
+                "id": "decision-quality",
+                "description": "Improve decision quality through data",
+                "domain": "management",
+            },
         ],
         "secondary": [
-            {"id": "music-production", "description": "DAWless music production workflow", "domain": "personal"},
+            {
+                "id": "music-production",
+                "description": "DAWless music production workflow",
+                "domain": "personal",
+            },
         ],
     },
     "agent_context_map": {
@@ -121,12 +138,14 @@ MOCK_OPERATOR = {
 def _inject_mock_operator(monkeypatch):
     """Inject mock operator data into the cache for all tests in this module."""
     import shared.operator as op_mod
+
     monkeypatch.setattr(op_mod, "_operator_cache", copy.deepcopy(MOCK_OPERATOR))
     yield
     monkeypatch.setattr(op_mod, "_operator_cache", None)
 
 
 # ── Basic loading ───────────────────────────────────────────────────────────
+
 
 def test_operator_loads():
     data = get_operator()
@@ -196,6 +215,7 @@ def test_axioms():
 
 # ── System prompt fragment tests ────────────────────────────────────────────
 
+
 def test_system_prompt_fragment_includes_single_operator_axiom():
     fragment = get_system_prompt_fragment("research")
     # Registry axioms take precedence if available; otherwise fall back to operator.json axioms
@@ -233,6 +253,7 @@ def test_system_prompt_fragment_no_constraints_for_unmapped_agent():
 
 def test_neurocognitive_profile_empty():
     from shared.operator import get_neurocognitive_profile
+
     result = get_neurocognitive_profile()
     assert isinstance(result, dict)
 
@@ -250,6 +271,7 @@ def test_system_prompt_fragment_ignores_neurocognitive_in_management_mode(monkey
     rather than profiled separately.
     """
     import shared.operator as op_mod
+
     patched = copy.deepcopy(MOCK_OPERATOR)
     patched["neurocognitive"] = {
         "task_initiation": ["Body doubling effective", "Timers help start"],
@@ -262,6 +284,7 @@ def test_system_prompt_fragment_ignores_neurocognitive_in_management_mode(monkey
 
 
 # ── Agent context map injection tests ────────────────────────────────────────
+
 
 def test_system_prompt_includes_constraints_for_mapped_agent():
     """Agents with agent_context_map entries get their mapped constraints."""
@@ -295,6 +318,7 @@ def test_system_prompt_no_context_map_for_unknown():
 def test_system_prompt_has_constraints_without_neurocognitive(monkeypatch):
     """Mapped agent gets constraints; neurocognitive is deprecated and not rendered."""
     import shared.operator as op_mod
+
     patched = copy.deepcopy(MOCK_OPERATOR)
     patched["neurocognitive"] = {"attention": ["Focus windows 90 min"]}
     monkeypatch.setattr(op_mod, "_operator_cache", patched)
@@ -306,8 +330,10 @@ def test_system_prompt_has_constraints_without_neurocognitive(monkeypatch):
 
 # ── Schema validation tests ─────────────────────────────────────────────────
 
+
 def test_operator_schema_valid():
     from shared.operator import OperatorSchema
+
     data = {"version": 1, "operator": {"name": "Test"}}
     schema = OperatorSchema.model_validate(data)
     assert schema.version == 1
@@ -315,6 +341,7 @@ def test_operator_schema_valid():
 
 def test_operator_schema_extra_fields_allowed():
     from shared.operator import OperatorSchema
+
     data = {"version": 1, "operator": {}, "custom_field": "allowed"}
     schema = OperatorSchema.model_validate(data)
     assert schema.version == 1
@@ -322,13 +349,16 @@ def test_operator_schema_extra_fields_allowed():
 
 def test_operator_schema_wrong_type_rejects():
     from pydantic import ValidationError
+
     from shared.operator import OperatorSchema
+
     with pytest.raises(ValidationError):
         OperatorSchema.model_validate({"operator": "not-a-dict"})
 
 
 def test_load_operator_corrupt_json(tmp_path, monkeypatch):
     import shared.operator as op_mod
+
     monkeypatch.setattr(op_mod, "_operator_cache", None)
     corrupt = tmp_path / "operator.json"
     corrupt.write_text("{invalid json!")
@@ -340,6 +370,7 @@ def test_load_operator_corrupt_json(tmp_path, monkeypatch):
 
 def test_load_operator_invalid_schema(tmp_path, monkeypatch):
     import shared.operator as op_mod
+
     monkeypatch.setattr(op_mod, "_operator_cache", None)
     bad = tmp_path / "operator.json"
     bad.write_text(json.dumps({"operator": "not-a-dict"}))
@@ -352,6 +383,7 @@ def test_load_operator_invalid_schema(tmp_path, monkeypatch):
 def test_reload_operator_clears_cache(tmp_path, monkeypatch):
     """reload_operator() clears cache so next access re-reads from disk."""
     import shared.operator as op_mod
+
     # Write mock operator.json to tmp_path so reload can re-read it
     operator_file = tmp_path / "operator.json"
     operator_file.write_text(json.dumps(MOCK_OPERATOR))

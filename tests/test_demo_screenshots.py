@@ -1,16 +1,21 @@
 """Tests for screenshot capture pipeline."""
+
 from __future__ import annotations
 
-from pathlib import Path
-from unittest.mock import AsyncMock, call, patch
+from typing import TYPE_CHECKING
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
 from agents.demo_models import ScreenshotSpec
 from agents.demo_pipeline.screenshots import (
-    capture_screenshots, _resolve_selector, ROUTE_SELECTORS,
-    validate_screenshot_specs, ROUTE_DEFAULT_ACTIONS,
+    _resolve_selector,
+    capture_screenshots,
+    validate_screenshot_specs,
 )
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 class TestCaptureScreenshots:
@@ -67,7 +72,12 @@ class TestCaptureScreenshots:
         mock_pw.return_value.__aenter__.return_value = mock_context
 
         specs = [
-            ("wide", ScreenshotSpec(url="http://localhost:5173", viewport_width=2560, viewport_height=1440)),
+            (
+                "wide",
+                ScreenshotSpec(
+                    url="http://localhost:5173", viewport_width=2560, viewport_height=1440
+                ),
+            ),
         ]
         await capture_screenshots(specs, output_dir)
         mock_page.set_viewport_size.assert_called_with({"width": 2560, "height": 1440})
@@ -89,7 +99,7 @@ class TestScreenshotRetry:
         mock_pw.return_value.__aenter__.return_value = mock_context
 
         specs = [("test", ScreenshotSpec(url="http://localhost:5173"))]
-        paths = await capture_screenshots(specs, tmp_path, max_retries=2)
+        await capture_screenshots(specs, tmp_path, max_retries=2)
         assert mock_page.goto.call_count == 2
 
     @patch("agents.demo_pipeline.screenshots.asyncio.sleep", new_callable=AsyncMock)
@@ -162,7 +172,9 @@ class TestGracefulDegradation:
     @patch("agents.demo_pipeline.screenshots.asyncio.sleep", new_callable=AsyncMock)
     @patch("agents.demo_pipeline.screenshots._preflight_check", new_callable=AsyncMock)
     @patch("agents.demo_pipeline.screenshots.async_playwright")
-    async def test_selector_timeout_captures_anyway(self, mock_pw, mock_preflight, mock_sleep, tmp_path):
+    async def test_selector_timeout_captures_anyway(
+        self, mock_pw, mock_preflight, mock_sleep, tmp_path
+    ):
         """When wait_for selector times out, screenshot is still captured."""
         from agents.demo_pipeline.screenshots import PlaywrightTimeoutError
 

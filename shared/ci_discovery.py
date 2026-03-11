@@ -4,9 +4,9 @@ Discovers agents, timers, and services from the filesystem and Docker.
 Adapted for the hapax-mgmt self-contained repo (no systemd, no multi-repo scan).
 Zero LLM calls.
 """
+
 from __future__ import annotations
 
-import json
 import logging
 import subprocess
 from pathlib import Path
@@ -31,7 +31,7 @@ def discover_agents(agents_dir: Path | None = None) -> list[str]:
             continue
         try:
             content = py_file.read_text(errors="replace")
-            if '__name__' in content and '__main__' in content:
+            if "__name__" in content and "__main__" in content:
                 name = py_file.stem.replace("_", "-")
                 agents.append(name)
         except OSError:
@@ -47,7 +47,9 @@ def discover_services(compose_dir: Path | None = None) -> list[str]:
     try:
         result = subprocess.run(
             ["docker", "compose", "ps", "--format", "{{.Name}}"],
-            capture_output=True, text=True, timeout=15,
+            capture_output=True,
+            text=True,
+            timeout=15,
             cwd=str(compose_dir) if compose_dir.is_dir() else None,
         )
         if result.returncode != 0:

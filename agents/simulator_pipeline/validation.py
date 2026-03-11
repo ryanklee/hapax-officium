@@ -3,12 +3,14 @@
 Rejects events with unknown workflow types, mismatched subdirectories,
 or empty filenames. Logs warnings for each rejected event.
 """
+
 from __future__ import annotations
 
 import logging
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from agents.simulator_pipeline.models import SimulatedEvent
+if TYPE_CHECKING:
+    from agents.simulator_pipeline.models import SimulatedEvent
 
 _log = logging.getLogger(__name__)
 
@@ -39,7 +41,9 @@ def validate_events(
         if actual_subdir != expected_subdir:
             _log.warning(
                 "Rejected event: subdirectory mismatch for %s (got=%s, expected=%s)",
-                event.workflow_type, event.subdirectory, expected_subdir,
+                event.workflow_type,
+                event.subdirectory,
+                expected_subdir,
             )
             continue
 

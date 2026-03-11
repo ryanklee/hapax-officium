@@ -3,11 +3,15 @@
 Thin wrapper around shared.frontmatter for callers that only need the
 frontmatter dict (not the body text).
 """
+
 from __future__ import annotations
 
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 from shared.frontmatter import parse_frontmatter as _parse_fm
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def parse_frontmatter(path: Path) -> dict:

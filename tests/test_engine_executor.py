@@ -44,17 +44,20 @@ async def test_phases_run_in_order():
         async def h():
             order.append(label)
             return label
+
         return h
 
     h0 = await make_handler("phase0")
     h1 = await make_handler("phase1")
     h2 = await make_handler("phase2")
 
-    plan = _make_plan([
-        Action(name="a", handler=h0, phase=0),
-        Action(name="b", handler=h1, phase=1),
-        Action(name="c", handler=h2, phase=2),
-    ])
+    plan = _make_plan(
+        [
+            Action(name="a", handler=h0, phase=0),
+            Action(name="b", handler=h1, phase=1),
+            Action(name="c", handler=h2, phase=2),
+        ]
+    )
     executor = PhasedExecutor()
     await executor.execute(plan)
     assert order == ["phase0", "phase1", "phase2"]
@@ -76,10 +79,12 @@ async def test_actions_within_phase_run_concurrently():
     async def h2():
         return await slow_handler("b")
 
-    plan = _make_plan([
-        Action(name="a", handler=h1, phase=0),
-        Action(name="b", handler=h2, phase=0),
-    ])
+    plan = _make_plan(
+        [
+            Action(name="a", handler=h1, phase=0),
+            Action(name="b", handler=h2, phase=0),
+        ]
+    )
     executor = PhasedExecutor()
     t0 = time.monotonic()
     await executor.execute(plan)
@@ -95,10 +100,12 @@ async def test_failed_action_does_not_abort_plan():
 
     ok_handler = AsyncMock(return_value="ok")
 
-    plan = _make_plan([
-        Action(name="fail", handler=failing, phase=0),
-        Action(name="ok", handler=ok_handler, phase=0),
-    ])
+    plan = _make_plan(
+        [
+            Action(name="fail", handler=failing, phase=0),
+            Action(name="ok", handler=ok_handler, phase=0),
+        ]
+    )
     executor = PhasedExecutor()
     await executor.execute(plan)
     assert "fail" in plan.errors
@@ -112,10 +119,12 @@ async def test_dependent_action_skipped_when_dependency_fails():
 
     dependent = AsyncMock(return_value="should not run")
 
-    plan = _make_plan([
-        Action(name="step1", handler=failing, phase=0),
-        Action(name="step2", handler=dependent, phase=1, depends_on=["step1"]),
-    ])
+    plan = _make_plan(
+        [
+            Action(name="step1", handler=failing, phase=0),
+            Action(name="step2", handler=dependent, phase=1, depends_on=["step1"]),
+        ]
+    )
     executor = PhasedExecutor()
     await executor.execute(plan)
     assert "step1" in plan.errors
@@ -151,10 +160,7 @@ async def test_llm_concurrency_is_bounded():
             current -= 1
         return "done"
 
-    actions = [
-        Action(name=f"llm_{i}", handler=tracked_handler, phase=1)
-        for i in range(4)
-    ]
+    actions = [Action(name=f"llm_{i}", handler=tracked_handler, phase=1) for i in range(4)]
     plan = _make_plan(actions)
     executor = PhasedExecutor(llm_concurrency=2)
     await executor.execute(plan)
@@ -164,9 +170,11 @@ async def test_llm_concurrency_is_bounded():
 
 async def test_handler_receives_args_as_kwargs():
     handler = AsyncMock(return_value="result")
-    plan = _make_plan([
-        Action(name="a", handler=handler, args={"x": 1, "y": "hello"}, phase=0),
-    ])
+    plan = _make_plan(
+        [
+            Action(name="a", handler=handler, args={"x": 1, "y": "hello"}, phase=0),
+        ]
+    )
     executor = PhasedExecutor()
     await executor.execute(plan)
     handler.assert_awaited_once_with(x=1, y="hello")
@@ -190,10 +198,7 @@ async def test_phase0_unlimited_concurrency():
             current -= 1
         return "done"
 
-    actions = [
-        Action(name=f"fast_{i}", handler=tracked_handler, phase=0)
-        for i in range(3)
-    ]
+    actions = [Action(name=f"fast_{i}", handler=tracked_handler, phase=0) for i in range(3)]
     plan = _make_plan(actions)
     executor = PhasedExecutor(llm_concurrency=1)
     await executor.execute(plan)
@@ -204,17 +209,20 @@ async def test_phase0_unlimited_concurrency():
 
 async def test_dependent_skipped_when_dependency_in_skipped():
     """Action skipped if its dependency was itself skipped."""
+
     async def failing():
         raise ValueError("boom")
 
     dep2 = AsyncMock(return_value="nope")
     dep3 = AsyncMock(return_value="nope")
 
-    plan = _make_plan([
-        Action(name="step1", handler=failing, phase=0),
-        Action(name="step2", handler=dep2, phase=1, depends_on=["step1"]),
-        Action(name="step3", handler=dep3, phase=2, depends_on=["step2"]),
-    ])
+    plan = _make_plan(
+        [
+            Action(name="step1", handler=failing, phase=0),
+            Action(name="step2", handler=dep2, phase=1, depends_on=["step1"]),
+            Action(name="step3", handler=dep3, phase=2, depends_on=["step2"]),
+        ]
+    )
     executor = PhasedExecutor()
     await executor.execute(plan)
     assert "step2" in plan.skipped

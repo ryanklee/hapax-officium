@@ -10,12 +10,16 @@ format.  This module provides two entry points:
 - ``parse_frontmatter(path)`` — returns (dict, body_str)
 - ``parse_frontmatter_text(text)`` — same, from a string
 """
+
 from __future__ import annotations
 
 import re
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import yaml
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 # The canonical regex.  Captures:
 #   group(1) = raw YAML between the --- delimiters

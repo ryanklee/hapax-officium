@@ -1,4 +1,5 @@
 """WAV-to-MP3 audio conversion using ffmpeg (via imageio_ffmpeg)."""
+
 from __future__ import annotations
 
 import logging
@@ -10,7 +11,7 @@ log = logging.getLogger(__name__)
 
 def get_ffmpeg_path() -> str:
     """Get the ffmpeg binary path bundled with imageio_ffmpeg (via MoviePy)."""
-    import imageio_ffmpeg
+    import imageio_ffmpeg  # type: ignore[import-not-found]  # optional dep via moviepy
 
     return imageio_ffmpeg.get_ffmpeg_exe()
 
@@ -53,7 +54,12 @@ def wav_to_mp3(
         log.error("ffmpeg stderr: %s", result.stderr)
         raise subprocess.CalledProcessError(result.returncode, cmd, result.stdout, result.stderr)
 
-    log.info("Converted %s (%.1f KB -> %.1f KB)", wav_path.name, wav_path.stat().st_size / 1024, mp3_path.stat().st_size / 1024)
+    log.info(
+        "Converted %s (%.1f KB -> %.1f KB)",
+        wav_path.name,
+        wav_path.stat().st_size / 1024,
+        mp3_path.stat().st_size / 1024,
+    )
     return mp3_path
 
 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useBriefing } from "../../api/hooks";
 import { SidebarSection } from "./SidebarSection";
 import { DetailModal } from "../shared/DetailModal";
@@ -8,6 +8,22 @@ import { formatAge } from "../../utils";
 export function BriefingPanel() {
   const { data: briefing, dataUpdatedAt, isError } = useBriefing();
   const [detailOpen, setDetailOpen] = useState(false);
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const interval = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const ageH = useMemo(() => {
+    if (!briefing?.generated_at) return "?";
+    try {
+      const gen = new Date(briefing.generated_at);
+      return ((now - gen.getTime()) / 3600000).toFixed(0);
+    } catch {
+      return "?";
+    }
+  }, [briefing, now]);
 
   if (isError) {
     return (
@@ -24,15 +40,6 @@ export function BriefingPanel() {
       </SidebarSection>
     );
   }
-
-  const ageH = (() => {
-    try {
-      const gen = new Date(briefing.generated_at);
-      return ((Date.now() - gen.getTime()) / 3600000).toFixed(0);
-    } catch {
-      return "?";
-    }
-  })();
 
   return (
     <>

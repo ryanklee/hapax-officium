@@ -1,13 +1,17 @@
 """Illustration generation pipeline using Gemini image generation API."""
+
 from __future__ import annotations
 
 import logging
-from collections.abc import Callable
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import yaml
 
-from agents.demo_models import IllustrationSpec
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from agents.demo_models import IllustrationSpec
 
 log = logging.getLogger(__name__)
 
@@ -45,7 +49,7 @@ async def _generate_single(
     Returns the saved image path, or None on failure.
     """
     try:
-        from google import genai
+        from google import genai  # type: ignore[attr-defined]  # google-genai SDK
 
         client = genai.Client()
 
@@ -69,8 +73,7 @@ async def _generate_single(
         image_bytes = image.image.image_bytes
         output_path.parent.mkdir(parents=True, exist_ok=True)
         output_path.write_bytes(image_bytes)
-        log.info("Saved illustration: %s (%.1f KB)",
-                 output_path.name, len(image_bytes) / 1024)
+        log.info("Saved illustration: %s (%.1f KB)", output_path.name, len(image_bytes) / 1024)
         return output_path
 
     except Exception as e:

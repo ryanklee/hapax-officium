@@ -1,13 +1,17 @@
 """shared/vault_writer.py — Write management data to DATA_DIR as markdown with YAML frontmatter."""
+
 from __future__ import annotations
 
 import logging
 from datetime import date
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import yaml
 
 from shared.config import config
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 _log = logging.getLogger(__name__)
 

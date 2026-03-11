@@ -16,6 +16,7 @@ Usage:
     uv run python -m agents.knowledge_maint --notify           # Notify if work done
     uv run python -m agents.knowledge_maint --score-threshold 0.95  # Custom dedup threshold
 """
+
 from __future__ import annotations
 
 import argparse
@@ -23,11 +24,12 @@ import asyncio
 import logging
 import sys
 import time
+from datetime import UTC
 from pathlib import Path
 
 from pydantic import BaseModel, Field
 
-from shared.config import get_qdrant, PROFILES_DIR
+from shared.config import PROFILES_DIR, get_qdrant
 
 log = logging.getLogger("agents.knowledge_maint")
 
@@ -47,6 +49,7 @@ DEFAULT_SCORE_THRESHOLD = 0.98
 
 class CollectionStats(BaseModel):
     """Maintenance stats for a single collection."""
+
     name: str
     points_before: int = 0
     points_after: int = 0
@@ -58,6 +61,7 @@ class CollectionStats(BaseModel):
 
 class MaintenanceReport(BaseModel):
     """Full maintenance run report."""
+
     generated_at: str
     duration_ms: int = 0
     dry_run: bool = True
@@ -71,6 +75,7 @@ class MaintenanceReport(BaseModel):
 
 # ── Operations ───────────────────────────────────────────────────────────────
 
+
 def get_collection_info(collection_name: str) -> CollectionStats:
     """Get collection stats: point count and dimensions."""
     stats = CollectionStats(name=collection_name)
@@ -81,9 +86,9 @@ def get_collection_info(collection_name: str) -> CollectionStats:
         stats.points_before = count
         stats.points_after = count
         # Extract vector dimension
-        vec_config = info.config.params.vectors
+        vec_config = info.config.params.vectors  # type: ignore[union-attr]
         if hasattr(vec_config, "size"):
-            stats.dimensions = vec_config.size
+            stats.dimensions = vec_config.size  # type: ignore[union-attr]
         elif isinstance(vec_config, dict) and "" in vec_config:
             stats.dimensions = vec_config[""].size
         else:
@@ -132,12 +137,14 @@ def find_stale_sources(collection_name: str) -> list[str]:
     return sorted(stale)
 
 
-def prune_stale_sources(collection_name: str, stale_sources: list[str], dry_run: bool = True) -> int:
+def prune_stale_sources(
+    collection_name: str, stale_sources: list[str], dry_run: bool = True
+) -> int:
     """Delete points for stale source files."""
     if not stale_sources or dry_run:
         return len(stale_sources)
 
-    from qdrant_client.models import Filter, FilterSelector, FieldCondition, MatchValue
+    from qdrant_client.models import FieldCondition, Filter, FilterSelector, MatchValue
 
     client = get_qdrant()
     for source in stale_sources:
@@ -146,10 +153,12 @@ def prune_stale_sources(collection_name: str, stale_sources: list[str], dry_run:
                 collection_name,
                 points_selector=FilterSelector(
                     filter=Filter(
-                        must=[FieldCondition(
-                            key="source",
-                            match=MatchValue(value=source),
-                        )]
+                        must=[
+                            FieldCondition(
+                                key="source",
+                                match=MatchValue(value=source),
+                            )
+                        ]
                     )
                 ),
             )
@@ -196,7 +205,7 @@ def find_near_duplicates(
         try:
             result = client.query_points(
                 collection_name=collection_name,
-                query=vector,
+                query=vector,  # type: ignore[arg-type]  # qdrant SDK vector type
                 limit=10,
                 score_threshold=score_threshold,
             )
@@ -209,11 +218,13 @@ def find_near_duplicates(
         cluster_members = []
         for neighbor in neighbors:
             if neighbor.id not in seen_ids:
-                cluster_members.append({
-                    "point_id": neighbor.id,
-                    "ingested_at": (neighbor.payload or {}).get("ingested_at", 0),
-                    "source": (neighbor.payload or {}).get("source", ""),
-                })
+                cluster_members.append(
+                    {
+                        "point_id": neighbor.id,
+                        "ingested_at": (neighbor.payload or {}).get("ingested_at", 0),
+                        "source": (neighbor.payload or {}).get("source", ""),
+                    }
+                )
 
         if len(cluster_members) >= 2:
             clusters.append(cluster_members)
@@ -253,7 +264,7 @@ def merge_duplicates(
         # Delete in batches
         batch_size = 100
         for i in range(0, len(ids_to_delete), batch_size):
-            batch = ids_to_delete[i:i + batch_size]
+            batch = ids_to_delete[i : i + batch_size]
             client.delete(
                 collection_name,
                 points_selector=PointIdsList(points=batch),
@@ -265,6 +276,7 @@ def merge_duplicates(
 
 
 # ── Main Runner ──────────────────────────────────────────────────────────────
+
 
 async def run_maintenance(
     collections: list[str] | None = None,
@@ -315,23 +327,24 @@ async def run_maintenance(
     report.total_pruned = sum(c.stale_pruned for c in report.collections)
     report.total_merged = sum(c.duplicates_merged for c in report.collections)
     report.warnings = [w for c in report.collections for w in c.warnings]
-    report.errors_encountered = sum(
-        1 for w in report.warnings if w.lower().startswith("failed")
-    )
+    report.errors_encountered = sum(1 for w in report.warnings if w.lower().startswith("failed"))
 
     elapsed = time.monotonic() - start
     report.duration_ms = int(elapsed * 1000)
-    from datetime import datetime, timezone
-    report.generated_at = datetime.now(timezone.utc).isoformat()[:19] + "Z"
+    from datetime import datetime
+
+    report.generated_at = datetime.now(UTC).isoformat()[:19] + "Z"
 
     return report
 
 
 # ── LLM Summary (optional) ──────────────────────────────────────────────────
 
+
 async def add_summary(report: MaintenanceReport) -> MaintenanceReport:
     """Add a human-readable summary via LLM."""
     from pydantic_ai import Agent
+
     from shared.config import get_model
 
     agent = Agent(
@@ -339,6 +352,7 @@ async def add_summary(report: MaintenanceReport) -> MaintenanceReport:
         system_prompt="Summarize this knowledge base maintenance report in 2-3 sentences. Be specific about numbers.",
     )
     from shared.axiom_tools import get_axiom_tools
+
     for _tool_fn in get_axiom_tools():
         agent.tool(_tool_fn)
     result = await agent.run(report.model_dump_json(indent=2))
@@ -347,6 +361,7 @@ async def add_summary(report: MaintenanceReport) -> MaintenanceReport:
 
 
 # ── Formatters ───────────────────────────────────────────────────────────────
+
 
 def format_report_human(report: MaintenanceReport) -> str:
     """Format maintenance report for terminal display."""
@@ -359,9 +374,10 @@ def format_report_human(report: MaintenanceReport) -> str:
     for stats in report.collections:
         dim_info = f"{stats.dimensions}d" if stats.dimensions else "?d"
         lines.append(f"  {stats.name} ({dim_info})")
-        lines.append(f"    Points: {stats.points_before}" + (
-            f" → {stats.points_after}" if stats.points_after != stats.points_before else ""
-        ))
+        lines.append(
+            f"    Points: {stats.points_before}"
+            + (f" → {stats.points_after}" if stats.points_after != stats.points_before else "")
+        )
         if stats.stale_pruned:
             lines.append(f"    Stale pruned: {stats.stale_pruned}")
         if stats.duplicates_merged:
@@ -394,9 +410,10 @@ def format_report_md(report: MaintenanceReport) -> str:
     for stats in report.collections:
         dim_info = f"{stats.dimensions}d" if stats.dimensions else "?d"
         lines.append(f"## {stats.name} ({dim_info})")
-        lines.append(f"- Points: {stats.points_before}" + (
-            f" → {stats.points_after}" if stats.points_after != stats.points_before else ""
-        ))
+        lines.append(
+            f"- Points: {stats.points_before}"
+            + (f" → {stats.points_after}" if stats.points_after != stats.points_before else "")
+        )
         if stats.stale_pruned:
             lines.append(f"- Stale pruned: {stats.stale_pruned}")
         if stats.duplicates_merged:
@@ -417,6 +434,7 @@ def format_report_md(report: MaintenanceReport) -> str:
 
 
 # ── Notification ─────────────────────────────────────────────────────────────
+
 
 def send_notification(report: MaintenanceReport) -> None:
     """Send notification if maintenance did work or has warnings."""
@@ -455,22 +473,21 @@ async def main() -> None:
         description="Knowledge base maintenance — dedup, prune, stats",
         prog="python -m agents.knowledge_maint",
     )
-    parser.add_argument("--dry-run", action="store_true", default=True,
-                        help="Report only, no deletions (default)")
-    parser.add_argument("--apply", action="store_true",
-                        help="Actually perform deletions")
-    parser.add_argument("--collection", type=str, default=None,
-                        help="Process a single collection")
-    parser.add_argument("--json", action="store_true",
-                        help="Machine-readable JSON output")
-    parser.add_argument("--save", action="store_true",
-                        help="Save report to profiles/")
-    parser.add_argument("--summarize", action="store_true",
-                        help="Add LLM-generated summary")
-    parser.add_argument("--notify", action="store_true",
-                        help="Send notification if work done")
-    parser.add_argument("--score-threshold", type=float, default=DEFAULT_SCORE_THRESHOLD,
-                        help=f"Similarity threshold for dedup (default: {DEFAULT_SCORE_THRESHOLD})")
+    parser.add_argument(
+        "--dry-run", action="store_true", default=True, help="Report only, no deletions (default)"
+    )
+    parser.add_argument("--apply", action="store_true", help="Actually perform deletions")
+    parser.add_argument("--collection", type=str, default=None, help="Process a single collection")
+    parser.add_argument("--json", action="store_true", help="Machine-readable JSON output")
+    parser.add_argument("--save", action="store_true", help="Save report to profiles/")
+    parser.add_argument("--summarize", action="store_true", help="Add LLM-generated summary")
+    parser.add_argument("--notify", action="store_true", help="Send notification if work done")
+    parser.add_argument(
+        "--score-threshold",
+        type=float,
+        default=DEFAULT_SCORE_THRESHOLD,
+        help=f"Similarity threshold for dedup (default: {DEFAULT_SCORE_THRESHOLD})",
+    )
     args = parser.parse_args()
 
     dry_run = not args.apply

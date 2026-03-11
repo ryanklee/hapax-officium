@@ -1,6 +1,7 @@
 """Smoke tests for shared config and agent loading."""
+
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 from shared.config import (
     DATA_DIR,
@@ -46,6 +47,7 @@ def test_get_model_alias_fallthrough():
 
 def test_get_qdrant_returns_client():
     from qdrant_client import QdrantClient
+
     client = get_qdrant()
     assert isinstance(client, QdrantClient)
 
@@ -74,9 +76,11 @@ def test_embed_dimension_validation():
     wrong_dim = [0.1] * 512  # 512 instead of 768
     mock_client = MagicMock()
     mock_client.embed.return_value = {"embeddings": [wrong_dim]}
-    with patch("shared.config._get_ollama_client", return_value=mock_client):
-        with pytest.raises(RuntimeError, match="Expected 768-dim embedding, got 512"):
-            embed("test text")
+    with (
+        patch("shared.config._get_ollama_client", return_value=mock_client),
+        pytest.raises(RuntimeError, match="Expected 768-dim embedding, got 512"),
+    ):
+        embed("test text")
 
 
 def test_embed_dimension_validation_correct():
@@ -95,6 +99,7 @@ def test_embed_dimension_validation_correct():
 def test_project_paths_exist():
     """Local project path constants should be importable from config."""
     from shared.config import AXIOMS_DIR, PROJECT_ROOT
+
     assert isinstance(AXIOMS_DIR, Path)
     assert isinstance(PROJECT_ROOT, Path)
     assert AXIOMS_DIR.name == "axioms"
@@ -105,7 +110,6 @@ def test_no_path_home_in_shared():
 
     Exception: config.py itself (defines the root constants).
     """
-    import ast
     shared_dir = Path(__file__).resolve().parent.parent / "shared"
     violations = []
     for py_file in shared_dir.rglob("*.py"):
@@ -159,9 +163,11 @@ def test_data_dir_env_override():
 
     with patch.dict(os.environ, {"HAPAX_DATA_DIR": "/tmp/test-hapax-data"}):
         import shared.config as cfg
+
         importlib.reload(cfg)
-        assert cfg.DATA_DIR == Path("/tmp/test-hapax-data")
+        assert Path("/tmp/test-hapax-data") == cfg.DATA_DIR
 
     # Reload to restore default
     import shared.config as cfg
+
     importlib.reload(cfg)

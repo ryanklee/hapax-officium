@@ -1,9 +1,9 @@
 # ai-agents/tests/test_simulator_integration.py
 """Integration test for the full simulation loop (mocked LLM)."""
+
 from __future__ import annotations
 
-from datetime import date
-from pathlib import Path
+from typing import TYPE_CHECKING
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import yaml
@@ -12,6 +12,9 @@ from agents.simulator import run_simulation
 from agents.simulator_pipeline.models import SimulatedEvent
 from shared.simulation import load_manifest
 from shared.simulation_models import SimStatus
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 class TestRunSimulation:
@@ -39,15 +42,13 @@ class TestRunSimulation:
         mock_result = MagicMock()
         mock_result.output = mock_events
 
-        with patch("agents.simulator_pipeline.event_gen._event_agent") as mock_agent, \
-             patch("agents.simulator_pipeline.checkpoints._refresh_caches",
-                   new_callable=AsyncMock), \
-             patch("agents.simulator_pipeline.checkpoints._run_briefing",
-                   new_callable=AsyncMock), \
-             patch("agents.simulator_pipeline.checkpoints._run_snapshot",
-                   new_callable=AsyncMock), \
-             patch("agents.simulator_pipeline.checkpoints._run_profiler",
-                   new_callable=AsyncMock):
+        with (
+            patch("agents.simulator_pipeline.event_gen._event_agent") as mock_agent,
+            patch("agents.simulator_pipeline.checkpoints._refresh_caches", new_callable=AsyncMock),
+            patch("agents.simulator_pipeline.checkpoints._run_briefing", new_callable=AsyncMock),
+            patch("agents.simulator_pipeline.checkpoints._run_snapshot", new_callable=AsyncMock),
+            patch("agents.simulator_pipeline.checkpoints._run_profiler", new_callable=AsyncMock),
+        ):
             mock_agent.run = AsyncMock(return_value=mock_result)
 
             sim_dir = await run_simulation(
@@ -89,15 +90,13 @@ class TestRunSimulation:
         mock_result = MagicMock()
         mock_result.output = mock_events
 
-        with patch("agents.simulator_pipeline.event_gen._event_agent") as mock_agent, \
-             patch("agents.simulator_pipeline.checkpoints._refresh_caches",
-                   new_callable=AsyncMock), \
-             patch("agents.simulator_pipeline.checkpoints._run_briefing",
-                   new_callable=AsyncMock), \
-             patch("agents.simulator_pipeline.checkpoints._run_snapshot",
-                   new_callable=AsyncMock), \
-             patch("agents.simulator_pipeline.checkpoints._run_profiler",
-                   new_callable=AsyncMock):
+        with (
+            patch("agents.simulator_pipeline.event_gen._event_agent") as mock_agent,
+            patch("agents.simulator_pipeline.checkpoints._refresh_caches", new_callable=AsyncMock),
+            patch("agents.simulator_pipeline.checkpoints._run_briefing", new_callable=AsyncMock),
+            patch("agents.simulator_pipeline.checkpoints._run_snapshot", new_callable=AsyncMock),
+            patch("agents.simulator_pipeline.checkpoints._run_profiler", new_callable=AsyncMock),
+        ):
             mock_agent.run = AsyncMock(return_value=mock_result)
 
             # Run first 3 days, then simulate a failure
@@ -124,14 +123,18 @@ class TestRunSimulation:
 
         # Write a minimal org-dossier.yaml
         dossier_path = tmp_path / "org-dossier.yaml"
-        dossier_path.write_text(yaml.dump({
-            "org": {
-                "company_stage": "startup",
-                "headcount_band": "10-50",
-                "team_count": 2,
-                "industry": "fintech",
-            }
-        }))
+        dossier_path.write_text(
+            yaml.dump(
+                {
+                    "org": {
+                        "company_stage": "startup",
+                        "headcount_band": "10-50",
+                        "team_count": 2,
+                        "industry": "fintech",
+                    }
+                }
+            )
+        )
 
         mock_events = [
             SimulatedEvent(
@@ -147,17 +150,14 @@ class TestRunSimulation:
         mock_result = MagicMock()
         mock_result.output = mock_events
 
-        with patch("agents.simulator_pipeline.event_gen._event_agent") as mock_agent, \
-             patch("agents.simulator_pipeline.checkpoints._refresh_caches",
-                   new_callable=AsyncMock), \
-             patch("agents.simulator_pipeline.checkpoints._run_briefing",
-                   new_callable=AsyncMock), \
-             patch("agents.simulator_pipeline.checkpoints._run_snapshot",
-                   new_callable=AsyncMock), \
-             patch("agents.simulator_pipeline.checkpoints._run_profiler",
-                   new_callable=AsyncMock), \
-             patch("agents.simulator.compose_role_profile",
-                   wraps=None) as mock_compose:
+        with (
+            patch("agents.simulator_pipeline.event_gen._event_agent") as mock_agent,
+            patch("agents.simulator_pipeline.checkpoints._refresh_caches", new_callable=AsyncMock),
+            patch("agents.simulator_pipeline.checkpoints._run_briefing", new_callable=AsyncMock),
+            patch("agents.simulator_pipeline.checkpoints._run_snapshot", new_callable=AsyncMock),
+            patch("agents.simulator_pipeline.checkpoints._run_profiler", new_callable=AsyncMock),
+            patch("agents.simulator.compose_role_profile", wraps=None) as mock_compose,
+        ):
             mock_agent.run = AsyncMock(return_value=mock_result)
             mock_compose.return_value = {
                 "role": "engineering-manager",
@@ -208,17 +208,14 @@ class TestRunSimulation:
 
         nonexistent = tmp_path / "no-such-dossier.yaml"
 
-        with patch("agents.simulator_pipeline.event_gen._event_agent") as mock_agent, \
-             patch("agents.simulator_pipeline.checkpoints._refresh_caches",
-                   new_callable=AsyncMock), \
-             patch("agents.simulator_pipeline.checkpoints._run_briefing",
-                   new_callable=AsyncMock), \
-             patch("agents.simulator_pipeline.checkpoints._run_snapshot",
-                   new_callable=AsyncMock), \
-             patch("agents.simulator_pipeline.checkpoints._run_profiler",
-                   new_callable=AsyncMock), \
-             patch("agents.simulator.compose_role_profile",
-                   wraps=None) as mock_compose:
+        with (
+            patch("agents.simulator_pipeline.event_gen._event_agent") as mock_agent,
+            patch("agents.simulator_pipeline.checkpoints._refresh_caches", new_callable=AsyncMock),
+            patch("agents.simulator_pipeline.checkpoints._run_briefing", new_callable=AsyncMock),
+            patch("agents.simulator_pipeline.checkpoints._run_snapshot", new_callable=AsyncMock),
+            patch("agents.simulator_pipeline.checkpoints._run_profiler", new_callable=AsyncMock),
+            patch("agents.simulator.compose_role_profile", wraps=None) as mock_compose,
+        ):
             mock_agent.run = AsyncMock(return_value=mock_result)
             mock_compose.return_value = {
                 "role": "engineering-manager",
@@ -264,16 +261,14 @@ class TestRunSimulation:
         mock_result = MagicMock()
         mock_result.output = mock_events
 
-        with patch("agents.simulator_pipeline.event_gen._event_agent") as mock_agent, \
-             patch("agents.simulator_pipeline.checkpoints._refresh_caches",
-                   new_callable=AsyncMock), \
-             patch("agents.simulator_pipeline.checkpoints._run_briefing",
-                   new_callable=AsyncMock), \
-             patch("agents.simulator_pipeline.checkpoints._run_snapshot",
-                   new_callable=AsyncMock), \
-             patch("agents.simulator_pipeline.checkpoints._run_profiler",
-                   new_callable=AsyncMock), \
-             patch("agents.simulator.validate_distribution") as mock_validate:
+        with (
+            patch("agents.simulator_pipeline.event_gen._event_agent") as mock_agent,
+            patch("agents.simulator_pipeline.checkpoints._refresh_caches", new_callable=AsyncMock),
+            patch("agents.simulator_pipeline.checkpoints._run_briefing", new_callable=AsyncMock),
+            patch("agents.simulator_pipeline.checkpoints._run_snapshot", new_callable=AsyncMock),
+            patch("agents.simulator_pipeline.checkpoints._run_profiler", new_callable=AsyncMock),
+            patch("agents.simulator.validate_distribution") as mock_validate,
+        ):
             mock_agent.run = AsyncMock(return_value=mock_result)
             mock_validate.return_value = ["one_on_one: 5 events in 5d (expected 1-2)"]
 

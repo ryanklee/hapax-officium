@@ -1,21 +1,25 @@
 """Tests for agents/status_update.py — status report data gathering and model."""
+
 from __future__ import annotations
 
-from datetime import datetime, timezone, timedelta
-from pathlib import Path
-from shared.config import config
+from datetime import UTC, datetime, timedelta
+from typing import TYPE_CHECKING
 
 import yaml
 
 from agents.status_update import (
     StatusReport,
+    _body_excerpt,
+    _file_date,
+    _format_context_for_prompt,
     _gather_week_context,
     _parse_frontmatter,
-    _file_date,
-    _body_excerpt,
-    _format_context_for_prompt,
     _save_report,
 )
+from shared.config import config
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def _write_md(path: Path, frontmatter: dict, body: str = "") -> None:
@@ -112,7 +116,7 @@ class TestFileDate:
 
     def test_datetime_in_frontmatter(self, tmp_path: Path):
         path = tmp_path / "test.md"
-        now = datetime(2026, 3, 5, 10, 0, 0, tzinfo=timezone.utc)
+        now = datetime(2026, 3, 5, 10, 0, 0, tzinfo=UTC)
         dt = _file_date({"date": now}, path)
         assert dt == now
 
@@ -146,12 +150,16 @@ class TestBodyExcerpt:
 class TestGatherWeekContext:
     def test_returns_correct_structure(self, tmp_path: Path):
         # Create meeting file with recent date
-        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-        _write_md(tmp_path / "meetings" / f"{today}-standup.md", {
-            "type": "meeting",
-            "title": "Daily Standup",
-            "date": today,
-        }, "Discussed blockers")
+        today = datetime.now(UTC).strftime("%Y-%m-%d")
+        _write_md(
+            tmp_path / "meetings" / f"{today}-standup.md",
+            {
+                "type": "meeting",
+                "title": "Daily Standup",
+                "date": today,
+            },
+            "Discussed blockers",
+        )
 
         config.set_data_dir(tmp_path)
         try:
@@ -169,20 +177,28 @@ class TestGatherWeekContext:
 
     def test_date_filtering_excludes_old(self, tmp_path: Path):
         # Old file (30 days ago)
-        old_date = (datetime.now(timezone.utc) - timedelta(days=30)).strftime("%Y-%m-%d")
-        _write_md(tmp_path / "meetings" / f"{old_date}-old.md", {
-            "type": "meeting",
-            "title": "Old Meeting",
-            "date": old_date,
-        }, "Old content")
+        old_date = (datetime.now(UTC) - timedelta(days=30)).strftime("%Y-%m-%d")
+        _write_md(
+            tmp_path / "meetings" / f"{old_date}-old.md",
+            {
+                "type": "meeting",
+                "title": "Old Meeting",
+                "date": old_date,
+            },
+            "Old content",
+        )
 
         # Recent file
-        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-        _write_md(tmp_path / "meetings" / f"{today}-new.md", {
-            "type": "meeting",
-            "title": "New Meeting",
-            "date": today,
-        }, "New content")
+        today = datetime.now(UTC).strftime("%Y-%m-%d")
+        _write_md(
+            tmp_path / "meetings" / f"{today}-new.md",
+            {
+                "type": "meeting",
+                "title": "New Meeting",
+                "date": today,
+            },
+            "New content",
+        )
 
         config.set_data_dir(tmp_path)
         try:
@@ -195,10 +211,14 @@ class TestGatherWeekContext:
 
     def test_includes_file_without_date(self, tmp_path: Path):
         # File with no parseable date should be included (not excluded)
-        _write_md(tmp_path / "meetings" / "undated-notes.md", {
-            "type": "meeting",
-            "title": "Undated Notes",
-        }, "Some content")
+        _write_md(
+            tmp_path / "meetings" / "undated-notes.md",
+            {
+                "type": "meeting",
+                "title": "Undated Notes",
+            },
+            "Some content",
+        )
 
         config.set_data_dir(tmp_path)
         try:
@@ -209,17 +229,32 @@ class TestGatherWeekContext:
         assert len(ctx["meetings"]) == 1
 
     def test_multiple_categories(self, tmp_path: Path):
-        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        today = datetime.now(UTC).strftime("%Y-%m-%d")
 
-        _write_md(tmp_path / "meetings" / f"{today}-standup.md", {
-            "type": "meeting", "title": "Standup", "date": today,
-        })
-        _write_md(tmp_path / "coaching" / f"{today}-experiment.md", {
-            "type": "coaching", "title": "Experiment A", "date": today,
-        })
-        _write_md(tmp_path / "feedback" / f"{today}-peer.md", {
-            "type": "feedback", "title": "Peer Review", "date": today,
-        })
+        _write_md(
+            tmp_path / "meetings" / f"{today}-standup.md",
+            {
+                "type": "meeting",
+                "title": "Standup",
+                "date": today,
+            },
+        )
+        _write_md(
+            tmp_path / "coaching" / f"{today}-experiment.md",
+            {
+                "type": "coaching",
+                "title": "Experiment A",
+                "date": today,
+            },
+        )
+        _write_md(
+            tmp_path / "feedback" / f"{today}-peer.md",
+            {
+                "type": "feedback",
+                "title": "Peer Review",
+                "date": today,
+            },
+        )
 
         config.set_data_dir(tmp_path)
         try:
@@ -259,16 +294,26 @@ class TestGatherWeekContext:
 
     def test_daily_lookback(self, tmp_path: Path):
         # 3 days ago — should be excluded for daily
-        old_date = (datetime.now(timezone.utc) - timedelta(days=3)).strftime("%Y-%m-%d")
-        _write_md(tmp_path / "meetings" / f"{old_date}-old.md", {
-            "type": "meeting", "title": "3 Days Ago", "date": old_date,
-        })
+        old_date = (datetime.now(UTC) - timedelta(days=3)).strftime("%Y-%m-%d")
+        _write_md(
+            tmp_path / "meetings" / f"{old_date}-old.md",
+            {
+                "type": "meeting",
+                "title": "3 Days Ago",
+                "date": old_date,
+            },
+        )
 
         # Today — should be included
-        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-        _write_md(tmp_path / "meetings" / f"{today}-today.md", {
-            "type": "meeting", "title": "Today", "date": today,
-        })
+        today = datetime.now(UTC).strftime("%Y-%m-%d")
+        _write_md(
+            tmp_path / "meetings" / f"{today}-today.md",
+            {
+                "type": "meeting",
+                "title": "Today",
+                "date": today,
+            },
+        )
 
         config.set_data_dir(tmp_path)
         try:
@@ -296,11 +341,13 @@ class TestFormatContextForPrompt:
 
     def test_includes_file_data(self):
         ctx = {
-            "meetings": [{
-                "filename": "2026-03-05-standup.md",
-                "frontmatter": {"title": "Daily Standup", "date": "2026-03-05"},
-                "excerpt": "Discussed blockers",
-            }],
+            "meetings": [
+                {
+                    "filename": "2026-03-05-standup.md",
+                    "frontmatter": {"title": "Daily Standup", "date": "2026-03-05"},
+                    "excerpt": "Discussed blockers",
+                }
+            ],
             "coaching": [],
             "feedback": [],
         }

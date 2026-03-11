@@ -11,25 +11,24 @@ Usage:
     uv run python -m agents.management_activity --json           # Machine-readable JSON
     uv run python -m agents.management_activity --days 30        # Custom window (default: 30)
 """
+
 from __future__ import annotations
 
 import argparse
-import json
 import logging
-import sys
-from datetime import datetime, timezone, timedelta
+from datetime import UTC, datetime, timedelta
 
 from pydantic import BaseModel, Field
-
-from shared.config import PROFILES_DIR
 
 log = logging.getLogger("agents.management_activity")
 
 
 # ── Schemas ──────────────────────────────────────────────────────────────────
 
+
 class OneOnOneMetrics(BaseModel):
     """1:1 completion rates over rolling windows."""
+
     total_people: int = 0
     on_track_7d: int = 0
     on_track_30d: int = 0
@@ -42,6 +41,7 @@ class OneOnOneMetrics(BaseModel):
 
 class FeedbackTimingMetrics(BaseModel):
     """Feedback delivery timing — days between observation and delivery."""
+
     total_pending: int = 0
     total_overdue: int = 0
     avg_days_overdue: float = 0.0
@@ -51,6 +51,7 @@ class FeedbackTimingMetrics(BaseModel):
 
 class CoachingMetrics(BaseModel):
     """Coaching experiment check-in frequency."""
+
     total_active: int = 0
     total_overdue: int = 0
     avg_days_overdue: float = 0.0
@@ -60,6 +61,7 @@ class CoachingMetrics(BaseModel):
 
 class CareerConversationMetrics(BaseModel):
     """Career conversation recency per team member."""
+
     total_people: int = 0
     with_career_convo: int = 0
     without_career_convo: int = 0
@@ -70,6 +72,7 @@ class CareerConversationMetrics(BaseModel):
 
 class GoalMomentum(BaseModel):
     """Management goal momentum tracking."""
+
     name: str
     status: str = ""
     last_activity_at: str = ""
@@ -79,6 +82,7 @@ class GoalMomentum(BaseModel):
 
 class ManagementActivityReport(BaseModel):
     """Complete management activity report."""
+
     generated_at: str
     window_days: int
     one_on_ones: OneOnOneMetrics = Field(default_factory=OneOnOneMetrics)
@@ -94,9 +98,8 @@ class ManagementActivityReport(BaseModel):
 
 # ── Collectors (all deterministic, zero LLM) ────────────────────────────────
 
-def _collect_one_on_ones(
-    people: list, now: datetime, window_days: int
-) -> OneOnOneMetrics:
+
+def _collect_one_on_ones(people: list, now: datetime, window_days: int) -> OneOnOneMetrics:
     """Compute 1:1 completion rates from person states."""
     metrics = OneOnOneMetrics(total_people=len(people))
 
@@ -119,9 +122,7 @@ def _collect_one_on_ones(
 
         if last_date and days is not None:
             try:
-                last_dt = datetime.strptime(last_date, "%Y-%m-%d").replace(
-                    tzinfo=timezone.utc
-                )
+                last_dt = datetime.strptime(last_date, "%Y-%m-%d").replace(tzinfo=UTC)
                 if last_dt >= window_7d:
                     metrics.on_track_7d += 1
                 if last_dt >= window_30d:
@@ -150,11 +151,13 @@ def _collect_feedback_timing(feedback: list) -> FeedbackTimingMetrics:
         if f.overdue:
             metrics.total_overdue += 1
             overdue_days.append(f.days_overdue)
-            metrics.overdue_details.append({
-                "title": f.title,
-                "person": f.person,
-                "days_overdue": f.days_overdue,
-            })
+            metrics.overdue_details.append(
+                {
+                    "title": f.title,
+                    "person": f.person,
+                    "days_overdue": f.days_overdue,
+                }
+            )
 
     if overdue_days:
         metrics.avg_days_overdue = round(sum(overdue_days) / len(overdue_days), 1)
@@ -171,11 +174,13 @@ def _collect_coaching_metrics(coaching: list) -> CoachingMetrics:
         if c.overdue:
             metrics.total_overdue += 1
             overdue_days.append(c.days_overdue)
-            metrics.overdue_details.append({
-                "title": c.title,
-                "person": c.person,
-                "days_overdue": c.days_overdue,
-            })
+            metrics.overdue_details.append(
+                {
+                    "title": c.title,
+                    "person": c.person,
+                    "days_overdue": c.days_overdue,
+                }
+            )
 
     if overdue_days:
         metrics.avg_days_overdue = round(sum(overdue_days) / len(overdue_days), 1)
@@ -183,9 +188,7 @@ def _collect_coaching_metrics(coaching: list) -> CoachingMetrics:
     return metrics
 
 
-def _collect_career_conversations(
-    people: list, now: datetime
-) -> CareerConversationMetrics:
+def _collect_career_conversations(people: list, now: datetime) -> CareerConversationMetrics:
     """Compute career conversation recency per team member."""
     metrics = CareerConversationMetrics(total_people=len(people))
 
@@ -196,25 +199,23 @@ def _collect_career_conversations(
         if last_convo:
             metrics.with_career_convo += 1
             try:
-                convo_dt = datetime.strptime(last_convo, "%Y-%m-%d").replace(
-                    tzinfo=timezone.utc
-                )
+                convo_dt = datetime.strptime(last_convo, "%Y-%m-%d").replace(tzinfo=UTC)
                 days_since = (now - convo_dt).days
             except (ValueError, TypeError):
                 pass
         else:
             metrics.without_career_convo += 1
 
-        metrics.details.append({
-            "name": p.name,
-            "last_career_convo": last_convo or "",
-            "days_since": days_since,
-        })
+        metrics.details.append(
+            {
+                "name": p.name,
+                "last_career_convo": last_convo or "",
+                "days_since": days_since,
+            }
+        )
 
     if metrics.total_people > 0:
-        metrics.coverage_pct = round(
-            100 * metrics.with_career_convo / metrics.total_people, 1
-        )
+        metrics.coverage_pct = round(100 * metrics.with_career_convo / metrics.total_people, 1)
 
     return metrics
 
@@ -264,18 +265,21 @@ def _collect_management_goals(now: datetime) -> list[GoalMomentum]:
             except (ValueError, TypeError):
                 pass
 
-        results.append(GoalMomentum(
-            name=name,
-            status=status,
-            last_activity_at=last,
-            days_since_activity=days_since,
-            momentum=momentum,
-        ))
+        results.append(
+            GoalMomentum(
+                name=name,
+                status=status,
+                last_activity_at=last,
+                days_since_activity=days_since,
+                momentum=momentum,
+            )
+        )
 
     return results
 
 
 # ── Main collector ───────────────────────────────────────────────────────────
+
 
 def generate_management_report(window_days: int = 30) -> ManagementActivityReport:
     """Collect all management activity metrics.
@@ -285,7 +289,7 @@ def generate_management_report(window_days: int = 30) -> ManagementActivityRepor
     """
     from cockpit.data.management import collect_management_state
 
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     snapshot = collect_management_state()
 
     one_on_ones = _collect_one_on_ones(snapshot.people, now, window_days)
@@ -309,6 +313,7 @@ def generate_management_report(window_days: int = 30) -> ManagementActivityRepor
 
 # ── Formatter ────────────────────────────────────────────────────────────────
 
+
 def format_human(report: ManagementActivityReport) -> str:
     """Format report for human-readable terminal output."""
     lines = [
@@ -321,9 +326,11 @@ def format_human(report: ManagementActivityReport) -> str:
 
     # 1:1 Completion
     oo = report.one_on_ones
-    lines.append(f"1:1 Completion:")
+    lines.append("1:1 Completion:")
     lines.append(f"  7d rate:  {oo.completion_rate_7d}% ({oo.on_track_7d}/{oo.total_people})")
-    lines.append(f"  {report.window_days}d rate: {oo.completion_rate_30d}% ({oo.on_track_30d}/{oo.total_people})")
+    lines.append(
+        f"  {report.window_days}d rate: {oo.completion_rate_30d}% ({oo.on_track_30d}/{oo.total_people})"
+    )
     if oo.stale_count > 0:
         lines.append(f"  Stale ({oo.stale_count}):")
         for d in sorted(oo.stale_details, key=lambda x: x.get("days_since") or 0, reverse=True):
@@ -336,7 +343,7 @@ def format_human(report: ManagementActivityReport) -> str:
 
     # Feedback Timing
     fb = report.feedback
-    lines.append(f"Feedback Delivery:")
+    lines.append("Feedback Delivery:")
     lines.append(f"  Pending: {fb.total_pending}  Overdue: {fb.total_overdue}")
     if fb.total_overdue > 0:
         lines.append(f"  Avg overdue: {fb.avg_days_overdue} days")
@@ -346,7 +353,7 @@ def format_human(report: ManagementActivityReport) -> str:
 
     # Coaching Experiments
     co = report.coaching
-    lines.append(f"Coaching Experiments:")
+    lines.append("Coaching Experiments:")
     lines.append(f"  Active: {co.total_active}  Overdue check-ins: {co.total_overdue}")
     if co.total_overdue > 0:
         lines.append(f"  Avg overdue: {co.avg_days_overdue} days")
@@ -356,7 +363,7 @@ def format_human(report: ManagementActivityReport) -> str:
 
     # Career Conversations
     cc = report.career_conversations
-    lines.append(f"Career Conversations:")
+    lines.append("Career Conversations:")
     lines.append(f"  Coverage: {cc.coverage_pct}% ({cc.with_career_convo}/{cc.total_people})")
     if cc.without_career_convo > 0:
         missing = [d for d in cc.details if not d.get("last_career_convo")]
@@ -388,18 +395,14 @@ def format_human(report: ManagementActivityReport) -> str:
 
 # ── CLI ──────────────────────────────────────────────────────────────────────
 
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Management activity tracker — management practice metrics",
         prog="python -m agents.management_activity",
     )
-    parser.add_argument(
-        "--json", action="store_true", help="Machine-readable JSON output"
-    )
-    parser.add_argument(
-        "--days", type=int, default=30,
-        help="Rolling window in days (default: 30)"
-    )
+    parser.add_argument("--json", action="store_true", help="Machine-readable JSON output")
+    parser.add_argument("--days", type=int, default=30, help="Rolling window in days (default: 30)")
     args = parser.parse_args()
 
     report = generate_management_report(args.days)

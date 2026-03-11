@@ -3,13 +3,16 @@
 Loads workflow semantics, role matrix, and scenarios; composes them into
 a role profile and builds per-tick prompts for LLM event generation.
 """
+
 from __future__ import annotations
 
 import logging
-from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import yaml
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 _log = logging.getLogger(__name__)
 
@@ -86,9 +89,7 @@ def compose_role_profile(
     """
     if role_name not in roles:
         valid = ", ".join(sorted(roles.keys()))
-        raise ValueError(
-            f"Unknown role '{role_name}'. Valid roles: {valid}"
-        )
+        raise ValueError(f"Unknown role '{role_name}'. Valid roles: {valid}")
     role = roles[role_name]
     variant_def = role["variants"].get(variant, {})
     cadence_modifiers = variant_def.get("cadence_modifiers", {})
@@ -117,9 +118,13 @@ def compose_role_profile(
 
             if effective != raw:
                 _log.warning(
-                    "Clamped %s modifier: %.2f -> %.2f "
-                    "(role=%.1f, scenario=%.1f, org=%.1f)",
-                    wf_name, raw, effective, role_mod, scenario_mod, org_mod,
+                    "Clamped %s modifier: %.2f -> %.2f (role=%.1f, scenario=%.1f, org=%.1f)",
+                    wf_name,
+                    raw,
+                    effective,
+                    role_mod,
+                    scenario_mod,
+                    org_mod,
                 )
 
             wf_entry["effective_weight"] = effective
@@ -183,8 +188,10 @@ def build_tick_prompt(
     for wf in profile["workflows"]:
         effective = wf.get("effective_weight", 1.0)
         cadence = wf.get("cadence", "event-driven")
-        lines.append(f"  - {wf['name']}: {wf.get('description', '')} "
-                      f"(cadence: {cadence}, weight: {effective:.1f}x)")
+        lines.append(
+            f"  - {wf['name']}: {wf.get('description', '')} "
+            f"(cadence: {cadence}, weight: {effective:.1f}x)"
+        )
     lines.append("")
 
     if profile.get("scenario_description"):
@@ -202,18 +209,20 @@ def build_tick_prompt(
             lines.append(f"  Strategic priority: {priority}")
         lines.append("")
 
-    lines.extend([
-        "Generate 0-3 plausible events for today. Consider:",
-        "- What would this role naturally do on this day?",
-        "- Respect cadences (don't do daily what should be weekly)",
-        "- Some days have no events — that's normal",
-        "- Incidents and decisions are stochastic (rare, random)",
-        "- Follow trigger chains (incident -> postmortem_action)",
-        "",
-        "SAFETY: Never generate evaluative language about team members.",
-        "Coaching and feedback events must contain ONLY structural content:",
-        "date, participant, topics discussed, and action items.",
-    ])
+    lines.extend(
+        [
+            "Generate 0-3 plausible events for today. Consider:",
+            "- What would this role naturally do on this day?",
+            "- Respect cadences (don't do daily what should be weekly)",
+            "- Some days have no events — that's normal",
+            "- Incidents and decisions are stochastic (rare, random)",
+            "- Follow trigger chains (incident -> postmortem_action)",
+            "",
+            "SAFETY: Never generate evaluative language about team members.",
+            "Coaching and feedback events must contain ONLY structural content:",
+            "date, participant, topics discussed, and action items.",
+        ]
+    )
 
     return "\n".join(lines)
 
@@ -240,7 +249,6 @@ def validate_distribution(
         scaled_hi = int(hi * scale + 0.5)
         if actual < scaled_lo or actual > scaled_hi:
             warnings.append(
-                f"{wf_type}: {actual} events in {window_days}d "
-                f"(expected {scaled_lo}-{scaled_hi})"
+                f"{wf_type}: {actual} events in {window_days}d (expected {scaled_lo}-{scaled_hi})"
             )
     return warnings

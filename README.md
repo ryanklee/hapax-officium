@@ -8,7 +8,7 @@ A management cockpit for engineering managers. LLM-powered agents prepare contex
 
 ```bash
 # Clone and install
-git clone https://github.com/<owner>/hapax-mgmt.git
+git clone https://github.com/ryanklee/hapax-mgmt.git
 cd hapax-mgmt
 uv sync
 

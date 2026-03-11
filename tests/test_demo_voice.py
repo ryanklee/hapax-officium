@@ -1,17 +1,16 @@
 """Tests for voice generation pipeline."""
+
 from __future__ import annotations
 
-from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 
 from agents.demo_pipeline.voice import (
-    check_tts_available,
-    generate_voice_segment,
-    generate_all_voice_segments,
     MAX_TTS_WORKERS,
-    VOICE_SAMPLE_PATH,
+    check_tts_available,
+    generate_all_voice_segments,
+    generate_voice_segment,
 )
 
 
@@ -133,7 +132,10 @@ class TestVoiceSampleCaching:
         output = tmp_path / "test.wav"
         raw = b"RIFF" + b"\x00" * 50
         generate_voice_segment(
-            "Hello", output, voice_sample=tmp_path / "nonexistent.wav", voice_bytes=raw,
+            "Hello",
+            output,
+            voice_sample=tmp_path / "nonexistent.wav",
+            voice_bytes=raw,
         )
         assert output.exists()
         call_url = mock_httpx.post.call_args[0][0]

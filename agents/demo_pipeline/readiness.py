@@ -1,10 +1,14 @@
 """System readiness gate — ensures system is presentable before demo generation."""
+
 from __future__ import annotations
 
 import asyncio
 import logging
 from dataclasses import dataclass, field
-from typing import Callable
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 log = logging.getLogger(__name__)
 
@@ -19,6 +23,7 @@ def _run_async(coro):
     if loop and loop.is_running():
         # We're inside an existing event loop — create a new thread to run it
         import concurrent.futures
+
         with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
             return pool.submit(asyncio.run, coro).result()
     else:

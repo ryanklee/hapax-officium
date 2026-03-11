@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, type ComponentType } from "react";
+import { useState, useMemo, useCallback, useEffect, type ComponentType } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useBriefing, useManagement, useNudges, useOKRs, useReviewCycles, useIncidents } from "../api/hooks";
 import { BriefingPanel } from "./sidebar/BriefingPanel";
@@ -24,6 +24,12 @@ const panels: PanelEntry[] = [
 
 export function Sidebar() {
   const [manualOverride, setManualOverride] = useState<"expanded" | "collapsed" | null>(null);
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const interval = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(interval);
+  }, []);
 
   const { data: briefing } = useBriefing();
   const { data: mgmt } = useManagement();
@@ -40,11 +46,11 @@ export function Sidebar() {
     if (reviews && reviews.overdue_count > 0) return true;
     if (incidents && incidents.open_count > 0) return true;
     if (briefing?.generated_at) {
-      const hours = (Date.now() - new Date(briefing.generated_at).getTime()) / 3_600_000;
+      const hours = (now - new Date(briefing.generated_at).getTime()) / 3_600_000;
       if (hours > 24) return true;
     }
     return false;
-  }, [briefing, mgmt, nudges, okrs, reviews, incidents]);
+  }, [briefing, mgmt, nudges, okrs, reviews, incidents, now]);
 
   const isExpanded = manualOverride === "expanded" || (manualOverride === null && needsAttention);
 
@@ -56,11 +62,11 @@ export function Sidebar() {
     dots.reviews = reviews?.overdue_count ? "red" : reviews ? "green" : "zinc";
     dots.briefing = (() => {
       if (!briefing?.generated_at) return "zinc" as const;
-      const h = (Date.now() - new Date(briefing.generated_at).getTime()) / 3_600_000;
+      const h = (now - new Date(briefing.generated_at).getTime()) / 3_600_000;
       return h > 24 ? "yellow" as const : "green" as const;
     })();
     return dots;
-  }, [briefing, mgmt, okrs, reviews]);
+  }, [briefing, mgmt, now, okrs, reviews]);
 
   const summaries = useMemo(() => {
     const s: Record<string, string> = {};
@@ -85,7 +91,7 @@ export function Sidebar() {
           return (reviews?.overdue_count ?? 0) > 0 ? 22 : 0;
         case "briefing": {
           if (!briefing?.generated_at) return 0;
-          const hours = (Date.now() - new Date(briefing.generated_at).getTime()) / 3_600_000;
+          const hours = (now - new Date(briefing.generated_at).getTime()) / 3_600_000;
           return hours > 24 ? 30 : 0;
         }
         default:
@@ -99,9 +105,9 @@ export function Sidebar() {
       if (pa !== pb) return pb - pa;
       return a.defaultOrder - b.defaultOrder;
     });
-  }, [briefing, mgmt, okrs, reviews]);
+  }, [briefing, mgmt, now, okrs, reviews]);
 
-  const handleStripClick = useCallback((_id: string) => {
+  const handleStripClick = useCallback(() => {
     setManualOverride("expanded");
   }, []);
 

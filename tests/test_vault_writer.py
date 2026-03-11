@@ -1,4 +1,5 @@
 """Tests for shared/vault_writer.py — markdown file writing to DATA_DIR."""
+
 from __future__ import annotations
 
 import yaml
@@ -153,7 +154,9 @@ class TestDecisionStarter:
 
         config.set_data_dir(tmp_path)
         try:
-            result = create_decision_starter("Adopt new CI pipeline for backend services", "standup-2026-03-09")
+            result = create_decision_starter(
+                "Adopt new CI pipeline for backend services", "standup-2026-03-09"
+            )
         finally:
             config.reset_data_dir()
 

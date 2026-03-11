@@ -14,22 +14,25 @@ Usage:
     uv run python -m agents.review_prep --person "Alice" --months 12 --save
     uv run python -m agents.review_prep --person "Alice" --json
 """
+
 from __future__ import annotations
 
 import argparse
 import asyncio
-import json
 import logging
 import re
 import sys
-from datetime import datetime, timezone, timedelta
-from pathlib import Path
+from datetime import UTC, datetime, timedelta
+from typing import TYPE_CHECKING
 
 import yaml
 from pydantic import BaseModel, Field
 from pydantic_ai import Agent
 
 from shared.config import config, get_model
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 log = logging.getLogger(__name__)
 
@@ -74,12 +77,10 @@ def _file_date(fm: dict, path: Path) -> datetime | None:
     if date_val:
         if isinstance(date_val, datetime):
             if date_val.tzinfo is None:
-                return date_val.replace(tzinfo=timezone.utc)
+                return date_val.replace(tzinfo=UTC)
             return date_val
         try:
-            return datetime.strptime(str(date_val), "%Y-%m-%d").replace(
-                tzinfo=timezone.utc
-            )
+            return datetime.strptime(str(date_val), "%Y-%m-%d").replace(tzinfo=UTC)
         except ValueError:
             pass
 
@@ -89,7 +90,7 @@ def _file_date(fm: dict, path: Path) -> datetime | None:
             try:
                 dt = datetime.fromisoformat(str(val).replace("Z", "+00:00"))
                 if dt.tzinfo is None:
-                    dt = dt.replace(tzinfo=timezone.utc)
+                    dt = dt.replace(tzinfo=UTC)
                 return dt
             except (ValueError, TypeError):
                 pass
@@ -97,9 +98,7 @@ def _file_date(fm: dict, path: Path) -> datetime | None:
     date_match = re.match(r"(\d{4}-\d{2}-\d{2})", path.stem)
     if date_match:
         try:
-            return datetime.strptime(date_match.group(1), "%Y-%m-%d").replace(
-                tzinfo=timezone.utc
-            )
+            return datetime.strptime(date_match.group(1), "%Y-%m-%d").replace(tzinfo=UTC)
         except ValueError:
             pass
 
@@ -111,6 +110,7 @@ def _file_date(fm: dict, path: Path) -> datetime | None:
 
 class ReviewEvidence(BaseModel):
     """Evidence aggregation for performance review preparation."""
+
     person: str = Field(description="Name of the person being reviewed")
     period_months: int = Field(description="Review period in months")
     contributions: list[str] = Field(
@@ -155,7 +155,7 @@ def _gather_person_evidence(person: str, months: int = 6) -> dict[str, list[dict
     Returns dict with 'meetings', 'coaching', 'feedback' lists of dicts
     containing 'filename', 'frontmatter', 'excerpt'.
     """
-    cutoff = datetime.now(timezone.utc) - timedelta(days=months * 30)
+    cutoff = datetime.now(UTC) - timedelta(days=months * 30)
     person_lower = person.lower()
 
     evidence: dict[str, list[dict]] = {
@@ -177,9 +177,7 @@ def _gather_person_evidence(person: str, months: int = 6) -> dict[str, list[dict
             # Check attendees frontmatter
             attendees = fm.get("attendees", [])
             if isinstance(attendees, list):
-                attendee_match = any(
-                    person_lower in str(a).lower() for a in attendees
-                )
+                attendee_match = any(person_lower in str(a).lower() for a in attendees)
             else:
                 attendee_match = False
 
@@ -187,11 +185,13 @@ def _gather_person_evidence(person: str, months: int = 6) -> dict[str, list[dict
             body_match = person_lower in body.lower()
 
             if attendee_match or body_match:
-                evidence["meetings"].append({
-                    "filename": path.name,
-                    "frontmatter": fm,
-                    "excerpt": _body_excerpt(body),
-                })
+                evidence["meetings"].append(
+                    {
+                        "filename": path.name,
+                        "frontmatter": fm,
+                        "excerpt": _body_excerpt(body),
+                    }
+                )
 
     # Coaching: match person frontmatter field
     coaching_dir = config.data_dir / "coaching"
@@ -205,11 +205,13 @@ def _gather_person_evidence(person: str, months: int = 6) -> dict[str, list[dict
 
             fm_person = str(fm.get("person", "")).lower()
             if fm_person == person_lower:
-                evidence["coaching"].append({
-                    "filename": path.name,
-                    "frontmatter": fm,
-                    "excerpt": _body_excerpt(body),
-                })
+                evidence["coaching"].append(
+                    {
+                        "filename": path.name,
+                        "frontmatter": fm,
+                        "excerpt": _body_excerpt(body),
+                    }
+                )
 
     # Feedback: match person frontmatter field
     feedback_dir = config.data_dir / "feedback"
@@ -223,11 +225,13 @@ def _gather_person_evidence(person: str, months: int = 6) -> dict[str, list[dict
 
             fm_person = str(fm.get("person", "")).lower()
             if fm_person == person_lower:
-                evidence["feedback"].append({
-                    "filename": path.name,
-                    "frontmatter": fm,
-                    "excerpt": _body_excerpt(body),
-                })
+                evidence["feedback"].append(
+                    {
+                        "filename": path.name,
+                        "frontmatter": fm,
+                        "excerpt": _body_excerpt(body),
+                    }
+                )
 
     return evidence
 
@@ -262,9 +266,7 @@ _agent = Agent(
 )
 
 
-def _format_evidence_for_prompt(
-    person: str, months: int, evidence: dict[str, list[dict]]
-) -> str:
+def _format_evidence_for_prompt(person: str, months: int, evidence: dict[str, list[dict]]) -> str:
     """Format gathered evidence into a structured prompt for the LLM."""
     lines: list[str] = [
         f"Aggregate review evidence for {person} over the last {months} months.",
@@ -337,7 +339,7 @@ def _save_review(review: ReviewEvidence) -> Path:
     refs_dir = config.data_dir / "references"
     refs_dir.mkdir(parents=True, exist_ok=True)
 
-    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    today = datetime.now(UTC).strftime("%Y-%m-%d")
     person_slug = review.person.lower().replace(" ", "-")
     filename = f"review-evidence-{person_slug}-{today}.md"
     path = refs_dir / filename
@@ -429,19 +431,25 @@ async def main() -> None:
         prog="python -m agents.review_prep",
     )
     parser.add_argument(
-        "--person", type=str, required=True,
+        "--person",
+        type=str,
+        required=True,
         help="Name of the person to gather evidence for",
     )
     parser.add_argument(
-        "--months", type=int, default=6,
+        "--months",
+        type=int,
+        default=6,
         help="Number of months to look back (default: 6)",
     )
     parser.add_argument(
-        "--save", action="store_true",
+        "--save",
+        action="store_true",
         help="Save evidence report to DATA_DIR/references/",
     )
     parser.add_argument(
-        "--json", action="store_true",
+        "--json",
+        action="store_true",
         help="Machine-readable JSON output",
     )
     args = parser.parse_args()
@@ -450,9 +458,7 @@ async def main() -> None:
         f"Gathering review evidence for {args.person} ({args.months}mo)...",
         file=sys.stderr,
     )
-    review = await generate_review_evidence(
-        person=args.person, months=args.months, save=args.save
-    )
+    review = await generate_review_evidence(person=args.person, months=args.months, save=args.save)
 
     if args.json:
         print(review.model_dump_json(indent=2))

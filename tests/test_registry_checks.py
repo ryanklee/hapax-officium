@@ -1,22 +1,21 @@
 """Tests for shared/registry_checks.py — document registry enforcement."""
+
 from __future__ import annotations
 
 import textwrap
-from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 import pytest
 
 from agents.drift_detector import DriftItem
 from shared.document_registry import load_registry
 from shared.registry_checks import (
-    check_required_docs,
     check_archetype_sections,
     check_coverage_rules,
-    check_mutual_awareness,
     check_document_registry,
+    check_mutual_awareness,
+    check_required_docs,
 )
-
 
 REGISTRY_YAML = textwrap.dedent("""\
     version: 1
@@ -66,13 +65,9 @@ def registry_env(tmp_path):
     repo.mkdir()
     (repo / "CLAUDE.md").write_text("# Test\n\n## Project Memory\nStuff here\n")
 
-    (tmp_path / "system-context.md").write_text(
-        "# System\n\n## Agents\n| briefing | yes |\n"
-    )
+    (tmp_path / "system-context.md").write_text("# System\n\n## Agents\n| briefing | yes |\n")
 
-    (tmp_path / "registry-doc.md").write_text(
-        "# Main\n\n## Related Repos\n| test-repo | desc |\n"
-    )
+    (tmp_path / "registry-doc.md").write_text("# Main\n\n## Related Repos\n| test-repo | desc |\n")
 
     (tmp_path / "boundary-a.md").write_text("Version A content")
     (tmp_path / "boundary-b.md").write_text("Version B content")
@@ -92,7 +87,9 @@ class TestCheckRequiredDocs:
 
     def test_existing_doc_no_drift(self, registry_env):
         reg, tmp_path = registry_env
-        (tmp_path / "test-repo" / "README.md").write_text("# Readme\n\n## Project Memory\n\n## Conventions\n")
+        (tmp_path / "test-repo" / "README.md").write_text(
+            "# Readme\n\n## Project Memory\n\n## Conventions\n"
+        )
         items = check_required_docs(reg)
         missing = [i for i in items if i.category == "missing-required-doc"]
         assert len(missing) == 0

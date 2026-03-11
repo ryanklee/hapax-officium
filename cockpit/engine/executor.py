@@ -9,8 +9,10 @@ from __future__ import annotations
 
 import asyncio
 from dataclasses import dataclass, field
+from typing import TYPE_CHECKING
 
-from cockpit.engine.models import Action, ActionPlan
+if TYPE_CHECKING:
+    from cockpit.engine.models import Action, ActionPlan
 
 
 @dataclass
@@ -33,15 +35,10 @@ class PhasedExecutor:
                 for action in actions:
                     tg.create_task(self._run_action(action, plan, phase_num))
 
-    async def _run_action(
-        self, action: Action, plan: ActionPlan, phase: int
-    ) -> None:
+    async def _run_action(self, action: Action, plan: ActionPlan, phase: int) -> None:
         """Run a single action with dependency checking, timeout, and error handling."""
         # Check dependencies
-        if any(
-            dep in plan.errors or dep in plan.skipped
-            for dep in action.depends_on
-        ):
+        if any(dep in plan.errors or dep in plan.skipped for dep in action.depends_on):
             plan.skipped.add(action.name)
             return
 
@@ -58,7 +55,7 @@ class PhasedExecutor:
                     timeout=self.action_timeout_s,
                 )
             plan.results[action.name] = result
-        except asyncio.TimeoutError:
+        except TimeoutError:
             plan.errors[action.name] = "timeout"
         except Exception as exc:
             plan.errors[action.name] = str(exc)

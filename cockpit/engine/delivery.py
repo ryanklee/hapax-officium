@@ -5,14 +5,18 @@ executor after actions complete. The queue respects attention budget:
 at most one notification per flush interval, with critical items
 triggering immediate delivery and high-priority items flushing early.
 """
+
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import logging
 from collections import deque
 from dataclasses import dataclass, field
+from typing import TYPE_CHECKING
 
-from cockpit.engine.models import DeliveryItem
+if TYPE_CHECKING:
+    from cockpit.engine.models import DeliveryItem
 
 _log = logging.getLogger(__name__)
 
@@ -38,6 +42,7 @@ def _send_notification(*, title: str, message: str, priority: str) -> bool:
     """
     try:
         from shared.notify import send_notification
+
         return send_notification(title, message, priority=priority)
     except Exception as exc:
         _log.error("Notification send failed: %s", exc)
@@ -59,9 +64,7 @@ class DeliveryQueue:
     pending: list[DeliveryItem] = field(default_factory=list)
     recent: deque[DeliveryItem] = field(init=False)
     _flush_task: asyncio.Task | None = field(default=None, init=False, repr=False)
-    _high_flush_handle: asyncio.TimerHandle | None = field(
-        default=None, init=False, repr=False
-    )
+    _high_flush_handle: asyncio.TimerHandle | None = field(default=None, init=False, repr=False)
     _high_flush_scheduled: bool = field(default=False, init=False, repr=False)
 
     def __post_init__(self) -> None:
@@ -111,9 +114,7 @@ class DeliveryQueue:
         loop = asyncio.get_running_loop()
         await loop.run_in_executor(
             None,
-            lambda: _send_notification(
-                title=title, message=message, priority=notify_priority
-            ),
+            lambda: _send_notification(title=title, message=message, priority=notify_priority),
         )
         _log.info("Flushed %d delivery items (priority=%s)", len(items), notify_priority)
 
@@ -145,10 +146,8 @@ class DeliveryQueue:
         """Cancel background tasks and flush remaining items."""
         if self._flush_task is not None:
             self._flush_task.cancel()
-            try:
+            with contextlib.suppress(asyncio.CancelledError):
                 await self._flush_task
-            except asyncio.CancelledError:
-                pass
             self._flush_task = None
 
         if self._high_flush_handle is not None:

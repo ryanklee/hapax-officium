@@ -3,14 +3,18 @@
 Rules map ChangeEvents to ActionPlans. Each rule has a trigger_filter
 predicate and a produce callable that returns actions when the filter matches.
 """
+
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import UTC, datetime
-from typing import Callable
+from typing import TYPE_CHECKING
 
 from cockpit.engine.models import Action, ActionPlan, ChangeEvent
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 _log = logging.getLogger(__name__)
 

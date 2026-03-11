@@ -1,14 +1,17 @@
 """Marp slide generation from DemoScript."""
+
 from __future__ import annotations
 
 import asyncio
 import logging
 import shutil
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-from collections.abc import Callable
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
-from agents.demo_models import DemoScript
+    from agents.demo_models import DemoScript
 
 log = logging.getLogger(__name__)
 
@@ -22,9 +25,7 @@ AUDIENCE_LABELS: dict[str, str] = {
 THEME_PATH = Path(__file__).parent / "gruvbox-marp.css"
 
 
-def generate_marp_markdown(
-    script: DemoScript, screenshots: dict[str, Path]
-) -> str:
+def generate_marp_markdown(script: DemoScript, screenshots: dict[str, Path]) -> str:
     """Generate Marp-flavored markdown from a DemoScript."""
     lines: list[str] = []
 
@@ -109,12 +110,16 @@ async def render_slides(
         shutil.copy2(THEME_PATH, theme_dest)
 
         proc = await asyncio.create_subprocess_exec(
-            "npx", "-y", "@marp-team/marp-cli@4",
+            "npx",
+            "-y",
+            "@marp-team/marp-cli@4",
             str(md_path),
-            "--theme", str(theme_dest),
+            "--theme",
+            str(theme_dest),
             "--html",
             "--allow-local-files",
-            "-o", str(pdf_path),
+            "-o",
+            str(pdf_path),
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
             cwd=str(output_dir),

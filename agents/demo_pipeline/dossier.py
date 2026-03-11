@@ -4,18 +4,23 @@ Gathers background on a specific person through a CLI interview,
 persists to demo-audiences.yaml, and optionally indexes relationship
 facts to Qdrant profile-facts.
 """
+
 from __future__ import annotations
 
+import contextlib
 import logging
 import os
 import tempfile
 import uuid
-from collections.abc import Callable
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import yaml
 
 from agents.demo_models import AUDIENCES_PATH, AudienceDossier, load_audiences, load_personas
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+    from pathlib import Path
 
 log = logging.getLogger(__name__)
 
@@ -134,7 +139,7 @@ def save_dossier(
 
     # Serialize to YAML-friendly dict
     audiences_data: dict = {}
-    for key, d in existing.items():
+    for _key, d in existing.items():
         audiences_data[d.key] = {
             "archetype": d.archetype,
             "name": d.name,
@@ -149,25 +154,26 @@ def save_dossier(
     )
 
     # Atomic write: tempfile + os.replace
-    fd = tempfile.NamedTemporaryFile(
+    with tempfile.NamedTemporaryFile(
         mode="w",
         dir=str(target.parent),
         suffix=".tmp",
         delete=False,
         encoding="utf-8",
-    )
+    ) as fd:
+        try:
+            fd.write(content)
+            fd.flush()
+            os.fsync(fd.fileno())
+        except BaseException:
+            with contextlib.suppress(OSError):
+                os.unlink(fd.name)
+            raise
     try:
-        fd.write(content)
-        fd.flush()
-        os.fsync(fd.fileno())
-        fd.close()
         os.replace(fd.name, str(target))
     except BaseException:
-        fd.close()
-        try:
+        with contextlib.suppress(OSError):
             os.unlink(fd.name)
-        except OSError:
-            pass
         raise
 
     return target
@@ -205,31 +211,35 @@ def record_relationship_facts(
                 continue
             text = f"relationships/{dossier.key}: {key} = {value}"
             texts.append(text)
-            metadata_list.append({
-                "dimension": "relationships",
-                "key": f"{dossier.key}/{key}",
-                "value": value,
-                "confidence": 0.9,
-                "source": "dossier-interview",
-                "text": text,
-                "audience_key": dossier.key,
-                "audience_name": dossier.name,
-            })
+            metadata_list.append(
+                {
+                    "dimension": "relationships",
+                    "key": f"{dossier.key}/{key}",
+                    "value": value,
+                    "confidence": 0.9,
+                    "source": "dossier-interview",
+                    "text": text,
+                    "audience_key": dossier.key,
+                    "audience_name": dossier.name,
+                }
+            )
 
         # Also index the assembled context as a summary fact
         if dossier.context:
             text = f"relationships/{dossier.key}: context = {dossier.context}"
             texts.append(text)
-            metadata_list.append({
-                "dimension": "relationships",
-                "key": f"{dossier.key}/context",
-                "value": dossier.context,
-                "confidence": 0.9,
-                "source": "dossier-interview",
-                "text": text,
-                "audience_key": dossier.key,
-                "audience_name": dossier.name,
-            })
+            metadata_list.append(
+                {
+                    "dimension": "relationships",
+                    "key": f"{dossier.key}/context",
+                    "value": dossier.context,
+                    "confidence": 0.9,
+                    "source": "dossier-interview",
+                    "text": text,
+                    "audience_key": dossier.key,
+                    "audience_name": dossier.name,
+                }
+            )
 
         if not texts:
             return 0
@@ -237,11 +247,13 @@ def record_relationship_facts(
         vectors = embed_batch(texts, prefix="search_document")
 
         points: list[PointStruct] = []
-        for vec, meta in zip(vectors, metadata_list):
-            point_id = str(uuid.uuid5(
-                uuid.NAMESPACE_DNS,
-                f"profile-fact-relationships-{meta['key']}",
-            ))
+        for vec, meta in zip(vectors, metadata_list, strict=False):
+            point_id = str(
+                uuid.uuid5(
+                    uuid.NAMESPACE_DNS,
+                    f"profile-fact-relationships-{meta['key']}",
+                )
+            )
             points.append(PointStruct(id=point_id, vector=vec, payload=meta))
 
         client = get_qdrant()

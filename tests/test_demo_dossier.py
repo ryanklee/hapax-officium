@@ -1,11 +1,11 @@
 """Tests for agents.demo_pipeline.dossier — interactive audience dossier collection."""
+
 from __future__ import annotations
 
 import os
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-import pytest
 import yaml
 
 from agents.demo_models import AudienceDossier
@@ -16,7 +16,6 @@ from agents.demo_pipeline.dossier import (
     save_dossier,
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -25,8 +24,10 @@ from agents.demo_pipeline.dossier import (
 def _make_input_fn(answers: list[str]):
     """Return an input_fn that yields answers in order."""
     it = iter(answers)
+
     def _input(prompt: str) -> str:
         return next(it)
+
     return _input
 
 
@@ -53,12 +54,12 @@ class TestGatherDossierInteractive:
     def test_all_answers(self):
         """Full responses produce a fully populated dossier."""
         answers = [
-            "Sarah",                           # name
-            "nothing",                         # prior_knowledge_level
-            "wants to understand what I build", # goals
-            "thinks I spend too much time",     # attitudes
-            "spouse, no technical role",        # relationship_role
-            "casual at home",                   # situational_context
+            "Sarah",  # name
+            "nothing",  # prior_knowledge_level
+            "wants to understand what I build",  # goals
+            "thinks I spend too much time",  # attitudes
+            "spouse, no technical role",  # relationship_role
+            "casual at home",  # situational_context
         ]
         printed: list[str] = []
         dossier, responses = gather_dossier_interactive(
@@ -84,12 +85,12 @@ class TestGatherDossierInteractive:
     def test_skip_optional(self):
         """Empty Enter skips that field — context omits it."""
         answers = [
-            "Bob",      # name
+            "Bob",  # name
             "nothing",  # prior_knowledge_level
             "impress him",  # goals
-            "",         # attitudes (skip)
+            "",  # attitudes (skip)
             "peer who might adopt",  # relationship_role
-            "",         # situational_context (skip)
+            "",  # situational_context (skip)
         ]
         dossier, responses = gather_dossier_interactive(
             audience_key="colleague",
@@ -244,7 +245,6 @@ def test_dossier_questions_map_to_dimensions():
 def test_cli_gather_dossier_flag():
     """argparse parses --gather-dossier correctly."""
     import argparse
-    from agents.demo import main
 
     # Build the parser the same way main() does — we test parse_args
     parser = argparse.ArgumentParser()

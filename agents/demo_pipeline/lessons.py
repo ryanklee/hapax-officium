@@ -4,16 +4,22 @@ Persists proven corrections (adjustments that led to passing runs) in a YAML
 file so future runs start with better defaults.  No LLM calls, no Qdrant,
 no Pydantic — pure stdlib + PyYAML.
 """
+
 from __future__ import annotations
 
+import contextlib
 import copy
 import os
 import tempfile
 from datetime import date
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import yaml
 from typing_extensions import TypedDict
+
+if TYPE_CHECKING:
+    from agents.demo_models import DemoEvalResult
 
 # ---------------------------------------------------------------------------
 # Types
@@ -21,9 +27,9 @@ from typing_extensions import TypedDict
 
 
 class Lesson(TypedDict):
-    text: str           # imperative, prompt-ready string
+    text: str  # imperative, prompt-ready string
     success_count: int  # how many passing runs confirmed this
-    added: str          # ISO date
+    added: str  # ISO date
 
 
 LessonStore = dict[str, list[Lesson]]
@@ -43,10 +49,7 @@ KNOWN_ARCHETYPES: tuple[str, ...] = (
     "team-member",
 )
 
-_HEADER = (
-    "# Demo lesson store — auto-managed by demo_eval pipeline\n"
-    "# Do not edit manually\n"
-)
+_HEADER = "# Demo lesson store — auto-managed by demo_eval pipeline\n# Do not edit manually\n"
 
 # ---------------------------------------------------------------------------
 # I/O
@@ -100,25 +103,21 @@ def save_lessons(store: LessonStore, path: Path | None = None) -> None:
     body = yaml.dump(dict(store), default_flow_style=False, sort_keys=True)
     content = _HEADER + body
 
-    fd = tempfile.NamedTemporaryFile(
+    with tempfile.NamedTemporaryFile(
         mode="w",
         dir=str(target.parent),
         suffix=".tmp",
         delete=False,
         encoding="utf-8",
-    )
-    try:
+    ) as fd:
         fd.write(content)
         fd.flush()
         os.fsync(fd.fileno())
-        fd.close()
+    try:
         os.replace(fd.name, str(target))
     except BaseException:
-        fd.close()
-        try:
+        with contextlib.suppress(OSError):
             os.unlink(fd.name)
-        except OSError:
-            pass
         raise
 
 
@@ -195,10 +194,7 @@ def accumulate_lessons(
         indexed = list(enumerate(existing))
         indexed.sort(key=lambda pair: (pair[1]["added"], pair[0]))
         # Keep only the newest MAX entries.
-        keep_set = {
-            pair[0]
-            for pair in indexed[len(existing) - MAX_LESSONS_PER_ARCHETYPE :]
-        }
+        keep_set = {pair[0] for pair in indexed[len(existing) - MAX_LESSONS_PER_ARCHETYPE :]}
         existing = [l for i, l in enumerate(existing) if i in keep_set]
 
     out[archetype] = existing
@@ -220,11 +216,7 @@ def format_lessons_block(lessons: list[Lesson]) -> str:
 
     lines: list[str] = ["## LESSONS FROM PRIOR RUNS", ""]
     for lesson in lessons:
-        suffix = (
-            f" (confirmed {lesson['success_count']}x)"
-            if lesson["success_count"] > 1
-            else ""
-        )
+        suffix = f" (confirmed {lesson['success_count']}x)" if lesson["success_count"] > 1 else ""
         lines.append(f"- {lesson['text']}{suffix}")
 
     return "\n".join(lines) + "\n"

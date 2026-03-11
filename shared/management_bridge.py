@@ -4,15 +4,18 @@ Reads from DATA_DIR (people/, coaching/, feedback/, meetings/) and generates
 structured ProfileFact-compatible dicts for the management profiler and other
 consumers.
 """
+
 from __future__ import annotations
 
 import json
 import logging
-from datetime import datetime, timezone
-from pathlib import Path
+from typing import TYPE_CHECKING
 
-from shared.config import config, PROFILES_DIR
+from shared.config import PROFILES_DIR, config
 from shared.frontmatter import parse_frontmatter as _parse_frontmatter
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 log = logging.getLogger("management_bridge")
 FACTS_OUTPUT = PROFILES_DIR / "management-structured-facts.json"
@@ -27,6 +30,7 @@ def _make_fact(text: str, dimension: str, source: str) -> dict:
     Derives a stable key from the source path and text for deduplication.
     """
     import re as _re
+
     # Derive a key from source filename + first few words of text
     slug = source.rsplit("/", 1)[-1].replace(".md", "").replace("-", "_")
     words = _re.sub(r"[^a-z0-9 ]", "", text.lower()).split()[:5]
@@ -66,18 +70,22 @@ def _people_facts() -> list[dict]:
         role = str(fm.get("role", "unknown"))
         cadence = str(fm.get("cadence", ""))
 
-        facts.append(_make_fact(
-            f"{name} is on {team} team (role: {role})",
-            "team_leadership",
-            f"people/{path.name}",
-        ))
+        facts.append(
+            _make_fact(
+                f"{name} is on {team} team (role: {role})",
+                "team_leadership",
+                f"people/{path.name}",
+            )
+        )
 
         if cadence:
-            facts.append(_make_fact(
-                f"{cadence} 1:1 cadence with {name}",
-                "management_practice",
-                f"people/{path.name}",
-            ))
+            facts.append(
+                _make_fact(
+                    f"{cadence} 1:1 cadence with {name}",
+                    "management_practice",
+                    f"people/{path.name}",
+                )
+            )
 
     return facts
 
@@ -98,11 +106,13 @@ def _coaching_facts() -> list[dict]:
         title = str(fm.get("title", path.stem.replace("-", " ").title()))
         status = str(fm.get("status", "active"))
 
-        facts.append(_make_fact(
-            f"Coaching hypothesis for {person}: {title} (status: {status})",
-            "management_practice",
-            f"coaching/{path.name}",
-        ))
+        facts.append(
+            _make_fact(
+                f"Coaching hypothesis for {person}: {title} (status: {status})",
+                "management_practice",
+                f"coaching/{path.name}",
+            )
+        )
 
     return facts
 
@@ -123,11 +133,13 @@ def _feedback_facts() -> list[dict]:
         direction = str(fm.get("direction", "given"))
         category = str(fm.get("category", "growth"))
 
-        facts.append(_make_fact(
-            f"Feedback record ({direction}) for {person}: {category}",
-            "management_practice",
-            f"feedback/{path.name}",
-        ))
+        facts.append(
+            _make_fact(
+                f"Feedback record ({direction}) for {person}: {category}",
+                "management_practice",
+                f"feedback/{path.name}",
+            )
+        )
 
     return facts
 
@@ -150,11 +162,13 @@ def _meeting_facts() -> list[dict]:
         title = str(fm.get("title", path.stem.replace("-", " ").title()))
         meeting_date = str(fm.get("date", "unknown"))
 
-        facts.append(_make_fact(
-            f"Meeting: {title} ({meeting_date})",
-            "attention_distribution",
-            f"meetings/{path.name}",
-        ))
+        facts.append(
+            _make_fact(
+                f"Meeting: {title} ({meeting_date})",
+                "attention_distribution",
+                f"meetings/{path.name}",
+            )
+        )
 
     return facts
 
@@ -181,15 +195,20 @@ def _okr_facts() -> list[dict]:
         quarter = str(fm.get("quarter", ""))
         krs = fm.get("key-results", [])
         kr_count = len(krs) if isinstance(krs, list) else 0
-        on_track = sum(1 for kr in (krs if isinstance(krs, list) else [])
-                       if isinstance(kr, dict) and (kr.get("confidence") or 0) >= 0.5)
+        on_track = sum(
+            1
+            for kr in (krs if isinstance(krs, list) else [])
+            if isinstance(kr, dict) and (kr.get("confidence") or 0) >= 0.5
+        )
 
         scope_label = f"{scope} ({team})" if team else scope
-        facts.append(_make_fact(
-            f"OKR ({scope_label}, {quarter}): {objective} — {on_track}/{kr_count} KRs on track",
-            "strategic_alignment",
-            f"okrs/{path.name}",
-        ))
+        facts.append(
+            _make_fact(
+                f"OKR ({scope_label}, {quarter}): {objective} — {on_track}/{kr_count} KRs on track",
+                "strategic_alignment",
+                f"okrs/{path.name}",
+            )
+        )
 
     return facts
 
@@ -215,11 +234,13 @@ def _smart_goal_facts() -> list[dict]:
         category = str(fm.get("category", ""))
         target_date = str(fm.get("target-date", ""))
 
-        facts.append(_make_fact(
-            f"SMART goal for {person}: {specific} ({category}, due {target_date})",
-            "management_practice",
-            f"goals/{path.name}",
-        ))
+        facts.append(
+            _make_fact(
+                f"SMART goal for {person}: {specific} ({category}, due {target_date})",
+                "management_practice",
+                f"goals/{path.name}",
+            )
+        )
 
     return facts
 
@@ -242,11 +263,13 @@ def _incident_facts() -> list[dict]:
         duration = fm.get("duration-minutes")
         dur_str = f"{duration}min" if duration else "unknown duration"
 
-        facts.append(_make_fact(
-            f"{severity.upper()} incident: {title} ({dur_str}, {status})",
-            "attention_distribution",
-            f"incidents/{path.name}",
-        ))
+        facts.append(
+            _make_fact(
+                f"{severity.upper()} incident: {title} ({dur_str}, {status})",
+                "attention_distribution",
+                f"incidents/{path.name}",
+            )
+        )
 
     return facts
 
@@ -270,11 +293,13 @@ def _postmortem_action_facts() -> list[dict]:
         title = str(fm.get("title", path.stem))
         owner = str(fm.get("owner", ""))
 
-        facts.append(_make_fact(
-            f"Postmortem action ({status}): {title} — owner: {owner}",
-            "management_practice",
-            f"postmortem-actions/{path.name}",
-        ))
+        facts.append(
+            _make_fact(
+                f"Postmortem action ({status}): {title} — owner: {owner}",
+                "management_practice",
+                f"postmortem-actions/{path.name}",
+            )
+        )
 
     return facts
 
@@ -299,11 +324,13 @@ def _review_cycle_facts() -> list[dict]:
         status = str(fm.get("status", "not-started"))
         review_due = str(fm.get("review-due", ""))
 
-        facts.append(_make_fact(
-            f"Review cycle {cycle} for {person}: {status} (due {review_due})",
-            "management_practice",
-            f"review-cycles/{path.name}",
-        ))
+        facts.append(
+            _make_fact(
+                f"Review cycle {cycle} for {person}: {status} (due {review_due})",
+                "management_practice",
+                f"review-cycles/{path.name}",
+            )
+        )
 
     return facts
 

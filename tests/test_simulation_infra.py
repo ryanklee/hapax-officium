@@ -1,19 +1,21 @@
 # ai-agents/tests/test_simulation_infra.py
 """Tests for simulation directory lifecycle."""
+
 from __future__ import annotations
 
-import yaml
 from pathlib import Path
+
+import yaml
 
 from shared.simulation import (
     _SUBDIRS,
     _count_workdays,
+    cleanup_simulation,
     create_simulation,
-    seed_simulation,
+    list_simulations,
     load_manifest,
     save_manifest,
-    cleanup_simulation,
-    list_simulations,
+    seed_simulation,
 )
 from shared.simulation_models import SimManifest, SimStatus
 
@@ -38,10 +40,22 @@ class TestCreateSimulation:
     def test_subdirs_match_data_dir_layout(self):
         """_SUBDIRS contains the correct 14 directories."""
         expected = {
-            "people", "coaching", "feedback", "meetings",
-            "okrs", "goals", "incidents", "postmortem-actions",
-            "review-cycles", "status-reports", "decisions", "references",
-            "1on1-prep", "briefings", "status-updates", "review-prep",
+            "people",
+            "coaching",
+            "feedback",
+            "meetings",
+            "okrs",
+            "goals",
+            "incidents",
+            "postmortem-actions",
+            "review-cycles",
+            "status-reports",
+            "decisions",
+            "references",
+            "1on1-prep",
+            "briefings",
+            "status-updates",
+            "review-prep",
         }
         assert set(_SUBDIRS) == expected
 
@@ -82,18 +96,29 @@ class TestCreateSimulation:
 
     def test_unique_directory_names(self, tmp_path: Path):
         """Two calls create distinct directories."""
-        d1, _ = create_simulation(output=tmp_path, role="em", window="7d",
-                                   start_date="2026-03-01", end_date="2026-03-07",
-                                   seed="demo-data/")
-        d2, _ = create_simulation(output=tmp_path, role="em", window="7d",
-                                   start_date="2026-03-01", end_date="2026-03-07",
-                                   seed="demo-data/")
+        d1, _ = create_simulation(
+            output=tmp_path,
+            role="em",
+            window="7d",
+            start_date="2026-03-01",
+            end_date="2026-03-07",
+            seed="demo-data/",
+        )
+        d2, _ = create_simulation(
+            output=tmp_path,
+            role="em",
+            window="7d",
+            start_date="2026-03-01",
+            end_date="2026-03-07",
+            seed="demo-data/",
+        )
         assert d1 != d2
 
     def test_default_output_is_tmp(self, tmp_path: Path):
         """Without output param, sim dir would be created under /tmp."""
         from shared.simulation import _DEFAULT_BASE_DIR
-        assert _DEFAULT_BASE_DIR == Path("/tmp")
+
+        assert Path("/tmp") == _DEFAULT_BASE_DIR
 
     def test_ticks_total_calculated(self, tmp_path: Path):
         """ticks_total is set to the number of workdays in the window."""
@@ -126,21 +151,25 @@ class TestCountWorkdays:
     def test_full_week(self):
         """Mon-Fri = 5 workdays."""
         from datetime import date
+
         assert _count_workdays(date(2026, 3, 2), date(2026, 3, 6)) == 5
 
     def test_includes_weekends(self):
         """Mon-Sun (7 days) = 5 workdays."""
         from datetime import date
+
         assert _count_workdays(date(2026, 3, 2), date(2026, 3, 8)) == 5
 
     def test_two_weeks(self):
         """Two full weeks = 10 workdays."""
         from datetime import date
+
         assert _count_workdays(date(2026, 3, 2), date(2026, 3, 13)) == 10
 
     def test_end_before_start(self):
         """Returns 0 if end < start."""
         from datetime import date
+
         assert _count_workdays(date(2026, 3, 10), date(2026, 3, 1)) == 0
 
 
@@ -195,9 +224,14 @@ class TestManifestIO:
 
     def test_save_updates_existing(self, tmp_path: Path):
         """save_manifest overwrites existing manifest file."""
-        m1 = SimManifest(id="v1", role="em", window="7d",
-                         start_date="2026-03-01", end_date="2026-03-07",
-                         seed="demo-data/")
+        m1 = SimManifest(
+            id="v1",
+            role="em",
+            window="7d",
+            start_date="2026-03-01",
+            end_date="2026-03-07",
+            seed="demo-data/",
+        )
         save_manifest(tmp_path, m1)
 
         m2 = m1.model_copy(update={"status": SimStatus.RUNNING, "ticks_completed": 5})
@@ -223,6 +257,7 @@ class TestCleanup:
     def test_cleanup_refuses_non_simulation_dir(self, tmp_path: Path):
         """cleanup_simulation() raises if directory lacks .sim-manifest.yaml."""
         import pytest
+
         regular_dir = tmp_path / "not-a-sim"
         regular_dir.mkdir()
 
@@ -237,11 +272,19 @@ class TestListSimulations:
             d = tmp_path / name
             d.mkdir()
             (d / ".sim-manifest.yaml").write_text(
-                yaml.dump({"simulation": SimManifest(
-                    id=name, role="em", window="7d",
-                    start_date="2026-03-01", end_date="2026-03-07",
-                    seed="demo-data/"
-                ).model_dump(mode="json")}))
+                yaml.dump(
+                    {
+                        "simulation": SimManifest(
+                            id=name,
+                            role="em",
+                            window="7d",
+                            start_date="2026-03-01",
+                            end_date="2026-03-07",
+                            seed="demo-data/",
+                        ).model_dump(mode="json")
+                    }
+                )
+            )
 
         (tmp_path / "regular-dir").mkdir()
 

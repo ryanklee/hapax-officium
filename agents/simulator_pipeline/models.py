@@ -4,12 +4,12 @@ Safety enforcement: coaching and feedback events use restricted content
 policy — no free-text body, no evaluative language. Content is rendered
 from structural fields (date, participant, topics, action items) only.
 """
+
 from __future__ import annotations
 
 from typing import Any
 
 from pydantic import BaseModel, Field
-
 
 # Workflow types where body content is prohibited (management_safety axiom)
 _RESTRICTED_TYPES = frozenset({"coaching_note", "feedback"})
@@ -38,6 +38,7 @@ class SimulatedEvent(BaseModel):
     For restricted types (coaching, feedback), body_template must be None.
     Content is generated from structural fields via templates.
     """
+
     date: str = Field(description="ISO date of the event (YYYY-MM-DD)")
     workflow_type: str = Field(description="Key into workflow-semantics.yaml")
     subdirectory: str = Field(description="Target subdirectory in DATA_DIR")
@@ -53,6 +54,7 @@ class SimulatedEvent(BaseModel):
 
 class TickResult(BaseModel):
     """Result of processing a single simulation tick (one workday)."""
+
     date: str = Field(description="ISO date of this tick")
     events: list[SimulatedEvent] = Field(default_factory=list)
     checkpoint_ran: bool = Field(default=False)

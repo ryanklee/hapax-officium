@@ -1,20 +1,26 @@
 """Subject matter research — gathers audience-filtered context for demo planning."""
+
 from __future__ import annotations
 
-import glob as globmod
-import json
 import logging
 import os
 import re
 from pathlib import Path
-from typing import Callable
+from typing import TYPE_CHECKING
 
 import yaml
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from agents.demo_models import AudienceDossier
 
 log = logging.getLogger(__name__)
 
 # Path to canonical workflow definitions
-WORKFLOW_REGISTRY_PATH = Path(__file__).resolve().parent.parent.parent / "config" / "workflow-registry.yaml"
+WORKFLOW_REGISTRY_PATH = (
+    Path(__file__).resolve().parent.parent.parent / "config" / "workflow-registry.yaml"
+)
 
 # Audience -> which sources to gather
 AUDIENCE_SOURCES: dict[str, list[str]] = {
@@ -543,7 +549,8 @@ def _gather_major_components() -> str:
         if "## Tier 2 Agents" in content:
             # Count implemented agents
             import re
-            agent_table = content[content.find("### Implemented"):content.find("### Planned")]
+
+            agent_table = content[content.find("### Implemented") : content.find("### Planned")]
             agent_count = len(re.findall(r"^\| `\w+`", agent_table, re.MULTILINE))
             components.append(
                 f"- **Tier 2 Agents**: {agent_count} implemented Pydantic AI agents "
@@ -634,7 +641,7 @@ def _gather_domain_literature(scope: str, max_chars: int = 6000) -> str:
                 if content.startswith("---"):
                     end = content.find("---", 3)
                     if end > 0:
-                        content = content[end + 3:].strip()
+                        content = content[end + 3 :].strip()
                 remaining = max_chars - total_chars
                 if remaining <= 0:
                     break
@@ -680,11 +687,13 @@ def _gather_workflow_patterns(scope: str) -> str:
         else:
             for wf_id, wf in workflows.items():
                 # Match against workflow id, label, and component names
-                match_text = " ".join([
-                    wf_id.replace("-", " "),
-                    wf.get("label", "").lower(),
-                    " ".join(c.replace("_", " ") for c in wf.get("components", [])),
-                ])
+                match_text = " ".join(
+                    [
+                        wf_id.replace("-", " "),
+                        wf.get("label", "").lower(),
+                        " ".join(c.replace("_", " ") for c in wf.get("components", [])),
+                    ]
+                )
                 match_words = set(re.findall(r"\w+", match_text))
                 if scope_words & match_words:
                     selected.append((wf_id, wf))
@@ -734,9 +743,8 @@ def _gather_profile_digest_summary(scope: str) -> str:
         return ""
 
 
-def _format_audience_dossier(dossier: "AudienceDossier") -> str:
+def _format_audience_dossier(dossier: AudienceDossier) -> str:
     """Format dossier as a ## Audience Profile section."""
-    from agents.demo_models import AudienceDossier  # noqa: F811 — type check
 
     lines = [f"**Name**: {dossier.name}"]
     if dossier.context:
@@ -788,7 +796,7 @@ async def gather_research(
     audience: str,
     on_progress: Callable[[str], None] | None = None,
     enrichment_actions: list[str] | None = None,
-    audience_dossier: "AudienceDossier | None" = None,
+    audience_dossier: AudienceDossier | None = None,
 ) -> str:
     """Gather audience-filtered research context for demo planning.
 
@@ -882,12 +890,13 @@ async def gather_research(
     if failed:
         log.warning(
             "Research gathered %d/%d sources. Failed: %s",
-            len(succeeded), total, ", ".join(failed),
+            len(succeeded),
+            total,
+            ", ".join(failed),
         )
         if on_progress:
             on_progress(
-                f"Research: {len(succeeded)}/{total} sources gathered. "
-                f"Missing: {', '.join(failed)}"
+                f"Research: {len(succeeded)}/{total} sources gathered. Missing: {', '.join(failed)}"
             )
     else:
         if on_progress:

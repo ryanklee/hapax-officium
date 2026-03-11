@@ -1,9 +1,9 @@
 """Tests for event validation against workflow-semantics.yaml."""
+
 from __future__ import annotations
 
 from agents.simulator_pipeline.models import SimulatedEvent
 from agents.simulator_pipeline.validation import validate_events
-
 
 # Minimal valid workflows dict matching workflow-semantics.yaml structure
 _VALID_WORKFLOWS = {
@@ -62,8 +62,9 @@ class TestValidateEvents:
         events = [
             _event(),  # valid
             _event(workflow_type="bogus", subdirectory="nope"),  # invalid
-            _event(workflow_type="decision", subdirectory="decisions",
-                   filename="2026-03-05-ci.md"),  # valid
+            _event(
+                workflow_type="decision", subdirectory="decisions", filename="2026-03-05-ci.md"
+            ),  # valid
         ]
         result = validate_events(events, _VALID_WORKFLOWS)
         assert len(result) == 2

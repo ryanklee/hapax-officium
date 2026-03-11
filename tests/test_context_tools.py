@@ -2,19 +2,19 @@
 
 Uses mock operator data so tests don't depend on gitignored operator.json.
 """
+
 import copy
-import json
-from unittest.mock import MagicMock, patch, AsyncMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 
 from shared.context_tools import (
     get_context_tools,
+    get_profile_summary,
     lookup_constraints,
     lookup_patterns,
-    search_profile,
-    get_profile_summary,
     lookup_sufficiency_requirements,
+    search_profile,
 )
 
 # ── Mock operator data (matches test_operator.py) ───────────────────────────
@@ -49,12 +49,14 @@ MOCK_OPERATOR = {
 def _inject_mock_operator(monkeypatch):
     """Inject mock operator data so constraint/pattern lookups return values."""
     import shared.operator as op_mod
+
     monkeypatch.setattr(op_mod, "_operator_cache", copy.deepcopy(MOCK_OPERATOR))
     yield
     monkeypatch.setattr(op_mod, "_operator_cache", None)
 
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
+
 
 def _mock_ctx():
     """Create a mock RunContext."""
@@ -64,6 +66,7 @@ def _mock_ctx():
 
 
 # ── Tool list ────────────────────────────────────────────────────────────────
+
 
 def test_get_context_tools_returns_five():
     tools = get_context_tools()
@@ -86,11 +89,13 @@ def test_all_tools_have_docstrings():
 def test_all_tools_are_async():
     """All context tools must be async for Pydantic AI compatibility."""
     import asyncio
+
     for tool_fn in get_context_tools():
         assert asyncio.iscoroutinefunction(tool_fn), f"{tool_fn.__name__} is not async"
 
 
 # ── lookup_constraints ───────────────────────────────────────────────────────
+
 
 @pytest.mark.asyncio
 async def test_lookup_constraints_all():
@@ -123,6 +128,7 @@ async def test_lookup_constraints_multiple_categories():
 
 # ── lookup_patterns ──────────────────────────────────────────────────────────
 
+
 @pytest.mark.asyncio
 async def test_lookup_patterns_all():
     ctx = _mock_ctx()
@@ -147,11 +153,18 @@ async def test_lookup_patterns_empty_category():
 
 # ── search_profile ───────────────────────────────────────────────────────────
 
+
 @pytest.mark.asyncio
 async def test_search_profile_returns_results():
     ctx = _mock_ctx()
     mock_results = [
-        {"dimension": "workflow", "key": "tool_pref", "value": "uses uv", "confidence": 0.9, "score": 0.95},
+        {
+            "dimension": "workflow",
+            "key": "tool_pref",
+            "value": "uses uv",
+            "confidence": 0.9,
+            "score": 0.95,
+        },
     ]
     with patch("shared.profile_store.ProfileStore") as MockStore:
         MockStore.return_value.search.return_value = mock_results
@@ -194,6 +207,7 @@ async def test_search_profile_handles_error():
 
 # ── get_profile_summary ──────────────────────────────────────────────────────
 
+
 @pytest.mark.asyncio
 async def test_get_profile_summary_overall():
     ctx = _mock_ctx()
@@ -219,7 +233,11 @@ async def test_get_profile_summary_dimension():
     ctx = _mock_ctx()
     digest = {
         "dimensions": {
-            "workflow": {"fact_count": 50, "avg_confidence": 0.8, "summary": "Detailed workflow narrative"},
+            "workflow": {
+                "fact_count": 50,
+                "avg_confidence": 0.8,
+                "summary": "Detailed workflow narrative",
+            },
         },
     }
     with patch("shared.profile_store.ProfileStore") as MockStore:
@@ -255,6 +273,7 @@ async def test_get_profile_summary_no_digest():
 
 # ── lookup_sufficiency_requirements ─────────────────────────────────────────
 
+
 @pytest.mark.asyncio
 async def test_lookup_sufficiency_requirements_returns_results():
     ctx = _mock_ctx()
@@ -265,7 +284,9 @@ async def test_lookup_sufficiency_requirements_returns_results():
 @pytest.mark.asyncio
 async def test_lookup_sufficiency_requirements_filter_by_level():
     ctx = _mock_ctx()
-    result = await lookup_sufficiency_requirements(ctx, axiom_id="executive_function", level="system")
+    result = await lookup_sufficiency_requirements(
+        ctx, axiom_id="executive_function", level="system"
+    )
     assert "system" in result or "not found" in result.lower()
 
 

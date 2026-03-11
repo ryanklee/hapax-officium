@@ -1,5 +1,6 @@
 # ai-agents/tests/test_simulator_event_gen.py
 """Tests for LLM-driven event generation (mocked)."""
+
 from __future__ import annotations
 
 from unittest.mock import AsyncMock, MagicMock, patch

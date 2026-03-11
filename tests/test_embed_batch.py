@@ -1,9 +1,10 @@
 """Tests for shared/config.py:embed_batch() — batch embedding helper."""
-from unittest.mock import patch, MagicMock
+
+from unittest.mock import MagicMock, patch
 
 import pytest
 
-from shared.config import embed_batch, EMBEDDING_MODEL, EXPECTED_EMBED_DIMENSIONS
+from shared.config import EMBEDDING_MODEL, EXPECTED_EMBED_DIMENSIONS, embed_batch
 
 # Helper: valid 768-dim vector
 _VEC = [0.1] * EXPECTED_EMBED_DIMENSIONS
@@ -105,19 +106,23 @@ def test_singleton_client_reused():
 def test_error_wrapping():
     """embed_batch wraps Ollama errors in RuntimeError."""
     mc = _mock_client(side_effect=ConnectionError("Ollama is down"))
-    with patch("shared.config._get_ollama_client", return_value=mc):
-        with pytest.raises(RuntimeError, match="Batch embedding failed"):
-            embed_batch(["test"])
+    with (
+        patch("shared.config._get_ollama_client", return_value=mc),
+        pytest.raises(RuntimeError, match="Batch embedding failed"),
+    ):
+        embed_batch(["test"])
 
 
 def test_error_preserves_cause():
     """embed_batch RuntimeError should chain to the original exception."""
     orig = ConnectionError("Ollama is down")
     mc = _mock_client(side_effect=orig)
-    with patch("shared.config._get_ollama_client", return_value=mc):
-        with pytest.raises(RuntimeError) as exc_info:
-            embed_batch(["test"])
-        assert exc_info.value.__cause__ is orig
+    with (
+        patch("shared.config._get_ollama_client", return_value=mc),
+        pytest.raises(RuntimeError) as exc_info,
+    ):
+        embed_batch(["test"])
+    assert exc_info.value.__cause__ is orig
 
 
 def test_default_prefix_is_search_document():
@@ -133,15 +138,19 @@ def test_dimension_validation_rejects_wrong_size():
     """embed_batch rejects vectors with wrong dimensions."""
     wrong_dim = [[0.1] * 512]  # 512 instead of 768
     mc = _mock_client(return_value={"embeddings": wrong_dim})
-    with patch("shared.config._get_ollama_client", return_value=mc):
-        with pytest.raises(RuntimeError, match="Expected 768-dim embedding at index 0, got 512"):
-            embed_batch(["test"])
+    with (
+        patch("shared.config._get_ollama_client", return_value=mc),
+        pytest.raises(RuntimeError, match="Expected 768-dim embedding at index 0, got 512"),
+    ):
+        embed_batch(["test"])
 
 
 def test_dimension_validation_catches_mixed_dimensions():
     """embed_batch catches wrong dimensions even in middle of batch."""
     mixed = [[0.1] * 768, [0.2] * 512]  # Second vector wrong
     mc = _mock_client(return_value={"embeddings": mixed})
-    with patch("shared.config._get_ollama_client", return_value=mc):
-        with pytest.raises(RuntimeError, match="at index 1"):
-            embed_batch(["a", "b"])
+    with (
+        patch("shared.config._get_ollama_client", return_value=mc),
+        pytest.raises(RuntimeError, match="at index 1"),
+    ):
+        embed_batch(["a", "b"])

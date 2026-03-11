@@ -1,13 +1,21 @@
 """Integration test for demo generation pipeline (LLM mocked, pipeline real)."""
+
 from __future__ import annotations
 
 import json
-from pathlib import Path
-from unittest.mock import AsyncMock, patch, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from agents.demo_models import ContentSkeleton, DemoScript, DemoScene, DemoQualityReport, QualityDimension, SceneSkeleton, ScreenshotSpec
+from agents.demo_models import (
+    ContentSkeleton,
+    DemoQualityReport,
+    DemoScene,
+    DemoScript,
+    QualityDimension,
+    SceneSkeleton,
+    ScreenshotSpec,
+)
 
 
 class TestDemoIntegration:
@@ -58,8 +66,7 @@ class TestDemoIntegration:
 
         # Capture screenshots
         specs = [
-            (f"{i:02d}-scene", scene.screenshot)
-            for i, scene in enumerate(mock_script.scenes, 1)
+            (f"{i:02d}-scene", scene.screenshot) for i, scene in enumerate(mock_script.scenes, 1)
         ]
         screenshot_dir = tmp_path / "screenshots"
         paths = await capture_screenshots(specs, screenshot_dir)
@@ -71,14 +78,11 @@ class TestDemoIntegration:
 
         # Build screenshot map
         screenshot_map = {
-            scene.title: path
-            for scene, path in zip(mock_script.scenes, paths)
+            scene.title: path for scene, path in zip(mock_script.scenes, paths, strict=False)
         }
 
         # Render slides (markdown only, skip PDF to avoid npx dependency in CI)
-        md_path = await render_slides(
-            mock_script, screenshot_map, tmp_path, render_pdf=False
-        )
+        md_path = await render_slides(mock_script, screenshot_map, tmp_path, render_pdf=False)
 
         # Verify outputs
         assert md_path.exists()
@@ -104,7 +108,7 @@ class TestDemoIntegration:
         self, mock_content_agent, mock_voice_agent, mock_pw, mock_preflight, mock_script, tmp_path
     ):
         """End-to-end test of generate_demo() with mocked LLM and browser."""
-        from agents.demo import generate_demo, OUTPUT_DIR
+        from agents.demo import generate_demo
         from agents.demo_pipeline.readiness import ReadinessResult
 
         # Mock the content agent (Pass 1)
@@ -125,7 +129,9 @@ class TestDemoIntegration:
                     facts=["Browse past demos"],
                     visual_type="screenshot",
                     visual_brief="Demos page",
-                    screenshot=ScreenshotSpec(url="http://localhost:5173/demos", capture="viewport"),
+                    screenshot=ScreenshotSpec(
+                        url="http://localhost:5173/demos", capture="viewport"
+                    ),
                 ),
             ],
             outro_points=["That is the system"],
@@ -157,11 +163,14 @@ class TestDemoIntegration:
         )
 
         # Mock sufficiency gate (avoids Qdrant/operator dependency)
-        from agents.demo_pipeline.sufficiency import SufficiencyResult, KnowledgeCheck
+        from agents.demo_pipeline.sufficiency import KnowledgeCheck, SufficiencyResult
+
         mock_sufficiency = SufficiencyResult(
             confidence="adequate",
             system_checks=[KnowledgeCheck("architecture_docs", True, "ok", "system")] * 7,
-            audience_checks=[KnowledgeCheck("archetype_resolved", True, "matched 'family'", "person")],
+            audience_checks=[
+                KnowledgeCheck("archetype_resolved", True, "matched 'family'", "person")
+            ],
             enrichment_actions=[],
             audience_dossier=None,
         )
@@ -175,14 +184,28 @@ class TestDemoIntegration:
         with (
             patch("agents.demo.OUTPUT_DIR", tmp_path),
             patch("agents.demo_pipeline.readiness.check_readiness", return_value=mock_readiness),
-            patch("agents.demo_pipeline.sufficiency.check_sufficiency", return_value=mock_sufficiency),
-            patch("agents.demo_pipeline.research.gather_research", new_callable=AsyncMock, return_value="## Health\nScore: 75/75"),
-            patch("agents.demo_pipeline.critique.critique_and_revise", new_callable=AsyncMock, return_value=(mock_script, mock_quality)),
+            patch(
+                "agents.demo_pipeline.sufficiency.check_sufficiency", return_value=mock_sufficiency
+            ),
+            patch(
+                "agents.demo_pipeline.research.gather_research",
+                new_callable=AsyncMock,
+                return_value="## Health\nScore: 75/75",
+            ),
+            patch(
+                "agents.demo_pipeline.critique.critique_and_revise",
+                new_callable=AsyncMock,
+                return_value=(mock_script, mock_quality),
+            ),
             # Patch deterministic post-loop checks so mock script's short narration doesn't fail
             patch("agents.demo_pipeline.critique._check_word_count", return_value=None),
             patch("agents.demo_pipeline.critique._check_visual_variety", return_value=None),
             patch("agents.demo_pipeline.critique._check_intro_outro_length", return_value=None),
-            patch("agents.drift_detector.detect_drift", new_callable=AsyncMock, return_value=mock_drift_report),
+            patch(
+                "agents.drift_detector.detect_drift",
+                new_callable=AsyncMock,
+                return_value=mock_drift_report,
+            ),
         ):
             demo_dir = await generate_demo(
                 "the entire system for family member",

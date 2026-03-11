@@ -12,14 +12,14 @@ Usage:
     uv run python -m agents.introspect --json        # Full JSON manifest
     uv run python -m agents.introspect --save        # Save to profiles/manifest.json
 """
+
 from __future__ import annotations
 
 import asyncio
 import json
 import os
 import socket
-import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from urllib.error import URLError
 from urllib.request import Request, urlopen
@@ -27,12 +27,15 @@ from urllib.request import Request, urlopen
 from pydantic import BaseModel, Field
 
 from shared.config import (
-    PROFILES_DIR, PROJECT_ROOT,
-    QDRANT_URL, LITELLM_BASE, OLLAMA_URL,
+    LITELLM_BASE,
+    OLLAMA_URL,
+    PROFILES_DIR,
+    PROJECT_ROOT,
+    QDRANT_URL,
 )
 
-
 # ── Subprocess / HTTP helpers ────────────────────────────────────────────────
+
 
 async def run_cmd(
     cmd: list[str],
@@ -51,7 +54,7 @@ async def run_cmd(
             stdout.decode("utf-8", errors="replace"),
             stderr.decode("utf-8", errors="replace"),
         )
-    except asyncio.TimeoutError:
+    except TimeoutError:
         return (1, "", "timeout")
     except FileNotFoundError:
         return (127, "", f"command not found: {cmd[0]}")
@@ -61,6 +64,7 @@ async def run_cmd(
 
 async def http_get(url: str, timeout: float = 5.0) -> tuple[int, str]:
     """HTTP GET returning (status_code, body). Runs in executor."""
+
     def _fetch() -> tuple[int, str]:
         req = Request(url)
         try:
@@ -70,11 +74,13 @@ async def http_get(url: str, timeout: float = 5.0) -> tuple[int, str]:
             return (0, str(e))
         except Exception as e:
             return (0, str(e))
+
     loop = asyncio.get_running_loop()
     return await loop.run_in_executor(None, _fetch)
 
 
 # ── Schemas ──────────────────────────────────────────────────────────────────
+
 
 class ContainerInfo(BaseModel):
     name: str
@@ -158,9 +164,17 @@ async def collect_docker() -> tuple[str, list[ContainerInfo]]:
     rc, ver, _ = await run_cmd(["docker", "info", "--format", "{{.ServerVersion}}"])
     version = ver.strip() if rc == 0 else ""
 
-    rc, out, _ = await run_cmd([
-        "docker", "compose", "-f", str(COMPOSE_FILE), "ps", "--format", "json",
-    ])
+    rc, out, _ = await run_cmd(
+        [
+            "docker",
+            "compose",
+            "-f",
+            str(COMPOSE_FILE),
+            "ps",
+            "--format",
+            "json",
+        ]
+    )
     containers = []
     if rc == 0 and out:
         for line in out.splitlines():
@@ -172,15 +186,19 @@ async def collect_docker() -> tuple[str, list[ContainerInfo]]:
                 ports = []
                 for p in c.get("Publishers", []):
                     if p.get("PublishedPort"):
-                        ports.append(f"{p.get('URL', '')}:{p['PublishedPort']}->{p['TargetPort']}/{p.get('Protocol', 'tcp')}")
-                containers.append(ContainerInfo(
-                    name=c.get("Name", ""),
-                    service=c.get("Service", ""),
-                    image=c.get("Image", ""),
-                    state=c.get("State", ""),
-                    health=c.get("Health", ""),
-                    ports=ports,
-                ))
+                        ports.append(
+                            f"{p.get('URL', '')}:{p['PublishedPort']}->{p['TargetPort']}/{p.get('Protocol', 'tcp')}"
+                        )
+                containers.append(
+                    ContainerInfo(
+                        name=c.get("Name", ""),
+                        service=c.get("Service", ""),
+                        image=c.get("Image", ""),
+                        state=c.get("State", ""),
+                        health=c.get("Health", ""),
+                        ports=ports,
+                    )
+                )
             except (json.JSONDecodeError, KeyError):
                 continue
 
@@ -192,10 +210,17 @@ async def collect_systemd() -> tuple[list[SystemdUnit], list[SystemdUnit]]:
     timers = []
 
     # List user services
-    rc, out, _ = await run_cmd([
-        "systemctl", "--user", "list-units", "--type=service",
-        "--no-pager", "--no-legend", "--plain",
-    ])
+    rc, out, _ = await run_cmd(
+        [
+            "systemctl",
+            "--user",
+            "list-units",
+            "--type=service",
+            "--no-pager",
+            "--no-legend",
+            "--plain",
+        ]
+    )
     if rc == 0 and out:
         for line in out.splitlines():
             parts = line.split()
@@ -203,20 +228,38 @@ async def collect_systemd() -> tuple[list[SystemdUnit], list[SystemdUnit]]:
                 name = parts[0]
                 active = parts[2]
                 rc2, en, _ = await run_cmd(["systemctl", "--user", "is-enabled", name])
-                rc3, desc, _ = await run_cmd([
-                    "systemctl", "--user", "show", name, "--property=Description", "--value",
-                ])
-                services.append(SystemdUnit(
-                    name=name, type="service",
-                    active=active, enabled=en.strip() if rc2 == 0 else "unknown",
-                    description=desc.strip() if rc3 == 0 else "",
-                ))
+                rc3, desc, _ = await run_cmd(
+                    [
+                        "systemctl",
+                        "--user",
+                        "show",
+                        name,
+                        "--property=Description",
+                        "--value",
+                    ]
+                )
+                services.append(
+                    SystemdUnit(
+                        name=name,
+                        type="service",
+                        active=active,
+                        enabled=en.strip() if rc2 == 0 else "unknown",
+                        description=desc.strip() if rc3 == 0 else "",
+                    )
+                )
 
     # List user timers
-    rc, out, _ = await run_cmd([
-        "systemctl", "--user", "list-units", "--type=timer",
-        "--no-pager", "--no-legend", "--plain",
-    ])
+    rc, out, _ = await run_cmd(
+        [
+            "systemctl",
+            "--user",
+            "list-units",
+            "--type=timer",
+            "--no-pager",
+            "--no-legend",
+            "--plain",
+        ]
+    )
     if rc == 0 and out:
         for line in out.splitlines():
             parts = line.split()
@@ -224,14 +267,25 @@ async def collect_systemd() -> tuple[list[SystemdUnit], list[SystemdUnit]]:
                 name = parts[0]
                 active = parts[2]
                 rc2, en, _ = await run_cmd(["systemctl", "--user", "is-enabled", name])
-                rc3, desc, _ = await run_cmd([
-                    "systemctl", "--user", "show", name, "--property=Description", "--value",
-                ])
-                timers.append(SystemdUnit(
-                    name=name, type="timer",
-                    active=active, enabled=en.strip() if rc2 == 0 else "unknown",
-                    description=desc.strip() if rc3 == 0 else "",
-                ))
+                rc3, desc, _ = await run_cmd(
+                    [
+                        "systemctl",
+                        "--user",
+                        "show",
+                        name,
+                        "--property=Description",
+                        "--value",
+                    ]
+                )
+                timers.append(
+                    SystemdUnit(
+                        name=name,
+                        type="timer",
+                        active=active,
+                        enabled=en.strip() if rc2 == 0 else "unknown",
+                        description=desc.strip() if rc3 == 0 else "",
+                    )
+                )
 
     return services, timers
 
@@ -256,12 +310,14 @@ async def collect_qdrant() -> list[QdrantCollection]:
             try:
                 r = json.loads(body2).get("result", {})
                 config = r.get("config", {}).get("params", {}).get("vectors", {})
-                collections.append(QdrantCollection(
-                    name=name,
-                    points_count=r.get("points_count", 0),
-                    vectors_size=config.get("size", 768),
-                    distance=config.get("distance", "Cosine"),
-                ))
+                collections.append(
+                    QdrantCollection(
+                        name=name,
+                        points_count=r.get("points_count", 0),
+                        vectors_size=config.get("size", 768),
+                        distance=config.get("distance", "Cosine"),
+                    )
+                )
             except (json.JSONDecodeError, KeyError):
                 collections.append(QdrantCollection(name=name))
 
@@ -290,11 +346,13 @@ async def collect_ollama() -> list[OllamaModel]:
 
 
 async def collect_gpu() -> GpuInfo | None:
-    rc, out, _ = await run_cmd([
-        "nvidia-smi",
-        "--query-gpu=name,driver_version,memory.total,memory.used,memory.free,temperature.gpu",
-        "--format=csv,noheader,nounits",
-    ])
+    rc, out, _ = await run_cmd(
+        [
+            "nvidia-smi",
+            "--query-gpu=name,driver_version,memory.total,memory.used,memory.free,temperature.gpu",
+            "--format=csv,noheader,nounits",
+        ]
+    )
     if rc != 0:
         return None
 
@@ -349,10 +407,7 @@ async def collect_litellm_routes() -> list[LiteLLMRoute]:
     loop = asyncio.get_running_loop()
     data = await loop.run_in_executor(None, _fetch)
 
-    return [
-        LiteLLMRoute(model_name=m.get("id", ""))
-        for m in data.get("data", [])
-    ]
+    return [LiteLLMRoute(model_name=m.get("id", "")) for m in data.get("data", [])]
 
 
 async def collect_disk() -> list[DiskInfo]:
@@ -368,10 +423,15 @@ async def collect_disk() -> list[DiskInfo]:
                 pct = int(parts[4].rstrip("%"))
             except ValueError:
                 pct = 0
-            disks.append(DiskInfo(
-                mount=parts[0], size=parts[1], used=parts[2],
-                available=parts[3], use_percent=pct,
-            ))
+            disks.append(
+                DiskInfo(
+                    mount=parts[0],
+                    size=parts[1],
+                    used=parts[2],
+                    available=parts[3],
+                    use_percent=pct,
+                )
+            )
     return disks
 
 
@@ -408,27 +468,33 @@ async def collect_listening_ports() -> list[str]:
 
 # ── Main collector ───────────────────────────────────────────────────────────
 
+
 async def generate_manifest() -> InfrastructureManifest:
     """Collect all infrastructure state into a single manifest."""
-    # Run collectors in parallel
-    (docker_version, containers), (services, timers_list), collections, models, gpu, routes, disks, ports = (
-        await asyncio.gather(
-            collect_docker(),
-            collect_systemd(),
-            collect_qdrant(),
-            collect_ollama(),
-            collect_gpu(),
-            collect_litellm_routes(),
-            collect_disk(),
-            collect_listening_ports(),
-        )
-    )
+    # Run collectors in parallel — individual tasks for type safety
+    docker_task = asyncio.create_task(collect_docker())
+    systemd_task = asyncio.create_task(collect_systemd())
+    qdrant_task = asyncio.create_task(collect_qdrant())
+    ollama_task = asyncio.create_task(collect_ollama())
+    gpu_task = asyncio.create_task(collect_gpu())
+    litellm_task = asyncio.create_task(collect_litellm_routes())
+    disk_task = asyncio.create_task(collect_disk())
+    ports_task = asyncio.create_task(collect_listening_ports())
+
+    (docker_version, containers) = await docker_task
+    (services, timers_list) = await systemd_task
+    collections = await qdrant_task
+    models = await ollama_task
+    gpu = await gpu_task
+    routes = await litellm_task
+    disks = await disk_task
+    ports = await ports_task
 
     # OS info
     rc, os_info, _ = await run_cmd(["uname", "-sr"])
 
     return InfrastructureManifest(
-        timestamp=datetime.now(timezone.utc).isoformat(),
+        timestamp=datetime.now(UTC).isoformat(),
         hostname=socket.gethostname(),
         os_info=os_info.strip() if rc == 0 else "",
         docker_version=docker_version,
@@ -457,7 +523,9 @@ def format_summary(m: InfrastructureManifest) -> str:
 
     if m.gpu:
         lines.append(f"GPU: {m.gpu.name} (driver {m.gpu.driver})")
-        lines.append(f"  VRAM: {m.gpu.vram_used_mb}/{m.gpu.vram_total_mb} MiB ({m.gpu.temperature_c}°C)")
+        lines.append(
+            f"  VRAM: {m.gpu.vram_used_mb}/{m.gpu.vram_total_mb} MiB ({m.gpu.temperature_c}°C)"
+        )
         if m.gpu.loaded_models:
             lines.append(f"  Loaded: {', '.join(m.gpu.loaded_models)}")
         lines.append("")
@@ -509,8 +577,10 @@ def format_summary(m: InfrastructureManifest) -> str:
 
 # ── CLI ──────────────────────────────────────────────────────────────────────
 
+
 async def main() -> None:
     import argparse
+
     parser = argparse.ArgumentParser(
         description="Infrastructure manifest generator — live system state snapshot",
         prog="python -m agents.introspect",

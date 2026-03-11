@@ -1,14 +1,15 @@
 # ai-agents/tests/test_simulator_checkpoints.py
 """Tests for tiered checkpoint runner."""
+
 from __future__ import annotations
 
 from datetime import date
 from unittest.mock import AsyncMock, patch
 
 from agents.simulator_pipeline.checkpoints import (
-    should_run_weekly_checkpoint,
     run_deterministic_checkpoint,
     run_weekly_checkpoint,
+    should_run_weekly_checkpoint,
 )
 
 
@@ -27,8 +28,9 @@ class TestCheckpointScheduling:
 class TestDeterministicCheckpoint:
     async def test_runs_cache_refresh(self):
         """Deterministic checkpoint refreshes caches."""
-        with patch("agents.simulator_pipeline.checkpoints._refresh_caches",
-                    new_callable=AsyncMock) as mock_refresh:
+        with patch(
+            "agents.simulator_pipeline.checkpoints._refresh_caches", new_callable=AsyncMock
+        ) as mock_refresh:
             await run_deterministic_checkpoint()
             mock_refresh.assert_called_once()
 
@@ -36,12 +38,17 @@ class TestDeterministicCheckpoint:
 class TestWeeklyCheckpoint:
     async def test_runs_synthesis_agents(self):
         """Weekly checkpoint runs briefing, snapshot, overview synthesis."""
-        with patch("agents.simulator_pipeline.checkpoints._run_briefing",
-                    new_callable=AsyncMock) as mock_brief, \
-             patch("agents.simulator_pipeline.checkpoints._run_snapshot",
-                    new_callable=AsyncMock) as mock_snap, \
-             patch("agents.simulator_pipeline.checkpoints._run_profiler",
-                    new_callable=AsyncMock) as mock_prof:
+        with (
+            patch(
+                "agents.simulator_pipeline.checkpoints._run_briefing", new_callable=AsyncMock
+            ) as mock_brief,
+            patch(
+                "agents.simulator_pipeline.checkpoints._run_snapshot", new_callable=AsyncMock
+            ) as mock_snap,
+            patch(
+                "agents.simulator_pipeline.checkpoints._run_profiler", new_callable=AsyncMock
+            ) as mock_prof,
+        ):
             await run_weekly_checkpoint()
             mock_brief.assert_called_once()
             mock_snap.assert_called_once()

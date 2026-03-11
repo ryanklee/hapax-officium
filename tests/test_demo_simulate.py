@@ -1,11 +1,11 @@
 # tests/test_demo_simulate.py
 """Tests for demo agent --simulate integration."""
+
 from __future__ import annotations
 
 import sys
-from pathlib import Path
 from types import ModuleType
-from unittest.mock import AsyncMock, patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 # Stub playwright before agents.demo is imported so the module loads cleanly
 # in environments where playwright is not installed.
@@ -17,8 +17,14 @@ if "playwright" not in sys.modules:
     sys.modules["playwright"] = _pw_stub
     sys.modules["playwright.async_api"] = _pw_async
 
-from shared.config import config
+import contextlib
+from typing import TYPE_CHECKING
+
 from agents.demo import _run_simulated_demo
+from shared.config import config
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 class TestDemoSimulateOrchestration:
@@ -42,11 +48,12 @@ class TestDemoSimulateOrchestration:
             demo_dir.mkdir(exist_ok=True)
             return demo_dir
 
-        with patch("agents.demo.run_simulation", side_effect=mock_run_sim), \
-             patch("agents.demo.run_warmup", side_effect=mock_warmup), \
-             patch("agents.demo.generate_demo", side_effect=mock_generate_demo), \
-             patch("agents.demo.config") as mock_config:
-
+        with (
+            patch("agents.demo.run_simulation", side_effect=mock_run_sim),
+            patch("agents.demo.run_warmup", side_effect=mock_warmup),
+            patch("agents.demo.generate_demo", side_effect=mock_generate_demo),
+            patch("agents.demo.config"),
+        ):
             await _run_simulated_demo(
                 request="the management cockpit for a technical peer",
                 window="5d",
@@ -77,24 +84,23 @@ class TestDemoSimulateOrchestration:
         async def mock_generate_demo(request, **kwargs):
             raise RuntimeError("demo failed")
 
-        with patch("agents.demo.run_simulation", side_effect=mock_run_sim), \
-             patch("agents.demo.run_warmup", side_effect=mock_warmup), \
-             patch("agents.demo.generate_demo", side_effect=mock_generate_demo):
-
-            try:
-                await _run_simulated_demo(
-                    request="test",
-                    window="5d",
-                    variant="experienced-em",
-                    scenario=None,
-                    audience=None,
-                    format="slides",
-                    duration=None,
-                    persona_file=None,
-                    voice=False,
-                )
-            except RuntimeError:
-                pass
+        with (
+            patch("agents.demo.run_simulation", side_effect=mock_run_sim),
+            patch("agents.demo.run_warmup", side_effect=mock_warmup),
+            patch("agents.demo.generate_demo", side_effect=mock_generate_demo),
+            contextlib.suppress(RuntimeError),
+        ):
+            await _run_simulated_demo(
+                request="test",
+                window="5d",
+                variant="experienced-em",
+                scenario=None,
+                audience=None,
+                format="slides",
+                duration=None,
+                persona_file=None,
+                voice=False,
+            )
 
         assert config.data_dir == original_dir
 
@@ -118,11 +124,12 @@ class TestDemoSimulateRoleInference:
             demo_dir.mkdir(exist_ok=True)
             return demo_dir
 
-        with patch("agents.demo.run_simulation", side_effect=mock_run_sim), \
-             patch("agents.demo.run_warmup", side_effect=mock_warmup), \
-             patch("agents.demo.generate_demo", side_effect=mock_generate_demo), \
-             patch("agents.demo.config"):
-
+        with (
+            patch("agents.demo.run_simulation", side_effect=mock_run_sim),
+            patch("agents.demo.run_warmup", side_effect=mock_warmup),
+            patch("agents.demo.generate_demo", side_effect=mock_generate_demo),
+            patch("agents.demo.config"),
+        ):
             await _run_simulated_demo(
                 request="show the VP of engineering dashboard",
                 window="5d",
@@ -149,11 +156,12 @@ class TestDemoSimulateRoleInference:
             demo_dir.mkdir(exist_ok=True)
             return demo_dir
 
-        with patch("agents.demo.run_simulation", side_effect=mock_run_sim), \
-             patch("agents.demo.run_warmup", side_effect=mock_warmup), \
-             patch("agents.demo.generate_demo", side_effect=mock_generate_demo), \
-             patch("agents.demo.config"):
-
+        with (
+            patch("agents.demo.run_simulation", side_effect=mock_run_sim),
+            patch("agents.demo.run_warmup", side_effect=mock_warmup),
+            patch("agents.demo.generate_demo", side_effect=mock_generate_demo),
+            patch("agents.demo.config"),
+        ):
             await _run_simulated_demo(
                 request="show the VP of engineering dashboard",
                 role="tech-lead",
@@ -183,11 +191,12 @@ class TestDemoSimulateRoleInference:
 
         dossier_path = tmp_path / "custom-org.yaml"
 
-        with patch("agents.demo.run_simulation", side_effect=mock_run_sim), \
-             patch("agents.demo.run_warmup", side_effect=mock_warmup), \
-             patch("agents.demo.generate_demo", side_effect=mock_generate_demo), \
-             patch("agents.demo.config"):
-
+        with (
+            patch("agents.demo.run_simulation", side_effect=mock_run_sim),
+            patch("agents.demo.run_warmup", side_effect=mock_warmup),
+            patch("agents.demo.generate_demo", side_effect=mock_generate_demo),
+            patch("agents.demo.config"),
+        ):
             await _run_simulated_demo(
                 request="show the management cockpit",
                 window="5d",
@@ -215,11 +224,12 @@ class TestDemoSimulateRoleInference:
             demo_dir.mkdir(exist_ok=True)
             return demo_dir
 
-        with patch("agents.demo.run_simulation", side_effect=mock_run_sim), \
-             patch("agents.demo.run_warmup", side_effect=mock_warmup), \
-             patch("agents.demo.generate_demo", side_effect=mock_generate_demo), \
-             patch("agents.demo.config"):
-
+        with (
+            patch("agents.demo.run_simulation", side_effect=mock_run_sim),
+            patch("agents.demo.run_warmup", side_effect=mock_warmup),
+            patch("agents.demo.generate_demo", side_effect=mock_generate_demo),
+            patch("agents.demo.config"),
+        ):
             await _run_simulated_demo(
                 request="show the management cockpit",
                 window="5d",

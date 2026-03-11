@@ -8,6 +8,7 @@ Qdrant "documents" collection with deterministic UUIDs for idempotency.
 Usage:
     uv run python scripts/index-docs.py [--verbose] [--dry-run]
 """
+
 from __future__ import annotations
 
 import argparse
@@ -158,13 +159,15 @@ def _chunk_file(path: Path, rel_path: str) -> list[dict]:
     if path.suffix in (".yaml", ".yml"):
         section = f"(document) {path.name}"
         point_id = uuid.uuid5(UUID_NAMESPACE, f"{rel_path}::{section}")
-        return [{
-            "id": str(point_id),
-            "text": text.strip()[:MAX_CHUNK_CHARS],
-            "source": f"{SOURCE_PREFIX}/{rel_path}",
-            "filename": path.name,
-            "section": section,
-        }]
+        return [
+            {
+                "id": str(point_id),
+                "text": text.strip()[:MAX_CHUNK_CHARS],
+                "source": f"{SOURCE_PREFIX}/{rel_path}",
+                "filename": path.name,
+                "section": section,
+            }
+        ]
 
     sections = _split_by_headings(text)
     records: list[dict] = []
@@ -175,26 +178,32 @@ def _chunk_file(path: Path, rel_path: str) -> list[dict]:
             for idx, (sub_heading, sub_body) in enumerate(sub_chunks):
                 if len(sub_body) < MIN_CHUNK_CHARS:
                     continue
-                section_key = f"{sub_heading} (part {idx + 1})" if len(sub_chunks) > 1 else sub_heading
+                section_key = (
+                    f"{sub_heading} (part {idx + 1})" if len(sub_chunks) > 1 else sub_heading
+                )
                 point_id = uuid.uuid5(UUID_NAMESPACE, f"{rel_path}::{section_key}")
-                records.append({
-                    "id": str(point_id),
-                    "text": sub_body,
-                    "source": f"{SOURCE_PREFIX}/{rel_path}",
-                    "filename": path.name,
-                    "section": section_key,
-                })
+                records.append(
+                    {
+                        "id": str(point_id),
+                        "text": sub_body,
+                        "source": f"{SOURCE_PREFIX}/{rel_path}",
+                        "filename": path.name,
+                        "section": section_key,
+                    }
+                )
         else:
             if len(body) < MIN_CHUNK_CHARS:
                 continue
             point_id = uuid.uuid5(UUID_NAMESPACE, f"{rel_path}::{heading}")
-            records.append({
-                "id": str(point_id),
-                "text": body,
-                "source": f"{SOURCE_PREFIX}/{rel_path}",
-                "filename": path.name,
-                "section": heading,
-            })
+            records.append(
+                {
+                    "id": str(point_id),
+                    "text": body,
+                    "source": f"{SOURCE_PREFIX}/{rel_path}",
+                    "filename": path.name,
+                    "section": heading,
+                }
+            )
 
     return records
 
@@ -205,7 +214,9 @@ def _chunk_file(path: Path, rel_path: str) -> list[dict]:
 def main() -> None:
     parser = argparse.ArgumentParser(description="Index project docs into Qdrant")
     parser.add_argument("--verbose", action="store_true", help="Enable debug logging")
-    parser.add_argument("--dry-run", action="store_true", help="Chunk and report but do not embed or upsert")
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Chunk and report but do not embed or upsert"
+    )
     args = parser.parse_args()
 
     logging.basicConfig(
@@ -253,17 +264,19 @@ def main() -> None:
 
     client = get_qdrant()
     points = []
-    for rec, vec in zip(all_records, all_vectors):
-        points.append(PointStruct(
-            id=rec["id"],
-            vector=vec,
-            payload={
-                "source": rec["source"],
-                "text": rec["text"],
-                "filename": rec["filename"],
-                "section": rec["section"],
-            },
-        ))
+    for rec, vec in zip(all_records, all_vectors, strict=False):
+        points.append(
+            PointStruct(
+                id=rec["id"],
+                vector=vec,
+                payload={
+                    "source": rec["source"],
+                    "text": rec["text"],
+                    "filename": rec["filename"],
+                    "section": rec["section"],
+                },
+            )
+        )
 
     log.info("Upserting %d points into Qdrant '%s' ...", len(points), COLLECTION)
     for i in range(0, len(points), BATCH_SIZE):

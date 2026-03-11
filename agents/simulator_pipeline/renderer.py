@@ -3,14 +3,18 @@
 Coaching and feedback events use structural templates (date, participant,
 topics, action items) — never evaluative or prescriptive language.
 """
+
 from __future__ import annotations
 
 import logging
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import yaml
 
 from agents.simulator_pipeline.models import ContentPolicy, SimulatedEvent
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 _log = logging.getLogger(__name__)
 
@@ -73,6 +77,7 @@ def _structural_body(event: SimulatedEvent) -> str:
 def _expand_template(event: SimulatedEvent) -> str:
     """Expand body_template with event fields."""
     topics_list = "\n".join(f"- {t}" for t in event.topics)
-    return event.body_template.replace("{topics_list}", topics_list).replace(
+    template = event.body_template or ""
+    return template.replace("{topics_list}", topics_list).replace(
         "{topics}", ", ".join(event.topics)
     )
