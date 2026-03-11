@@ -386,7 +386,9 @@ def check_sufficiency(
     try:
         from qdrant_client.models import FieldCondition, Filter, MatchText
 
-        doc_filter = Filter(must=[FieldCondition(key="source", match=MatchText(text="hapax-officium"))])
+        doc_filter = Filter(
+            must=[FieldCondition(key="source", match=MatchText(text="hapax-officium"))]
+        )
         doc_count_result = client.count(
             collection_name="documents",
             count_filter=doc_filter,
