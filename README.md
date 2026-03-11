@@ -8,11 +8,9 @@ hapax-officium is a decision support system for a single engineering manager. 16
 
 **The point is to fork it.** This isn't a SaaS product or a framework you integrate with. It's a working system you clone, seed with your own management data, and evolve. The synthetic demo corpus shows you how the data works. Replace it with your real team, your real 1:1 cadence, your real coaching patterns — and the system becomes yours. Every manager's practice is different; every fork should diverge. The architecture (filesystem-as-bus, reactive engine, axiom governance) stays; the agents, nudge thresholds, and domain knowledge grow in whatever direction your management practice needs.
 
-**Safety principle:** LLMs prepare, humans deliver. The system never generates feedback language, coaching recommendations, or evaluations of individual team members. This boundary is a [constitutional axiom](https://github.com/ryanklee/hapax-constitution) enforced at commit time, not a prompt instruction.
+**Safety principle:** LLMs prepare, humans deliver. The system never generates feedback language, coaching recommendations, or evaluations of individual team members. This is enforced as a [constitutional axiom](https://github.com/ryanklee/hapax-constitution) with commit-time hooks, not a prompt instruction.
 
 ## The self-demonstrating system
-
-Most projects ask you to watch a screencast. This one bootstraps a live replica of itself and demos it to you.
 
 ```bash
 ./scripts/bootstrap-demo.sh
@@ -20,11 +18,9 @@ Most projects ask you to watch a screencast. This one bootstraps a live replica 
 
 This copies a synthetic seed corpus (3 teams, 8 people, full management state) into the data directory, creates Qdrant collections, runs deterministic agents in parallel, then chains LLM synthesis agents: profiler → briefing → digest → team snapshot. After ~2 minutes, the cockpit API serves live management state — real nudges, real team health scores, real briefings generated from realistic synthetic data.
 
-The demo agent goes further. It profiles the audience (who are you presenting to?), generates a tailored demonstration against the live system, and the demo_eval agent critiques and iterates on the result. The system doesn't just run — it explains itself, to whoever is asking, at their level.
+The demo agent profiles the audience (who are you presenting to?), generates a tailored demonstration against the live system, and the demo_eval agent critiques and iterates on the result.
 
-The system also introspects. `introspect` snapshots its own infrastructure state. `health_monitor` checks itself every 15 minutes and auto-fixes what it can. `dev_story` queries its own development history — correlating git commits with Claude Code conversation transcripts to reconstruct why decisions were made. `knowledge_maint` prunes its own knowledge base for staleness and near-duplicates.
-
-This isn't observability bolted on. Self-knowledge is the architecture.
+The system also introspects across several dimensions. `introspect` snapshots its own infrastructure state. `health_monitor` checks itself every 15 minutes and auto-fixes what it can. `dev_story` queries its own development history, correlating git commits with Claude Code conversation transcripts to reconstruct why decisions were made. `knowledge_maint` prunes its own knowledge base for staleness and near-duplicates.
 
 ## Quick start
 
