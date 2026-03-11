@@ -247,6 +247,21 @@ git bundle create ~/backups/hapax-vscode-history.bundle --all
 
 Dev_story's git extractor will be configured to index these bundles as additional history sources alongside the current repo's history. Commit SHA correlation with Claude Code conversations is preserved.
 
+### Claude Code Conversation Histories
+
+Claude Code conversation transcripts (JSONL files in `~/.claude/projects/`) contain the development narrative — design discussions, architectural reasoning, debugging sessions — that git history alone cannot capture. Before any directory renames or cutover:
+
+```bash
+cp -r ~/.claude/projects/-home-hapaxlegomenon-projects-hapax-mgmt/ ~/backups/claude-conversations/hapax-mgmt/
+cp -r ~/.claude/projects/-home-hapaxlegomenon-projects-ai-agents/ ~/backups/claude-conversations/ai-agents/
+cp -r ~/.claude/projects/-home-hapaxlegomenon-projects-hapaxromana/ ~/backups/claude-conversations/hapaxromana/
+cp -r ~/.claude/projects/-home-hapaxlegomenon-projects-hapax-system/ ~/backups/claude-conversations/hapax-system/
+cp -r ~/.claude/projects/-home-hapaxlegomenon-projects-cockpit-web/ ~/backups/claude-conversations/cockpit-web/
+cp -r ~/.claude/projects/-home-hapaxlegomenon-projects-hapax-vscode/ ~/backups/claude-conversations/hapax-vscode/
+```
+
+Dev_story should index these alongside git bundles for complete commit-conversation correlation across the pre-publication history.
+
 Original repos archived at `~/projects/.archive/` after cutover (same pattern as hapax-mgmt -> hapax-mgmt-pre-publish).
 
 ---
