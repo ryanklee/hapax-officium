@@ -90,6 +90,28 @@ The cockpit API (`cockpit/api/`) serves 32 endpoints across 8 route groups: data
 
 Enforced via `shared/axiom_*.py` modules. T0 violations are blocked by SDLC hooks. See `axioms/registry.yaml` for definitions.
 
+## SDLC Pipeline
+
+LLM-driven software development lifecycle, aligned with hapax-council's pipeline pattern. Issues flow through automated stages on GitHub Actions:
+
+```
+Issue opened (labeled "agent-eligible")
+  → Triage (Sonnet): classify type/complexity, check axiom relevance (management_safety critical)
+  → Plan (Sonnet): identify files, acceptance criteria, diff estimate
+  → Implement (Opus on Claude Code): sandboxed agent/* branch, run tests, open PR
+  → Adversarial Review (Sonnet): management_safety as primary review focus, 3 rounds max
+  → Axiom Gate (Haiku): structural + semantic checks, management_safety T0 enforced
+  → Auto-merge (squash) on pass, block on T0 violation
+```
+
+**Scripts** (`scripts/`): `sdlc_triage.py`, `sdlc_plan.py`, `sdlc_review.py`, `sdlc_axiom_judge.py`. All support `--dry-run`.
+
+**Workflows** (`.github/workflows/`): `sdlc-triage.yml`, `sdlc-implement.yml`, `sdlc-review.yml`, `sdlc-axiom-gate.yml`.
+
+**Protected paths** (rejected by triage, flagged by review): `agents/system_check.py`, `shared/axiom_*`, `shared/config.py`, `axioms/`, `cockpit/engine/`, `.github/`.
+
+**Observability**: Each stage logs to `profiles/sdlc-events.jsonl` via `shared/sdlc_log.py`, writes audit trail via `shared/audit.py`, and exports Langfuse traces. CODEOWNERS protects governance files.
+
 ## Build, Test, and Run
 
 ```bash
