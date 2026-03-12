@@ -8,7 +8,9 @@ Engineering management is executive function work at scale. Tracking 1:1 cadence
 
 hapax-officium externalizes this work into infrastructure. 16 agents prepare context for 1:1s, generate morning briefings, track management practice patterns, surface stale conversations, and profile the operator's management self-awareness across 6 dimensions. A reactive engine watches the filesystem for changes and cascades downstream work — nudge recalculation, cache refresh, LLM synthesis — without being asked.
 
-**Safety principle.** LLMs prepare context; humans deliver words to other humans. The system never generates feedback language, coaching recommendations, or evaluations of individual team members. This boundary is enforced as a constitutional axiom with commit-time hooks — structural enforcement, not a prompt instruction. The distinction matters: a prompt instruction degrades under context pressure; a commit hook blocks the code from existing.
+**Safety principle.** LLMs prepare context; humans deliver words to other humans. The system never generates feedback language, coaching recommendations, or evaluations of individual team members. This boundary is enforced as a constitutional axiom with commit-time hooks — structural enforcement, not a prompt instruction.
+
+A prompt instruction ("never generate feedback about individuals") degrades under context pressure — long conversations, complex queries, and tool-heavy interactions erode instruction-following. A commit-time hook blocks code that contains feedback-generation patterns from existing in the repository. The enforcement layer is where code enters the system, not where the LLM interprets instructions.
 
 ## Design intent
 
@@ -28,11 +30,11 @@ The system also introspects: `health_monitor` checks itself every 15 minutes and
 
 ## Architecture
 
-**Filesystem-as-bus.** All management state lives as markdown files with YAML frontmatter in `data/`. Person notes, meeting records, coaching hypotheses, feedback, OKRs, goals, incidents — human-readable, versioned by git. Agents read and write these files. The reactive engine watches via inotify.
+**Filesystem-as-bus.** All management state lives as markdown files with YAML frontmatter in `data/`. Person notes, meeting records, coaching hypotheses, feedback, OKRs, goals, incidents — human-readable, versioned by git. Agents read and write these files; the reactive engine watches via inotify. No message broker, no shared database, no RPC. Agents coordinate by producing and consuming files. Trades transactional consistency for debuggability (`cat`, `grep`, `git log`). At single-operator scale, the consistency trade-off has no practical cost. See [hapax-constitution](https://github.com/ryanklee/hapax-constitution) for the full rationale.
 
-**Reactive engine.** When files change, 12 rules evaluate and produce phased actions: deterministic work first (unlimited concurrency), then LLM work (semaphore-bounded, max 2). Person note updated — nudges recalculate. Meeting transcript dropped in — context refreshes. Coaching hypothesis written — the briefing regenerates. No manual triggering.
+**Reactive engine.** When files change, inotify fires, 12 rules evaluate, and phased actions execute — deterministic work first (unlimited concurrency), then LLM work (semaphore-bounded, max 2). Person note updated — nudges recalculate. Meeting transcript added — context refreshes. Coaching hypothesis written — the briefing regenerates. Self-trigger prevention ensures engine-written files don't create infinite loops. No manual triggering required.
 
-**Nudges.** 9 collectors across 3 categories (people, goals, operational) generate attention-prioritized nudges. Category-slotted caps prevent any single domain from monopolizing the operator's attention budget. Delivered via push notification.
+**Nudges.** 9 collectors across 3 categories (people, goals, operational) generate prioritized attention signals delivered via push notification. Examples: "1:1 with Alex overdue by 3 weeks," "Coaching follow-up for Jordan pending," "Q1 OKR check-in window closes Friday." Category-slotted caps prevent any single domain from dominating (at most N people nudges, M goal nudges per cycle).
 
 **Axiom governance.** Three constitutional axioms constrain the system:
 
@@ -42,7 +44,7 @@ The system also introspects: `health_monitor` checks itself every 15 minutes and
 | `decision_support` | 95 | Zero-config agents. Actionable errors. Automated routines. |
 | `management_safety` | 95 | Never generate feedback language or coaching recommendations about individuals. |
 
-These axioms produce derived implications at graduated enforcement tiers (T0: block, T1: review, T2: warn), each classified by interpretive canon (textualist, purposivist, absurdity, omitted-case) and enforcement mode (prohibition or sufficiency). See [hapax-constitution](https://github.com/ryanklee/hapax-constitution) for the full governance architecture.
+Each axiom produces derived implications — concrete constraints like "error messages must include a next action" or "never store individual performance ratings." These are enforced at graduated tiers: T0 blocks code from existing (commit hook), T1 requires operator review, T2 warns. Each implication carries an interpretive canon (how to apply it to unforeseen cases — textualist, purposivist, absurdity, or omitted-case) and a mode (prohibition: must NOT do this; sufficiency: MUST do this). See [hapax-constitution](https://github.com/ryanklee/hapax-constitution) for the full governance architecture.
 
 ## Agents
 
@@ -115,11 +117,15 @@ hapax-officium/
 └── docs/             Design documents and plans
 ```
 
-## Related
+## Ecosystem
 
-hapax-officium is a management-domain instantiation of the [hapax-constitution](https://github.com/ryanklee/hapax-constitution) pattern — a governance architecture for LLM agent systems using constitutional axioms, filesystem-as-bus coordination, and a reactive engine.
+Three repositories compose the hapax system:
 
-[hapax-council](https://github.com/ryanklee/hapax-council) is the full personal operating environment: 26+ agents, voice daemon, RAG sync pipeline, and the same governance architecture at broader scope.
+- **[hapax-constitution](https://github.com/ryanklee/hapax-constitution)** — The pattern specification. Defines the governance architecture: axioms, implications, interpretive canon, sufficiency probes, precedent store, filesystem-as-bus, reactive engine, three-tier agent model.
+- **[hapax-council](https://github.com/ryanklee/hapax-council)** — Personal operating environment. 26+ agents, voice daemon, RAG pipeline, reactive cockpit. Officium was extracted from council.
+- **hapax-officium** (this repo) — Management-domain extraction. Designed to be forked by engineering managers. Same architecture, scoped to management support.
+
+The three repos share infrastructure (Qdrant, LiteLLM, Ollama, PostgreSQL) but not code. The constitution constrains both implementations; the code is independent.
 
 ## License
 
