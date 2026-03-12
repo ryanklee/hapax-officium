@@ -1,0 +1,41 @@
+name: Auto Fix
+
+on:
+  check_suite:
+    types: [completed]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  fix:
+    if: >
+      github.event.check_suite.conclusion == 'failure' &&
+      github.event.check_suite.head_branch != 'main' &&
+      !startsWith(github.event.check_suite.head_branch, 'dependabot/')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.check_suite.head_branch }}
+          fetch-depth: 0
+      - uses: anthropics/claude-code-action@5d0cc745cd0cce4c0e9e0b3511de26c3bc285eb5
+        with:
+          model: claude-sonnet-4-6
+          max_turns: 5
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          timeout_minutes: 10
+          allowed_tools: "Read,Glob,Grep,Edit,Write,Bash"
+          prompt: |
+            The CI checks failed on this branch. Fix the issues.
+
+            Rules:
+            - Only fix lint errors (ruff), type errors (pyright), and test failures
+            - NEVER modify these files: axioms/*, shared/axiom_*.py, shared/config.py,
+              agents/system_check.py, .github/*, cockpit/engine/*
+            - Run `uv run ruff check --fix .` for lint issues
+            - Run `uv run pyright` to verify type fixes
+            - Run `uv run pytest` to verify test fixes
+            - Maximum 5 fix attempts per CI run (circuit breaker)

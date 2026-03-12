@@ -1,0 +1,9 @@
+# Governance & oversight — require human review
+axioms/ @ryanklee
+shared/axiom_registry.py @ryanklee
+shared/axiom_tools.py @ryanklee
+shared/axiom_enforcement.py @ryanklee
+shared/axiom_patterns.py @ryanklee
+shared/config.py @ryanklee
+agents/system_check.py @ryanklee
+.github/ @ryanklee

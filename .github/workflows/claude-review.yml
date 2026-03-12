@@ -1,0 +1,37 @@
+name: Claude Review
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  review:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: anthropics/claude-code-action@5d0cc745cd0cce4c0e9e0b3511de26c3bc285eb5
+        with:
+          model: claude-sonnet-4-6
+          max_turns: 5
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          timeout_minutes: 10
+          allowed_tools: "Read,Glob,Grep,Bash(read-only)"
+          prompt: |
+            Review this PR for correctness, security, and axiom compliance.
+            Focus on:
+            - Logic errors, missing edge cases, race conditions
+            - Security: hardcoded secrets, injection vectors, path traversal
+            - Axiom compliance: single_operator, decision_support, management_safety
+            - The management_safety axiom is CRITICAL: the system must NEVER generate
+              feedback language, coaching recommendations, or performance evaluations
+              about individual team members
+            - Test coverage for new code paths
+            Only report HIGH and MEDIUM findings. Be specific with file paths and line numbers.
