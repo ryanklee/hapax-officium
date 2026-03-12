@@ -41,8 +41,8 @@ class TestCaptureScreenshots:
             ),
         ]
 
-    @patch("agents.demo_pipeline.screenshots._preflight_check")
-    @patch("agents.demo_pipeline.screenshots.async_playwright")
+    @patch("demo.pipeline.screenshots._preflight_check")
+    @patch("demo.pipeline.screenshots.async_playwright")
     async def test_captures_screenshots(self, mock_pw, mock_preflight, specs, output_dir):
         mock_page = AsyncMock()
         mock_browser = AsyncMock()
@@ -61,8 +61,8 @@ class TestCaptureScreenshots:
         assert mock_page.screenshot.call_count == 2
         assert len(progress) == 2
 
-    @patch("agents.demo_pipeline.screenshots._preflight_check")
-    @patch("agents.demo_pipeline.screenshots.async_playwright")
+    @patch("demo.pipeline.screenshots._preflight_check")
+    @patch("demo.pipeline.screenshots.async_playwright")
     async def test_sets_viewport(self, mock_pw, mock_preflight, output_dir):
         mock_page = AsyncMock()
         mock_browser = AsyncMock()
@@ -84,9 +84,9 @@ class TestCaptureScreenshots:
 
 
 class TestScreenshotRetry:
-    @patch("agents.demo_pipeline.screenshots.asyncio.sleep", new_callable=AsyncMock)
-    @patch("agents.demo_pipeline.screenshots._preflight_check", new_callable=AsyncMock)
-    @patch("agents.demo_pipeline.screenshots.async_playwright")
+    @patch("demo.pipeline.screenshots.asyncio.sleep", new_callable=AsyncMock)
+    @patch("demo.pipeline.screenshots._preflight_check", new_callable=AsyncMock)
+    @patch("demo.pipeline.screenshots.async_playwright")
     async def test_retries_on_failure(self, mock_pw, mock_preflight, mock_sleep, tmp_path):
         mock_page = AsyncMock()
         # First goto fails, second succeeds
@@ -102,9 +102,9 @@ class TestScreenshotRetry:
         await capture_screenshots(specs, tmp_path, max_retries=2)
         assert mock_page.goto.call_count == 2
 
-    @patch("agents.demo_pipeline.screenshots.asyncio.sleep", new_callable=AsyncMock)
-    @patch("agents.demo_pipeline.screenshots._preflight_check", new_callable=AsyncMock)
-    @patch("agents.demo_pipeline.screenshots.async_playwright")
+    @patch("demo.pipeline.screenshots.asyncio.sleep", new_callable=AsyncMock)
+    @patch("demo.pipeline.screenshots._preflight_check", new_callable=AsyncMock)
+    @patch("demo.pipeline.screenshots.async_playwright")
     async def test_raises_after_max_retries(self, mock_pw, mock_preflight, mock_sleep, tmp_path):
         mock_page = AsyncMock()
         mock_page.goto.side_effect = Exception("persistent failure")
@@ -120,8 +120,8 @@ class TestScreenshotRetry:
         # 1 initial + 2 retries = 3 attempts
         assert mock_page.goto.call_count == 3
 
-    @patch("agents.demo_pipeline.screenshots._preflight_check", new_callable=AsyncMock)
-    @patch("agents.demo_pipeline.screenshots.async_playwright")
+    @patch("demo.pipeline.screenshots._preflight_check", new_callable=AsyncMock)
+    @patch("demo.pipeline.screenshots.async_playwright")
     async def test_no_retry_when_max_retries_zero(self, mock_pw, mock_preflight, tmp_path):
         mock_page = AsyncMock()
         mock_page.goto.side_effect = Exception("fail")
@@ -163,15 +163,16 @@ class TestResolveSelector:
         spec = ScreenshotSpec(url="http://example.com", wait_for="#main-content")
         assert _resolve_selector(spec) == "#main-content"
 
-    def test_port_8060_also_matched(self):
+    def test_port_8060_not_matched(self):
+        """Port 8060 is officium-specific and not in the shared package's ROUTE_SELECTORS."""
         spec = ScreenshotSpec(url="http://localhost:8060/")
-        assert _resolve_selector(spec) == "text=Action Items"
+        assert _resolve_selector(spec) is None
 
 
 class TestGracefulDegradation:
-    @patch("agents.demo_pipeline.screenshots.asyncio.sleep", new_callable=AsyncMock)
-    @patch("agents.demo_pipeline.screenshots._preflight_check", new_callable=AsyncMock)
-    @patch("agents.demo_pipeline.screenshots.async_playwright")
+    @patch("demo.pipeline.screenshots.asyncio.sleep", new_callable=AsyncMock)
+    @patch("demo.pipeline.screenshots._preflight_check", new_callable=AsyncMock)
+    @patch("demo.pipeline.screenshots.async_playwright")
     async def test_selector_timeout_captures_anyway(
         self, mock_pw, mock_preflight, mock_sleep, tmp_path
     ):
