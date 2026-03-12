@@ -98,11 +98,25 @@ uv sync
 # Run tests (all mocked, no LLM/network calls needed)
 uv run pytest tests/ -q
 
+# Run a single test file or specific test
+uv run pytest tests/test_engine_rules.py -q
+uv run pytest tests/test_api.py::test_health -q
+
+# Lint and format
+uv run ruff check .
+uv run ruff format .
+
+# Type check
+uv run pyright
+
 # Run an agent directly
 uv run python -m agents.<name> [flags]
 
 # Run cockpit API server (port 8050)
 uv run python -m cockpit.api --host 127.0.0.1 --port 8050
+
+# Frontend (React dashboard)
+cd officium-web && npm install && npm run dev
 ```
 
 ## Demo Hydration
@@ -177,6 +191,17 @@ API endpoints: `GET /api/engine/status`, `GET /api/engine/recent`, `GET /api/eng
 | `cockpit/engine/` | Reactive engine (inotify watcher, rule evaluator, phased executor) |
 | `axioms/registry.yaml` | Axiom definitions (single_operator, decision_support, management_safety) |
 
+## Infrastructure Defaults
+
+Configured in `shared/config.py` via env vars. Defaults:
+
+| Service | Env Var | Default |
+|---------|---------|---------|
+| LiteLLM | `LITELLM_API_BASE` / `LITELLM_BASE_URL` | `http://localhost:4100` |
+| Qdrant | `QDRANT_URL` | `http://localhost:6433` |
+| Ollama | `OLLAMA_URL` | `http://localhost:11534` |
+| DATA_DIR | `HAPAX_DATA_DIR` | `./data` |
+
 ## Conventions
 
 - Python 3.12+, managed with `uv`. Never pip.
@@ -186,4 +211,5 @@ API endpoints: `GET /api/engine/status`, `GET /api/engine/recent`, `GET /api/eng
 - pydantic-ai: uses `output_type` (not `result_type`) and `result.output` (not `result.data`).
 - Tests use `unittest.mock` -- no pytest fixtures in conftest. Each test file is self-contained.
 - `asyncio_mode = "auto"` in pytest config -- async tests work without `@pytest.mark.asyncio`.
+- Ruff: line-length 100, double quotes. Imports sorted with `known-first-party = ["agents", "shared", "cockpit"]`.
 - Safety: LLMs prepare, humans deliver. Never generate feedback language or coaching recommendations about individual team members.
