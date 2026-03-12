@@ -37,7 +37,7 @@ dependencies = [
     "opentelemetry-instrumentation-httpx>=0.50b0",
     "opentelemetry-instrumentation-fastapi>=0.50b0",
     "prometheus-fastapi-instrumentator>=7.0.0",
-    "hapax-sdlc @ git+https://github.com/ryanklee/hapax-constitution.git",
+    "hapax-sdlc[demo] @ git+https://github.com/ryanklee/hapax-constitution.git",
 ]
 
 [project.scripts]
