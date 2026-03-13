@@ -26,7 +26,7 @@ This copies a synthetic seed corpus (3 teams, 8 people, full management state) i
 
 The demo agent profiles the audience (who are you presenting to?), generates a tailored demonstration against the live system, and the demo_eval agent critiques and iterates on the result.
 
-The system also introspects: `health_monitor` checks itself every 15 minutes and auto-fixes what it can. `dev_story` queries its own development history, correlating git commits with Claude Code transcripts to reconstruct why decisions were made. `knowledge_maint` prunes its own knowledge base for staleness and near-duplicates.
+The system also introspects: `health_monitor` checks itself every 15 minutes and auto-fixes what it can. `knowledge_maint` prunes its own knowledge base for staleness and near-duplicates.
 
 ## Architecture
 
@@ -122,7 +122,7 @@ hapax-officium/
 Three repositories compose the hapax system:
 
 - **[hapax-constitution](https://github.com/ryanklee/hapax-constitution)** — The pattern specification. Defines the governance architecture: axioms, implications, interpretive canon, sufficiency probes, precedent store, filesystem-as-bus, reactive engine, three-tier agent model.
-- **[hapax-council](https://github.com/ryanklee/hapax-council)** — Personal operating environment. 26+ agents, voice daemon, RAG pipeline, reactive cockpit. Officium was extracted from council.
+- **[hapax-council](https://github.com/ryanklee/hapax-council)** — Personal operating environment. 26+ agents, voice daemon, RAG pipeline, natural language query subsystem, reactive cockpit. Officium was extracted from council.
 - **hapax-officium** (this repo) — Management-domain extraction. Designed to be forked by engineering managers. Same architecture, scoped to management support.
 
 The three repos share infrastructure (Qdrant, LiteLLM, Ollama, PostgreSQL) but not code. The constitution constrains both implementations; the code is independent.
