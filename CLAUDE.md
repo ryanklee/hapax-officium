@@ -231,6 +231,8 @@ Configured in `shared/config.py` via env vars. Defaults:
 - All LLM calls through LiteLLM proxy. Never direct to providers.
 - Git: conventional commits, feature branches from `main`.
 - **NEVER switch branches in the primary worktree.** The primary checkout (`~/projects/hapax-officium`) stays on `main`. For any feature branch, use `git worktree add ../hapax-officium--<branch-slug> <branch>`. This prevents concurrent Claude sessions from clobbering each other's state. When done, `git worktree remove`.
+- **Always PR completed work before moving on.** When you finish a coherent batch of work (feature, fix, refactor), create a PR immediately — do not wait to be asked. Only skip the PR if the work is genuinely incomplete or broken. Push and PR freely; this is expected behavior. **Do NOT start new work until the current work is resolved** — resolved means either a PR has been submitted or there is no branch/changes remaining to PR. This is a blocking requirement.
+- **You own every PR you create through to merge.** Do not abandon PRs. Monitor CI checks, fix failures, update the branch if behind, and merge when ready. A PR is not done until it is merged into main. If checks fail, diagnose and fix them before moving on. If the branch falls behind, update it. This is your responsibility — no one else will do it.
 - pydantic-ai: uses `output_type` (not `result_type`) and `result.output` (not `result.data`).
 - Tests use `unittest.mock` -- no pytest fixtures in conftest. Each test file is self-contained.
 - `asyncio_mode = "auto"` in pytest config -- async tests work without `@pytest.mark.asyncio`.
