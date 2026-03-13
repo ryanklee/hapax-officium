@@ -28,8 +28,10 @@ jobs:
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          claude_args: "--model claude-sonnet-4-6 --max-turns 5 --allowedTools Read,Glob,Grep,Bash"
-          prompt: |
+          model: claude-sonnet-4-6
+          max_turns: 5
+          allowed_tools: "Read,Glob,Grep,Bash"
+          direct_prompt: |
             Review this PR for correctness, security, and axiom compliance.
             Focus on:
             - Logic errors, missing edge cases, race conditions
