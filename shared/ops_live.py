@@ -47,9 +47,7 @@ def query_langfuse_cost(days: int = 7) -> str:
             cost = obs.get("calculatedTotalCost") or 0.0
             model = obs.get("model") or "unknown"
             tokens_in = obs.get("promptTokens") or obs.get("usage", {}).get("input", 0) or 0
-            tokens_out = (
-                obs.get("completionTokens") or obs.get("usage", {}).get("output", 0) or 0
-            )
+            tokens_out = obs.get("completionTokens") or obs.get("usage", {}).get("output", 0) or 0
 
             if model not in model_costs:
                 model_costs[model] = {"cost": 0.0, "calls": 0, "tokens_in": 0, "tokens_out": 0}
