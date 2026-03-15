@@ -97,11 +97,16 @@ class AgentRunner:
             self._process = None
             self._running = False
 
-    async def run_shell(self, command: str, label: str = "") -> RunResult:
+    async def _run_shell(self, command: str, label: str = "") -> RunResult:
         """Execute a shell command string (supports pipes, redirects, etc.).
 
+        WARNING: This method uses create_subprocess_shell and MUST NOT be called
+        with user-controlled input. It exists only for internal use where shell
+        features (pipes, redirects) are genuinely required. Prefer ``run()``
+        with an explicit args list whenever possible.
+
         Args:
-            command: Shell command string.
+            command: Shell command string — must be a trusted, hardcoded value.
             label: Human-readable label for output header.
         """
         if self._running:
