@@ -18,7 +18,7 @@ VS Code extension that embeds the Hapax autonomous agent system into the vault e
 ### From VSIX
 
 ```bash
-cd ~/projects/hapax-vscode
+cd vscode/
 pnpm install
 pnpm run package
 code --install-extension hapax-vscode-0.1.0.vsix
@@ -27,7 +27,7 @@ code --install-extension hapax-vscode-0.1.0.vsix
 ### Development
 
 ```bash
-cd ~/projects/hapax-vscode
+cd vscode/
 pnpm install
 pnpm run watch
 # Press F5 in VS Code to launch Extension Development Host
@@ -59,7 +59,7 @@ All settings are under the `hapax.*` namespace in VS Code settings.
 Keys are resolved in order: VS Code setting > environment variable (via direnv) > `pass` GPG store. The environment variable and pass path are provider-specific:
 
 | Provider | Env Var | Pass Path |
-|----------|---------|-----------|
+|----------|---------|-----------||
 | litellm | `LITELLM_API_KEY` | `litellm/master-key` |
 | openai | `OPENAI_API_KEY` | `api/openai` |
 | anthropic | `ANTHROPIC_API_KEY` | `api/anthropic` |
@@ -91,7 +91,7 @@ The extension is bundled with esbuild to a single `dist/extension.js`. Runtime d
 ## Related Repos
 
 | Repo | Purpose |
-|------|---------|
-| [hapaxromana](~/projects/hapaxromana/) | Architecture specs, axioms, design authority |
+|------|---------||
+| [hapax-constitution](~/projects/hapax-constitution/) | Architecture specs, axioms, design authority |
 | [agents, shared, cockpit](./) | Tier 2 agent implementations + cockpit API |
-| [cockpit-web](~/projects/cockpit-web/) | Web dashboard (full command center) |
+| [officium-web](../officium-web/) | Web dashboard |
