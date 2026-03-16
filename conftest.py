@@ -32,8 +32,20 @@ def _block_real_notifications():
     mock_run = MagicMock()
     mock_run.return_value = MagicMock(returncode=0)
 
+    # Patch a *private wrapper* on the notify module so we don't clobber
+    # subprocess.run globally (which would break any test that needs the
+    # real subprocess, e.g. ffmpeg audio-conversion tests).
+    import subprocess
+    import types
+
+    fake_subprocess = types.ModuleType("subprocess")
+    fake_subprocess.run = mock_run  # type: ignore[attr-defined]
+    # Carry over exception classes that notify.py catches.
+    fake_subprocess.TimeoutExpired = subprocess.TimeoutExpired  # type: ignore[attr-defined]
+    fake_subprocess.CalledProcessError = subprocess.CalledProcessError  # type: ignore[attr-defined]
+
     with (
         patch("shared.notify.urlopen", mock_urlopen),
-        patch("shared.notify.subprocess.run", mock_run),
+        patch("shared.notify.subprocess", fake_subprocess),
     ):
         yield
