@@ -4,7 +4,7 @@
 
 VS Code extension for the Hapax system. Replaces the archived `obsidian-hapax` plugin. Provides an LLM chat sidebar, Qdrant RAG search, and management commands -- all embedded in the vault editing workflow.
 
-Part of the three-tier Hapax architecture. This is a Tier 1 interface (interactive). Architecture specs live in `~/projects/hapaxromana/`.
+Part of the three-tier Hapax architecture. This is a Tier 1 interface (interactive). Architecture specs live in `~/projects/hapax-constitution/`.
 
 ## Build and Run
 
@@ -29,7 +29,7 @@ No test runner is configured yet.
 Three LLM providers behind a common `LLMProvider` interface (`src/types.ts`):
 
 | Provider | Class | Transport |
-|----------|-------|-----------|
+|----------|-------|-----------||
 | `litellm` | `OpenAICompatibleProvider` | OpenAI-compatible SSE via LiteLLM proxy (:4000) |
 | `openai` | `OpenAICompatibleProvider` | Direct OpenAI API (same SSE format) |
 | `anthropic` | `AnthropicProvider` | Anthropic Messages API (`x-api-key`, `content_block_delta` SSE) |
