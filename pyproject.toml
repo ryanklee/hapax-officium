@@ -25,7 +25,7 @@ dependencies = [
     "pillow>=11.0.0",
     "playwright>=1.50.0",
     "pydantic>=2.12.5",
-    "pydantic-ai[litellm]>=1.63.0",
+    "pydantic-ai>=1.63.0",
     "pyyaml>=6.0",
     "qdrant-client>=1.17.0",
     "sse-starlette>=2.0.0",
@@ -37,7 +37,7 @@ dependencies = [
     "opentelemetry-instrumentation-httpx>=0.50b0",
     "opentelemetry-instrumentation-fastapi>=0.50b0",
     "prometheus-fastapi-instrumentator>=7.0.0",
-    "hapax-sdlc[demo] @ git+https://github.com/ryanklee/hapax-constitution.git",
+    "hapax-sdlc[demo] @ git+https://github.com/ryanklee/hapax-constitution.git@cbdf204756fc6f0583d3056669e2c8643ca15d21",
 ]
 
 [project.scripts]

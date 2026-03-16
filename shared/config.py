@@ -18,8 +18,13 @@ LITELLM_BASE: str = os.environ.get(
     "LITELLM_API_BASE",
     os.environ.get("LITELLM_BASE_URL", "http://localhost:4100"),
 )
-LITELLM_KEY: str = os.environ.get("LITELLM_API_KEY", "changeme")
+LITELLM_KEY: str = os.environ.get("LITELLM_API_KEY", "")
 QDRANT_URL: str = os.environ.get("QDRANT_URL", "http://localhost:6433")
+
+if not LITELLM_KEY:
+    logging.getLogger("shared.config").warning(
+        "LITELLM_API_KEY is not set — LLM calls will fail until a valid key is provided"
+    )
 OLLAMA_URL: str = os.environ.get("OLLAMA_URL", "http://localhost:11534")
 
 # ── Canonical paths ─────────────────────────────────────────────────────────
