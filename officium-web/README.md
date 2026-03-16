@@ -1,73 +1,60 @@
-# React + TypeScript + Vite
+# officium-web
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Management dashboard for the hapax-officium system. Provides agent execution, nudge management, demo viewing, incident monitoring, and management oversight.
 
-Currently, two official plugins are available:
+## Quick Start
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+pnpm install      # install dependencies
+pnpm dev          # dev server on :5173
+pnpm build        # type-check + production build
+pnpm lint         # ESLint
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+**Requires the cockpit API backend running at :8050.** Vite proxies `/api` requests to `http://127.0.0.1:8051` in dev mode.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Tech Stack
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- **React 19** + **TypeScript 5.9** (strict mode)
+- **Vite 7** with `@vitejs/plugin-react`
+- **Tailwind CSS 4** via `@tailwindcss/vite`
+- **TanStack React Query** (5min refetch interval)
+- **React Router 7** (BrowserRouter, 2 routes)
+- **Lucide React** for icons
+- **react-markdown** + remark-gfm for markdown rendering
+
+No test runner is currently configured.
+
+## Routes
+
+| Path | Page | Purpose |
+|------|------|---------||
+| `/` | DashboardPage | Agents, nudges, incidents, sidebar panels |
+| `/demos` | DemosPage | Browse and view generated demos |
+
+## Project Structure
+
 ```
+src/
+  api/            API client (20 endpoints), React Query hooks, SSE helpers, TypeScript types
+  components/
+    dashboard/    Agent grid, nudge list, output pane, incident banner, agent config modal
+    demos/        Demo list and detail views
+    layout/       App layout shell, error boundary, command palette, toast provider
+    shared/       Command palette, error boundary, modals, markdown, badges, loading skeletons
+    sidebar/      5 sidebar panels (briefing, management, OKRs, review cycles, goals)
+  pages/          DashboardPage, DemosPage
+  utils.ts        Shared utilities
+```
+
+## Sidebar
+
+5 panels with auto-priority sorting (stale 1:1s > overdue reviews > at-risk OKRs > stale briefing). Auto-expand on alerts, manual collapse/expand override. Collapses to icon strip with status dots.
+
+## Conventions
+
+- **pnpm only** — never npm or yarn
+- TypeScript strict mode enforced
+- Tailwind for all styling — no CSS modules or styled-components
+- Functional components only
+- API types must stay in sync with cockpit backend dataclasses
