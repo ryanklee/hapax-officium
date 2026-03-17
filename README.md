@@ -123,7 +123,7 @@ hapax-officium/
 Three repositories compose the hapax system:
 
 - **[hapax-constitution](https://github.com/ryanklee/hapax-constitution)** — The pattern specification. Defines the governance architecture: axioms, implications, interpretive canon, sufficiency probes, precedent store, filesystem-as-bus, reactive engine, three-tier agent model.
-- **[hapax-council](https://github.com/ryanklee/hapax-council)** — Personal operating environment. 26+ agents, voice daemon, RAG pipeline, natural language query subsystem, reactive cockpit. Officium was extracted from council.
+- **[hapax-council](https://github.com/ryanklee/hapax-council)** — Personal operating environment. 45+ agents, voice daemon, perception intelligence, studio compositor, RAG pipeline, reactive cockpit. Officium was extracted from council.
 - **hapax-officium** (this repo) — Management-domain extraction. Designed to be forked by engineering managers. Same architecture, scoped to management support.
 
 The three repos share infrastructure (Qdrant, LiteLLM, Ollama, PostgreSQL) but not code. The constitution constrains both implementations; the code is independent.
