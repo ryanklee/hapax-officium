@@ -1,6 +1,8 @@
-# officium-web
+# officium-web — Management Dashboard
 
-Management dashboard for the hapax-officium system. Provides agent execution, nudge management, demo viewing, incident monitoring, and management oversight.
+React single-page application providing operational visibility into the hapax-officium management decision support system. Agent execution, nudge management, briefings, goals, and demo browsing — backed by the cockpit API via Server-Sent Events and React Query.
+
+This is a Tier 1 interface: interactive, human-facing, read-heavy. It consumes the cockpit API (:8050) but never writes to the filesystem-as-bus directly. All mutations go through API endpoints that the reactive engine processes.
 
 ## Quick Start
 
@@ -11,50 +13,51 @@ pnpm build        # type-check + production build
 pnpm lint         # ESLint
 ```
 
-**Requires the cockpit API backend running at :8050.** Vite proxies `/api` requests to `http://127.0.0.1:8051` in dev mode.
+Requires the cockpit API at :8050:
+```bash
+cd ~/projects/hapax-officium
+uv run python -m cockpit.api --host 127.0.0.1 --port 8050
+```
 
-## Tech Stack
+## Architecture
 
-- **React 19** + **TypeScript 5.9** (strict mode)
-- **Vite 7** with `@vitejs/plugin-react`
-- **Tailwind CSS 4** via `@tailwindcss/vite`
-- **TanStack React Query** (5min refetch interval)
-- **React Router 7** (BrowserRouter, 2 routes)
-- **Lucide React** for icons
-- **react-markdown** + remark-gfm for markdown rendering
+**Server state** is managed exclusively through TanStack React Query. Every backend call goes through `src/api/client.ts`, which hits `/api/*` (Vite proxies to :8050 in dev, nginx proxies in production). Types in `src/api/types.ts` mirror the Python dataclasses in `cockpit/data/`.
 
-No test runner is currently configured.
+**Agent execution** uses Server-Sent Events (`src/api/sse.ts` + `src/hooks/useSSE.ts`). Agent runs stream output, done, and error events in real time. AbortController-based cancellation with DELETE to `/api/agents/runs/current`.
+
+**Sidebar panels** show management-relevant context: briefing, goals, OKRs, management snapshots (people, coaching, feedback), review cycles, and status reports.
 
 ## Routes
 
 | Path | Page | Purpose |
-|------|------|---------||
-| `/` | DashboardPage | Agents, nudges, incidents, sidebar panels |
-| `/demos` | DemosPage | Browse and view generated demos |
+|------|------|---------|
+| `/` | DashboardPage | Agent grid, nudge list, incidents, streaming output, sidebar panels |
+| `/demos` | DemosPage | Browse and view generated capability demos |
+
+## Stack
+
+React 19, TypeScript 5.9 (strict), Vite 7, Tailwind CSS 4 (Gruvbox Dark theme), TanStack React Query, React Router 7, Recharts, Lucide React, react-markdown + remark-gfm, JetBrains Mono.
 
 ## Project Structure
 
 ```
 src/
-  api/            API client (20 endpoints), React Query hooks, SSE helpers, TypeScript types
+  api/              Client, React Query hooks, SSE streaming, TypeScript types
   components/
-    dashboard/    Agent grid, nudge list, output pane, incident banner, agent config modal
-    demos/        Demo list and detail views
-    layout/       App layout shell, error boundary, command palette, toast provider
-    shared/       Command palette, error boundary, modals, markdown, badges, loading skeletons
-    sidebar/      5 sidebar panels (briefing, management, OKRs, review cycles, goals)
-  pages/          DashboardPage, DemosPage
-  utils.ts        Shared utilities
+    dashboard/      Agent grid, nudge list, output pane, incident banner
+    demos/          Demo list and detail views
+    layout/         App shell, header, error boundary, toast provider, command palette
+    sidebar/        Briefing, goals, OKRs, management, review cycle panels
+  hooks/            useSSE (agent output streaming)
+  pages/            DashboardPage, DemosPage
 ```
 
-## Sidebar
+## Deployment
 
-5 panels with auto-priority sorting (stale 1:1s > overdue reviews > at-risk OKRs > stale briefing). Auto-expand on alerts, manual collapse/expand override. Collapses to icon strip with status dots.
+Production builds are served via nginx with SPA routing fallback. API requests proxy to `management-cockpit:8050`. Static assets cached with 1-year expiry.
 
-## Conventions
+## Related
 
-- **pnpm only** — never npm or yarn
-- TypeScript strict mode enforced
-- Tailwind for all styling — no CSS modules or styled-components
-- Functional components only
-- API types must stay in sync with cockpit backend dataclasses
+- [hapax-officium](https://github.com/ryanklee/hapax-officium) — Backend cockpit API + agents
+- [hapax-constitution](https://github.com/ryanklee/hapax-constitution) — Governance architecture
+- [council-web](../council-web/) (in hapax-council) — Equivalent dashboard for the personal operating environment
