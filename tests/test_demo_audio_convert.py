@@ -8,12 +8,26 @@ from pathlib import Path
 
 import pytest
 
-try:
-    import imageio_ffmpeg  # noqa: F401
 
-    _HAS_FFMPEG = True
-except ModuleNotFoundError:
-    _HAS_FFMPEG = False
+def _ffmpeg_available() -> bool:
+    """Check that imageio_ffmpeg is installed AND the binary actually runs."""
+    try:
+        import subprocess  # noqa: S404
+
+        import imageio_ffmpeg
+
+        exe = imageio_ffmpeg.get_ffmpeg_exe()
+        if not exe:
+            return False
+        result = subprocess.run(  # noqa: S603
+            [exe, "-version"], capture_output=True, timeout=5
+        )
+        return result.returncode == 0
+    except (ModuleNotFoundError, RuntimeError, FileNotFoundError, OSError):
+        return False
+
+
+_HAS_FFMPEG = _ffmpeg_available()
 
 pytestmark = pytest.mark.skipif(not _HAS_FFMPEG, reason="imageio_ffmpeg not installed")
 

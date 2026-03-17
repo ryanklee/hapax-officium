@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import re
 from datetime import date
 from typing import TYPE_CHECKING
 
@@ -15,14 +16,24 @@ if TYPE_CHECKING:
 
 _log = logging.getLogger(__name__)
 
+_SLUG_RE = re.compile(r"[^a-zA-Z0-9_-]")
+
 
 def _write_md(
     path: Path,
     content: str,
     frontmatter: dict | None = None,
 ) -> Path:
-    """Write a markdown file with optional YAML frontmatter. Creates parent dirs."""
-    path.parent.mkdir(parents=True, exist_ok=True)
+    """Write a markdown file with optional YAML frontmatter. Creates parent dirs.
+
+    Validates that the resolved path stays under DATA_DIR to prevent path traversal.
+    """
+    resolved = path.resolve()
+    data_root = config.data_dir.resolve()
+    if not resolved.is_relative_to(data_root):
+        raise ValueError(f"Path escapes DATA_DIR: {resolved}")
+
+    resolved.parent.mkdir(parents=True, exist_ok=True)
     parts: list[str] = []
     if frontmatter:
         parts.append("---")
@@ -30,8 +41,8 @@ def _write_md(
         parts.append("---")
         parts.append("")
     parts.append(content)
-    path.write_text("\n".join(parts))
-    return path
+    resolved.write_text("\n".join(parts))
+    return resolved
 
 
 def _today() -> str:
@@ -39,11 +50,19 @@ def _today() -> str:
 
 
 def _person_slug(name: str) -> str:
-    return name.lower().replace(" ", "-")
+    """Sanitise a person name into a filesystem-safe slug."""
+    slug = _SLUG_RE.sub("-", name.lower()).strip("-")
+    if not slug:
+        raise ValueError(f"Empty slug from person name: {name!r}")
+    return slug
 
 
 def _decision_slug(text: str) -> str:
-    return text[:40].lower().replace(" ", "-")
+    """Sanitise decision text into a filesystem-safe slug."""
+    slug = _SLUG_RE.sub("-", text[:40].lower()).strip("-")
+    if not slug:
+        raise ValueError(f"Empty slug from decision text: {text!r}")
+    return slug
 
 
 def write_to_vault(
