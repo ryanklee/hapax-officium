@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 import shlex
 
 from fastapi import APIRouter, HTTPException
@@ -11,9 +12,39 @@ from pydantic import BaseModel
 from sse_starlette.sse import EventSourceResponse
 
 from cockpit.api.cache import cache
+from cockpit.api.rate_limit import rate_limit
 from cockpit.api.sessions import agent_run_manager
 
 router = APIRouter(prefix="/api/agents", tags=["agents"])
+
+# Pattern: valid CLI flags like --flag, -f, --key=value (no shell metacharacters or paths)
+_FLAG_RE = re.compile(r"^--?[a-zA-Z0-9][a-zA-Z0-9_-]*(=\S*)?$")
+
+# Flags that could be used to hijack subprocess behaviour
+_BLOCKED_FLAG_PREFIXES = ("--exec", "--command", "--shell")
+
+
+def _validate_flags(flags: list[str]) -> list[str]:
+    """Validate that all flags are safe CLI arguments.
+
+    Rejects flags containing shell metacharacters, path separators,
+    or suspicious patterns.
+    """
+    clean: list[str] = []
+    for flag in flags:
+        if not _FLAG_RE.match(flag):
+            raise HTTPException(
+                status_code=422,
+                detail=f"Invalid flag format: {flag!r}",
+            )
+        lower = flag.lower().split("=")[0]
+        if any(lower.startswith(p) for p in _BLOCKED_FLAG_PREFIXES):
+            raise HTTPException(
+                status_code=422,
+                detail=f"Blocked flag: {flag!r}",
+            )
+        clean.append(flag)
+    return clean
 
 
 class AgentRunRequest(BaseModel):
@@ -21,11 +52,15 @@ class AgentRunRequest(BaseModel):
 
 
 @router.post("/{name}/run")
+@rate_limit("agent_run", max_calls=5, window_s=60)
 async def run_agent(name: str, req: AgentRunRequest):
     """Start an agent subprocess with SSE streaming output.
 
     Returns an SSE stream with events: output, done, error.
     """
+    # Validate user-supplied flags before use
+    validated_flags = _validate_flags(req.flags)
+
     # Find agent in registry
     agent = None
     for a in cache.agents or []:
@@ -40,9 +75,9 @@ async def run_agent(name: str, req: AgentRunRequest):
     if agent_run_manager.is_running:
         raise HTTPException(status_code=409, detail="Another agent is already running")
 
-    # Build command args from agent's base command + user flags
+    # Build command args from agent's base command + validated flags
     command = agent.command if hasattr(agent, "command") else agent.get("command", "")
-    args = shlex.split(command) + req.flags
+    args = shlex.split(command) + validated_flags
 
     try:
         queue = await agent_run_manager.run(name, args)

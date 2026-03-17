@@ -11,6 +11,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 from cockpit.api.cache import cache
+from cockpit.api.rate_limit import rate_limit
 from shared.config import config
 
 router = APIRouter(prefix="/api/engine", tags=["engine"])
@@ -80,6 +81,7 @@ async def engine_rules() -> list[dict]:
 
 
 @router.post("/synthesize")
+@rate_limit("synthesis", max_calls=10, window_s=60)
 async def engine_synthesize() -> dict:
     """Force immediate synthesis, bypassing quiet window."""
     engine = _get_engine()
@@ -109,9 +111,20 @@ async def set_simulation_context(req: SimulationContextRequest) -> dict:
         await cache.refresh()
         return {"status": "ok", "message": "Simulation context deactivated"}
 
-    sim_path = Path(req.sim_dir)
+    sim_path = Path(req.sim_dir).resolve()
+
+    # Path traversal protection: sim_dir must be under PROJECT_ROOT or /tmp
+    # (simulations are created in /tmp by default or under the project tree).
+    project_root = Path(__file__).resolve().parent.parent.parent.parent
+    allowed_roots = (project_root, Path("/tmp"))
+    if not any(sim_path.is_relative_to(root) for root in allowed_roots):
+        raise HTTPException(
+            status_code=400,
+            detail="Simulation directory must be under the project root or /tmp",
+        )
+
     if not sim_path.is_dir():
-        raise HTTPException(status_code=400, detail=f"Directory does not exist: {req.sim_dir}")
+        raise HTTPException(status_code=400, detail="Simulation directory does not exist")
     if not (sim_path / ".sim-manifest.yaml").is_file():
         raise HTTPException(
             status_code=400, detail="Not a simulation directory (no .sim-manifest.yaml)"
