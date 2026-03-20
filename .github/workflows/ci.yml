@@ -49,7 +49,7 @@ jobs:
         working-directory: officium-web
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
         with:
           version: 9
       - uses: actions/setup-node@v6
@@ -68,7 +68,7 @@ jobs:
         working-directory: vscode
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
         with:
           version: 9
       - uses: actions/setup-node@v6
