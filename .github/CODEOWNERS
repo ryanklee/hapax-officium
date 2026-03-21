@@ -6,4 +6,6 @@ shared/axiom_enforcement.py @ryanklee
 shared/axiom_patterns.py @ryanklee
 shared/config.py @ryanklee
 agents/system_check.py @ryanklee
+scripts/                     @ryanklee
+cockpit/engine/              @ryanklee
 .github/ @ryanklee
