@@ -25,13 +25,13 @@ wheels/
 .claude/settings.local.json
 .claude/agent-memory/
 
-# Profiles (generated runtime state)
-profiles/*.json
-profiles/*.md
-profiles/*.jsonl
-profiles/*.yaml
-profiles/*.bak
-profiles/*.wav
+# Profiles (generated runtime state, recursive to cover subdirs)
+profiles/**/*.json
+profiles/**/*.md
+profiles/**/*.jsonl
+profiles/**/*.yaml
+profiles/**/*.bak
+profiles/**/*.wav
 !profiles/.gitkeep
 
 # Management data (personal, never committed)
@@ -39,6 +39,10 @@ data/**/*.md
 data/**/*.json
 data/**/*.yaml
 !data/.gitkeep
+
+# Publication planning (contains PII scrubbing instructions)
+docs/superpowers/plans/
+docs/superpowers/specs/
 
 # Demo outputs
 output/
