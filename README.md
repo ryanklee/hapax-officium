@@ -116,9 +116,7 @@ hapax-officium/
 
 ## Part of the Hapax Research Project
 
-This management system is supporting software for a research project **operationalizing Clark & Brennan's (1991) conversational grounding theory in a production voice AI**. Officium was extracted from council when the management agents proved independently usable. It shares governance architecture and infrastructure but not experiment code.
-
-See [hapax-council](https://github.com/ryanklee/hapax-council) for the full research context.
+Supporting software for a research project implementing Clark & Brennan's (1991) conversational grounding theory in a voice AI system. Extracted from hapax-council; shares governance architecture and infrastructure but not experiment code. See [hapax-council](https://github.com/ryanklee/hapax-council) for the research context.
 
 | Repository | Role |
 |-----------|------|
