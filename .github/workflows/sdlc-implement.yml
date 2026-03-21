@@ -86,8 +86,8 @@ jobs:
             ## Rules
             1. Follow the plan exactly. Do not add features beyond what is planned.
             2. The management_safety axiom is CRITICAL: NEVER generate feedback language, coaching recommendations, or performance evaluations about individuals.
-            3. Do NOT modify protected paths: axioms/, hooks/, systemd/, shared/config.py,
-               shared/axiom_enforcement.py, shared/alert_state.py, agents/health_monitor.py.
+            3. Do NOT modify protected paths: axioms/, cockpit/engine/, .github/,
+               shared/config.py, agents/system_check.py.
             4. Read and follow CLAUDE.md for project conventions and constraints.
             5. Write or update tests for all new code paths.
             6. Run `uv run ruff check .` and `uv run ruff format .` before finishing.
