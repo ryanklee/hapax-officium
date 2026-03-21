@@ -114,15 +114,19 @@ hapax-officium/
 └── docs/             Design documents and plans
 ```
 
-## Ecosystem
+## Part of the Hapax Research Project
 
-Three repositories compose the hapax system:
+This management system is supporting software for a research project **operationalizing Clark & Brennan's (1991) conversational grounding theory in a production voice AI**. Officium was extracted from council when the management agents proved independently usable. It shares governance architecture and infrastructure but not experiment code.
 
-- **[hapax-constitution](https://github.com/ryanklee/hapax-constitution)** — The pattern specification. Defines the governance architecture: axioms, implications, interpretive canon, sufficiency probes, precedent store, filesystem-as-bus, reactive engine, three-tier agent model.
-- **[hapax-council](https://github.com/ryanklee/hapax-council)** — Personal operating environment. 45+ agents, voice daemon, perception intelligence, studio compositor, RAG pipeline, reactive cockpit. Officium was extracted from council.
-- **hapax-officium** (this repo) — Management-domain extraction. Designed to be forked by engineering managers. Same architecture, scoped to management support.
+See [hapax-council](https://github.com/ryanklee/hapax-council) for the full research context.
 
-The three repos share infrastructure (Qdrant, LiteLLM, Ollama, PostgreSQL) but not code. The constitution constrains both implementations; the code is independent.
+| Repository | Role |
+|-----------|------|
+| [hapax-council](https://github.com/ryanklee/hapax-council) | Primary research artifact — voice daemon, grounding system, experiment infrastructure |
+| [hapax-constitution](https://github.com/ryanklee/hapax-constitution) | Governance specification — axioms, implications, canons |
+| **hapax-officium** (this repo) | Supporting software — management decision support |
+| [hapax-watch](https://github.com/ryanklee/hapax-watch) | Research instrument — Wear OS biometric companion |
+| [cockpit-mcp](https://github.com/ryanklee/cockpit-mcp) | Infrastructure — MCP server for Claude Code |
 
 ## License
 
