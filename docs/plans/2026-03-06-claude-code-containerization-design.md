@@ -38,7 +38,7 @@ hapax-dev/
 ├── Node.js 22 + pnpm
 ├── Python 3.12 + uv
 ├── System tools (git, curl, jq, rg, d2, make)
-├── /home/hapax/.claude/
+├── /home/operator/.claude/
 │   ├── settings.json          (hooks, enabled plugins, permissions)
 │   ├── mcp_servers.json       (adapted for container networking)
 │   ├── commands/              (skill markdown files, copied not symlinked)
@@ -212,13 +212,13 @@ The container `settings.json` has:
 
 ### Custom agents
 
-The three custom agents (operator-voice, infra-check, convention-guard) are markdown files — no path dependencies. Copy directly to `/home/hapax/.claude/agents/`.
+The three custom agents (operator-voice, infra-check, convention-guard) are markdown files — no path dependencies. Copy directly to `/home/operator/.claude/agents/`.
 
 One consideration: `operator-voice` specifies `model: opus` and `infra-check`/`convention-guard` specify `model: haiku`. These route through the Anthropic API directly (Claude Code's own model access), not through LiteLLM. This works in-container as long as `ANTHROPIC_API_KEY` is set.
 
 ### Rules
 
-All 6 rule files are static markdown. Copy to `/home/hapax/.claude/rules/`:
+All 6 rule files are static markdown. Copy to `/home/operator/.claude/rules/`:
 - `environment.md` — adapt: container context instead of Pop!_OS desktop
 - `toolchain.md` — works as-is
 - `models.md` — works as-is (LiteLLM routing)
@@ -261,17 +261,17 @@ WORKDIR /home/hapax
 
 # Claude Code configuration
 COPY --chown=hapax:hapax hapax-system/ /app/hapax-system/
-COPY --chown=hapax:hapax claude-config/settings.json /home/hapax/.claude/settings.json
-COPY --chown=hapax:hapax claude-config/mcp_servers.json /home/hapax/.claude/mcp_servers.json
-COPY --chown=hapax:hapax claude-config/rules/ /home/hapax/.claude/rules/
-COPY --chown=hapax:hapax hapax-system/agents/ /home/hapax/.claude/agents/
+COPY --chown=hapax:hapax claude-config/settings.json /home/operator/.claude/settings.json
+COPY --chown=hapax:hapax claude-config/mcp_servers.json /home/operator/.claude/mcp_servers.json
+COPY --chown=hapax:hapax claude-config/rules/ /home/operator/.claude/rules/
+COPY --chown=hapax:hapax hapax-system/agents/ /home/operator/.claude/agents/
 COPY --chown=hapax:hapax hapax-system/skills/ /tmp/skills-src/
 
 # Install skills as commands (flat copy, no symlinks in image)
-RUN mkdir -p /home/hapax/.claude/commands && \
+RUN mkdir -p /home/operator/.claude/commands && \
     for d in /tmp/skills-src/*/; do \
       name="$(basename "$d")"; \
-      [ -f "$d/SKILL.md" ] && cp "$d/SKILL.md" "/home/hapax/.claude/commands/$name.md"; \
+      [ -f "$d/SKILL.md" ] && cp "$d/SKILL.md" "/home/operator/.claude/commands/$name.md"; \
     done && rm -rf /tmp/skills-src
 
 # Agent codebase
