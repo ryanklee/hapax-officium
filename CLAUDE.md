@@ -34,6 +34,28 @@ Shared conventions (uv, ruff, testing, git workflow, pydantic-ai) are in the wor
 
 FastAPI on `:8050`. 32 endpoints across 8 route groups: data, profile, agents, nudges, demos, engine, cycle_mode, scout.
 
+## Terrain UI (officium-web)
+
+Depth-stratified terrain adapted from council hapax-logos for management domain.
+
+**5 regions** × 3 depths (surface/stratum/core):
+
+| Region | Key | Position | Domain | Surface Shows |
+|--------|-----|----------|--------|---------------|
+| Outlook | O | Top bar | Strategy | Briefing headline + nudge count + OKR risk |
+| Assembly | A | Left col | Team | Report count + stale 1:1s + high load |
+| Cadence | C | Center | Rhythm | Review status + status report freshness |
+| Chronicle | H | Right col | Events | Open incidents + missing postmortems |
+| Foundation | F | Bottom bar | Infra | Agent count + cycle mode |
+
+**Sidebar** preserved alongside terrain (right edge). Same auto-expand, priority scoring, status dots.
+
+**Investigation overlay** (`/` key): 4 tabs — Chat, Query, Prep, Output. Agent execution → Output tab.
+
+**Stimmung**: `useStimmung()` derives per-region stance from management data pressure.
+
+**Keyboard**: O/A/C/H/F regions, / investigate, Ctrl+P palette, Escape cascade. Old dashboard at `/legacy`.
+
 ## Reactive Engine
 
 `logos/engine/` watches `DATA_DIR` for changes, evaluates 12 rules, executes cascading actions. Nudges: 3 categories (people, goals, operational), 9 collectors, category-slotted attention caps.

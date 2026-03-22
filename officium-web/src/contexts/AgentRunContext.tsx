@@ -1,20 +1,8 @@
-import { createContext, useCallback, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useMemo, useState, type ReactNode } from "react";
 import { useSSE } from "../hooks/useSSE";
 import { useTerrainActions } from "../hooks/useTerrain";
 import type { AgentInfo } from "../api/types";
-
-export interface AgentRunState {
-  lines: string[];
-  isRunning: boolean;
-  error: string | null;
-  agentName: string | null;
-  startedAt: number | null;
-  runAgent: (agent: AgentInfo, flags: string[]) => void;
-  cancelAgent: () => void;
-  clearOutput: () => void;
-}
-
-export const AgentRunCtx = createContext<AgentRunState | null>(null);
+import { AgentRunCtx } from "./AgentRunContextDefs";
 
 export function AgentRunProvider({ children }: { children: ReactNode }) {
   const sse = useSSE();
@@ -44,7 +32,7 @@ export function AgentRunProvider({ children }: { children: ReactNode }) {
     setStartedAt(null);
   }, [sse]);
 
-  const value = useMemo<AgentRunState>(
+  const value = useMemo(
     () => ({
       lines: sse.lines,
       isRunning: sse.isRunning,
@@ -60,4 +48,3 @@ export function AgentRunProvider({ children }: { children: ReactNode }) {
 
   return <AgentRunCtx.Provider value={value}>{children}</AgentRunCtx.Provider>;
 }
-

@@ -1,6 +1,6 @@
 import { useContext } from "react";
-import { DisplayCtx, ActionCtx } from "../contexts/TerrainContext";
-import type { TerrainDisplayValue, TerrainActionValue } from "../contexts/TerrainContext";
+import { DisplayCtx, ActionCtx } from "../contexts/TerrainContextDefs";
+import type { TerrainDisplayValue, TerrainActionValue } from "../contexts/TerrainContextDefs";
 
 export type { TerrainDisplayValue, TerrainActionValue };
 

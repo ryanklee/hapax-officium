@@ -1,6 +1,6 @@
 import { useContext } from "react";
-import { AgentRunCtx } from "../contexts/AgentRunContext";
-import type { AgentRunState } from "../contexts/AgentRunContext";
+import { AgentRunCtx } from "../contexts/AgentRunContextDefs";
+import type { AgentRunState } from "../contexts/AgentRunContextDefs";
 
 export type { AgentRunState };
 

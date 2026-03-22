@@ -9,11 +9,21 @@ function lineColor(line: string): string {
   return "";
 }
 
+function ElapsedTimer({ startedAt }: { startedAt: number }) {
+  const [elapsed, setElapsed] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => {
+      setElapsed(Math.floor((Date.now() - startedAt) / 1000));
+    }, 1000);
+    return () => clearInterval(id);
+  }, [startedAt]);
+  return <span className="text-blue-400">running {elapsed}s</span>;
+}
+
 export function OutputTab() {
   const { lines, isRunning, error, agentName, startedAt, cancelAgent, clearOutput } =
     useAgentRun();
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [elapsed, setElapsed] = useState(0);
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -21,16 +31,6 @@ export function OutputTab() {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [lines.length]);
-
-  // Elapsed timer
-  useEffect(() => {
-    if (!isRunning || !startedAt) return;
-    setElapsed(Math.floor((Date.now() - startedAt) / 1000));
-    const id = setInterval(() => {
-      setElapsed(Math.floor((Date.now() - startedAt) / 1000));
-    }, 1000);
-    return () => clearInterval(id);
-  }, [isRunning, startedAt]);
 
   if (lines.length === 0 && !isRunning && !error) {
     return (
@@ -45,9 +45,9 @@ export function OutputTab() {
       {/* Header */}
       <div className="flex items-center gap-3 px-3 py-2 text-[11px] text-zinc-400 shrink-0 border-b border-zinc-800">
         {agentName && <span className="text-zinc-300 font-medium">{agentName}</span>}
-        {isRunning && (
+        {isRunning && startedAt && (
           <>
-            <span className="text-blue-400">running {elapsed}s</span>
+            <ElapsedTimer startedAt={startedAt} />
             <button
               onClick={cancelAgent}
               className="text-red-400 hover:text-red-300 text-[10px] uppercase tracking-wider"

@@ -1,24 +1,7 @@
-import { createContext, useCallback, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useMemo, useState, type ReactNode } from "react";
 import type { Depth, InvestigationTab, Overlay, RegionName } from "../components/terrain/types";
 import { DEPTHS } from "../components/terrain/types";
-
-export interface TerrainDisplayValue {
-  focusedRegion: RegionName | null;
-  regionDepths: Record<RegionName, Depth>;
-  activeOverlay: Overlay;
-  investigationTab: InvestigationTab;
-}
-
-export interface TerrainActionValue {
-  focusRegion: (region: RegionName | null) => void;
-  setRegionDepth: (region: RegionName, depth: Depth) => void;
-  cycleDepth: (region: RegionName) => void;
-  setOverlay: (overlay: Overlay) => void;
-  setInvestigationTab: (tab: InvestigationTab) => void;
-}
-
-export const DisplayCtx = createContext<TerrainDisplayValue | null>(null);
-export const ActionCtx = createContext<TerrainActionValue | null>(null);
+import { DisplayCtx, ActionCtx } from "./TerrainContextDefs";
 
 const INITIAL_DEPTHS: Record<RegionName, Depth> = {
   outlook: "surface",
@@ -51,12 +34,12 @@ export function TerrainProvider({ children }: { children: ReactNode }) {
 
   const setOverlay = useCallback((overlay: Overlay) => setActiveOverlay(overlay), []);
 
-  const display = useMemo<TerrainDisplayValue>(
+  const display = useMemo(
     () => ({ focusedRegion, regionDepths, activeOverlay, investigationTab }),
     [focusedRegion, regionDepths, activeOverlay, investigationTab],
   );
 
-  const actions = useMemo<TerrainActionValue>(
+  const actions = useMemo(
     () => ({ focusRegion, setRegionDepth, cycleDepth, setOverlay, setInvestigationTab }),
     [focusRegion, setRegionDepth, cycleDepth, setOverlay],
   );
@@ -67,6 +50,3 @@ export function TerrainProvider({ children }: { children: ReactNode }) {
     </DisplayCtx.Provider>
   );
 }
-
-
-

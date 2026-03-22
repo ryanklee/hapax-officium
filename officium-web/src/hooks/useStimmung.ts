@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { RegionName, StimmungStance } from "../components/terrain/types";
 import {
   useBriefing,
@@ -34,9 +34,14 @@ export function useStimmung(): Record<RegionName, StimmungStance> {
   const { data: reviews } = useReviewCycles();
   const { data: statusReports } = useStatusReports();
 
-  // Briefing age computed outside memo (Date.now() is impure)
+  // Briefing age recomputed every 60s (avoid impure Date.now in render)
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(id);
+  }, []);
   const briefingAgeHours = briefing?.generated_at
-    ? (Date.now() - new Date(briefing.generated_at).getTime()) / 3_600_000
+    ? (now - new Date(briefing.generated_at).getTime()) / 3_600_000
     : 48;
 
   return useMemo(() => {
