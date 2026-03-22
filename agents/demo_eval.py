@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
 log = logging.getLogger(__name__)
 
-DEFAULT_SCENARIO = "the management cockpit for a technical peer"
+DEFAULT_SCENARIO = "the logos dashboard for a technical peer"
 DEFAULT_FORMAT = "slides"
 DEFAULT_DURATION = "3m"
 DEFAULT_MAX_ITERATIONS = 3

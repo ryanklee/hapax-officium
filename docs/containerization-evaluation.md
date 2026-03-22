@@ -35,7 +35,7 @@ Secrets: `.env` file generated from `pass` store via `generate-env.sh`.
 
 | Component | Invocation | Schedule | Resource Limit |
 |-----------|------------|----------|----------------|
-| logos API | `uv run python -m cockpit.api` | Always running | — |
+| logos API | `uv run python -m logos.api` | Always running | — |
 | health_monitor | `health-watchdog` | Every 15 min | 2G / 60% CPU |
 | briefing | `briefing-watchdog` | Daily 07:00 | 2G / 60% CPU |
 | digest | `digest-watchdog` | Daily 06:45 | 2G / 60% CPU |
@@ -95,7 +95,7 @@ All agents connect to services via HTTP. Environment variables already exist for
 | `data/` | Personal vault | rw | ~200MB | vault_writer |
 | `profiles/` | Operator profile data | rw | 347MB | profiler, briefing, activity_analyzer, logos API |
 | `~/documents/rag-sources/` | RAG document drop zone | ro | 344MB | ingest (watches for new files) |
-| `~/.cache/cockpit/` | Cockpit session state | rw | 36KB | logos API |
+| `~/.cache/logos/` | Logos session state | rw | 36KB | logos API |
 | `~/.cache/axiom-audit/` | Axiom audit trail | rw | 292KB | drift_detector, axiom tools |
 | `~/.cache/rag-ingest/` | Dedup tracker + retry queue | rw | 20MB | ingest |
 | `~/.cache/health-watchdog/` | Health alert state | rw | 8KB | health_monitor (HOST ONLY) |
@@ -200,7 +200,7 @@ hapax-agents:
     - ${HOME}/Documents/Work:/data/vaults/work
     - ${HOME}/Documents/Personal:/data/vaults/personal
     - ${HOME}/projects/profiles:/data/profiles
-    - ${HOME}/.cache/cockpit:/data/cache/cockpit
+    - ${HOME}/.cache/logos:/data/cache/logos
     - ${HOME}/.cache/axiom-audit:/data/cache/axiom-audit
   environment:
     - HAPAX_HOME=/data
@@ -256,8 +256,8 @@ hapax-ingest:
 | Add `OLLAMA_URL` to config constants | `shared/config.py` | Trivial | None |
 | Update systemd watchdogs to use `docker compose run` | `systemd/watchdogs/*` | Medium | Low |
 | Add hapax-agents + hapax-ingest to compose | `llm-stack/docker-compose.yml` | Low | Low |
-| Update cockpit-web API base URL | `officium-web/` config | Trivial | None |
-| Update hapax-vscode cockpit URL | `vscode/` settings | Trivial | None |
+| Update officium-web API base URL | `officium-web/` config | Trivial | None |
+| Update hapax-vscode logos URL | `vscode/` settings | Trivial | None |
 
 ## Environment Variables for Container
 
@@ -282,7 +282,7 @@ WORK_VAULT_PATH=/data/vaults/work
 PERSONAL_VAULT_PATH=/data/vaults/personal
 
 # Optional
-NTFY_TOPIC=cockpit
+NTFY_TOPIC=logos
 OTEL_EXPORTER_OTLP_ENDPOINT=http://langfuse:3000/api/public/otel
 ```
 
@@ -305,7 +305,7 @@ Scheduled agents run as one-shot containers (`docker compose run --rm`).
 ## Open Questions
 
 1. **Demo pipeline:** Separate image (`hapax-demo`) or leave on host? If containerized, needs playwright + moviepy + GPU access for chatterbox.
-2. **cockpit-web:** Bundle static build into hapax-agents image, or keep separate? Currently runs via `pnpm dev` on host.
+2. **officium-web:** Bundle static build into hapax-agents image, or keep separate? Currently runs via `pnpm dev` on host.
 3. **health_monitor container awareness:** Should health_monitor's Docker checks understand the new agent containers? (Probably yes — add to service tier list.)
 4. **Git repos for drift_detector/profiler:** Mount project repos read-only into container, or skip those features in container mode?
 5. **Backup script:** Should it back up the new container state? (Profiles volume is already backed up.)

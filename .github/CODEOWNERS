@@ -7,5 +7,5 @@ shared/axiom_patterns.py @ryanklee
 shared/config.py @ryanklee
 agents/system_check.py @ryanklee
 scripts/                     @ryanklee
-cockpit/engine/              @ryanklee
+logos/engine/                @ryanklee
 .github/ @ryanklee

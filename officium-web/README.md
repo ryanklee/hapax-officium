@@ -1,8 +1,8 @@
 # officium-web — Management Dashboard
 
-React single-page application providing operational visibility into the hapax-officium management decision support system. Agent execution, nudge management, briefings, goals, and demo browsing — backed by the cockpit API via Server-Sent Events and React Query.
+React single-page application providing operational visibility into the hapax-officium management decision support system. Agent execution, nudge management, briefings, goals, and demo browsing — backed by the logos API via Server-Sent Events and React Query.
 
-This is a Tier 1 interface: interactive, human-facing, read-heavy. It consumes the cockpit API (:8050) but never writes to the filesystem-as-bus directly. All mutations go through API endpoints that the reactive engine processes.
+This is a Tier 1 interface: interactive, human-facing, read-heavy. It consumes the logos API (:8050) but never writes to the filesystem-as-bus directly. All mutations go through API endpoints that the reactive engine processes.
 
 ## Quick Start
 
@@ -13,15 +13,15 @@ pnpm build        # type-check + production build
 pnpm lint         # ESLint
 ```
 
-Requires the cockpit API at :8050:
+Requires the logos API at :8050:
 ```bash
 cd ~/projects/hapax-officium
-uv run python -m cockpit.api --host 127.0.0.1 --port 8050
+uv run python -m logos.api --host 127.0.0.1 --port 8050
 ```
 
 ## Architecture
 
-**Server state** is managed exclusively through TanStack React Query. Every backend call goes through `src/api/client.ts`, which hits `/api/*` (Vite proxies to :8050 in dev, nginx proxies in production). Types in `src/api/types.ts` mirror the Python dataclasses in `cockpit/data/`.
+**Server state** is managed exclusively through TanStack React Query. Every backend call goes through `src/api/client.ts`, which hits `/api/*` (Vite proxies to :8050 in dev, nginx proxies in production). Types in `src/api/types.ts` mirror the Python dataclasses in `logos/data/`.
 
 **Agent execution** uses Server-Sent Events (`src/api/sse.ts` + `src/hooks/useSSE.ts`). Agent runs stream output, done, and error events in real time. AbortController-based cancellation with DELETE to `/api/agents/runs/current`.
 
@@ -54,10 +54,10 @@ src/
 
 ## Deployment
 
-Production builds are served via nginx with SPA routing fallback. API requests proxy to `management-cockpit:8050`. Static assets cached with 1-year expiry.
+Production builds are served via nginx with SPA routing fallback. API requests proxy to `management-logos:8050`. Static assets cached with 1-year expiry.
 
 ## Related
 
-- [hapax-officium](https://github.com/ryanklee/hapax-officium) — Backend cockpit API + agents
+- [hapax-officium](https://github.com/ryanklee/hapax-officium) — Backend logos API + agents
 - [hapax-constitution](https://github.com/ryanklee/hapax-constitution) — Governance architecture
 - [council-web](../council-web/) (in hapax-council) — Equivalent dashboard for the personal operating environment

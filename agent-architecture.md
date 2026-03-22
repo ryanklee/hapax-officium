@@ -26,9 +26,9 @@ This is the scout agent's purpose. Where the drift detector asks "does documenta
 │          MCP servers · slash commands · hooks         │
 │                  Full stack access                    │
 │                                                      │
-│          System Cockpit (web dashboard)               │
+│          System Logos (web dashboard)                  │
 │       FastAPI backend + React SPA frontend            │
-│     `uv run logos` · `cockpit --once` (CLI)        │
+│     `uv run logos` · `logos --once` (CLI)          │
 ├──────────────────────────────────────────────────────┤
 │                  TIER 2: ON-DEMAND                    │
 │            Pydantic AI agents invoked by              │
@@ -58,23 +58,23 @@ This is the scout agent's purpose. Where the drift detector asks "does documenta
     └─────────┘   └─────────────┘  └───────────┘
 ```
 
-## Tier 1: Interactive (Claude Code + System Cockpit + Extended Surfaces)
+## Tier 1: Interactive (Claude Code + System Logos + Extended Surfaces)
 
 Claude Code is the primary interactive interface — full MCP access, slash commands, hooks, and direct agent invocation.
 
-The **System Cockpit** is the operational dashboard, built as a **FastAPI API backend + React SPA frontend** (`cockpit-web`). It provides real-time health monitoring, agent status, nudge management, goal tracking, profile visibility, and briefing display.
+The **System Logos** is the operational dashboard, built as a **FastAPI API backend + React SPA frontend** (`officium-web`). It provides real-time health monitoring, agent status, nudge management, goal tracking, profile visibility, and briefing display.
 
 - `uv run logos` launches the API server (default port 8050, Docker port 8051)
-- `cockpit --once` produces a one-shot CLI snapshot for terminal use or piping
+- `logos --once` produces a one-shot CLI snapshot for terminal use or piping
 - The React frontend connects to the FastAPI backend and renders the dashboard in the browser
 
-The cockpit consumes data from system-check, briefing, scout, activity-analyzer, and profiler agents. Persistent state lives in `profiles/` (probes, decisions, facts).
+The logos API consumes data from system-check, briefing, scout, activity-analyzer, and profiler agents. Persistent state lives in `profiles/` (probes, decisions, facts).
 
 ### Extended Interactive Surfaces
 
 > **Note:** The surfaces listed below are part of the wider Hapax system only, not part of hapax-officium. They are documented here for architectural context.
 
-Beyond Claude Code and the Cockpit, the wider Hapax system includes additional LLM-enabled surfaces that route through LiteLLM for model access and Langfuse tracing. These are not agents — they are interaction points that make LLM availability ambient across the workstation.
+Beyond Claude Code and the Logos dashboard, the wider Hapax system includes additional LLM-enabled surfaces that route through LiteLLM for model access and Langfuse tracing. These are not agents — they are interaction points that make LLM availability ambient across the workstation.
 
 | Surface | Tools | Purpose |
 |---------|-------|---------|
@@ -293,7 +293,7 @@ Results flow back through stdout, files, or Qdrant queries.
 
 ## DATA_DIR as Operational Surface
 
-The management cockpit uses `data/` (DATA_DIR) as its primary data store. All management state is represented as markdown files with YAML frontmatter, organized by document type into subdirectories.
+The logos system uses `data/` (DATA_DIR) as its primary data store. All management state is represented as markdown files with YAML frontmatter, organized by document type into subdirectories.
 
 **Data flows:**
 - **Agents → DATA_DIR:** `vault_writer.py` writes briefings, prep docs, status updates to `data/` subdirectories

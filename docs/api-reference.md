@@ -1,6 +1,6 @@
 # Logos API Reference
 
-Management cockpit REST API. Serves cached management data, agent execution,
+Logos REST API. Serves cached management data, agent execution,
 nudge actions, profile inspection, demo management, reactive engine status,
 cycle mode control, and scout decision tracking.
 

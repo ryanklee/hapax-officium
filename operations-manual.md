@@ -1,6 +1,6 @@
-# Management Cockpit — Operations Manual
+# Management Logos — Operations Manual
 
-*Operational reference for the hapax-officium management cockpit system.*
+*Operational reference for the hapax-officium logos system.*
 
 ---
 
@@ -8,13 +8,13 @@
 
 ### 1. Verify Infrastructure
 
-The management cockpit depends on external Docker services. Start them:
+The logos system depends on external Docker services. Start them:
 
 ```bash
 docker compose up -d
 ```
 
-Core services for the management cockpit:
+Core services for the logos system:
 
 | Service | Host Port | Purpose |
 |---------|-----------|---------|
@@ -34,8 +34,8 @@ Additional services available via Docker Compose profiles:
 | Langfuse | 3100 | full | LLM observability |
 | ntfy | 8190 | full | Push notifications |
 | Chatterbox | 4223 | tts | Voice cloning TTS |
-| cockpit-web | 8052 | management | React dashboard |
-| management-cockpit | 8051 | management | Logos API container |
+| officium-web | 8052 | management | React dashboard |
+| management-logos | 8051 | management | Logos API container |
 
 Run the system check to confirm the stack is reachable:
 
@@ -68,7 +68,7 @@ uv run python -m agents.management_briefing --save
 ### 3. Start the Logos API
 
 ```bash
-uv run python -m cockpit.api --host 127.0.0.1 --port 8050
+uv run python -m logos.api --host 127.0.0.1 --port 8050
 ```
 
 The API serves 32 endpoints across 8 route groups. In Docker, the API container exposes port 8051 and the React dashboard runs on port 8052.
@@ -199,7 +199,7 @@ uv run python -m agents.review_prep
 
 ```bash
 uv run python -m agents.demo --audience "VP Engineering" --duration 15m
-uv run python -m agents.demo --audience "New EM" --duration 10m --voice "management cockpit overview"
+uv run python -m agents.demo --audience "New EM" --duration 10m --voice "logos dashboard overview"
 ```
 
 **system_check** — Health checks for 3 core services (logos API, Qdrant, LiteLLM). No LLM calls.
@@ -298,7 +298,7 @@ The bootstrap script copies `demo-data/` into `data/`, creates Qdrant collection
 Then generate a tailored demo walkthrough:
 
 ```bash
-uv run python -m agents.demo --audience "VP Engineering" --duration 15m --voice "management cockpit"
+uv run python -m agents.demo --audience "VP Engineering" --duration 15m --voice "logos dashboard"
 ```
 
 Demo data: 40 seed files across 15 directories, 8 people (7 active), 3 teams (Platform, Product, Data).
@@ -402,10 +402,10 @@ Axiom definitions live in `axioms/registry.yaml`.
 Start locally:
 
 ```bash
-uv run python -m cockpit.api --host 127.0.0.1 --port 8050
+uv run python -m logos.api --host 127.0.0.1 --port 8050
 ```
 
-In Docker, the management-cockpit container exposes port 8051.
+In Docker, the management-logos container exposes port 8051.
 
 32 endpoints across 8 route groups:
 
@@ -479,7 +479,7 @@ Common model sizes:
 uv run python -m agents.<name> [flags]
 
 # Logos API (local)
-uv run python -m cockpit.api --host 127.0.0.1 --port 8050
+uv run python -m logos.api --host 127.0.0.1 --port 8050
 
 # Docker services
 docker compose up -d                          # Core services
@@ -511,7 +511,7 @@ uv run pytest tests/ -q
 |------|------|
 | `agents/` | Agent implementations |
 | `shared/` | Shared modules (config, bridge, profile, axioms) |
-| `cockpit/` | FastAPI API server + data collectors + reactive engine |
+| `logos/` | FastAPI API server + data collectors + reactive engine |
 | `data/` | Live management data (DATA_DIR) |
 | `demo-data/` | Synthetic seed corpus |
 | `officium-web/` | React dashboard (SPA) |

@@ -180,7 +180,7 @@ Target scene count: {max_scenes} scenes (minimum {duration_constraints["scenes"]
 
 Available web interfaces for screenshots:
 
-COCKPIT WEB (http://localhost:5173) — the custom dashboard:
+LOGOS WEB (http://localhost:5173) — the custom dashboard:
 - / — Main dashboard with action items (management nudges), agents grid, output pane. Sidebar: team health, daily briefing, goals tracking.
 - /demos — Demo history browser with playback, download, and delete.
 
@@ -1471,7 +1471,7 @@ async def main() -> None:
         "request",
         nargs="?",
         default=None,
-        help="Natural language request, e.g. 'the management cockpit for a technical peer'",
+        help="Natural language request, e.g. 'the logos dashboard for a technical peer'",
     )
     parser.add_argument(
         "--audience",

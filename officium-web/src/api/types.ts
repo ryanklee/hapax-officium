@@ -1,4 +1,4 @@
-// Types matching cockpit/data/ Python dataclasses
+// Types matching logos/data/ Python dataclasses
 
 export interface Nudge {
   category: string;

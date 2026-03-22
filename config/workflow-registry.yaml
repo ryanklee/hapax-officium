@@ -21,7 +21,7 @@ workflows:
     trigger: health-monitor.timer every 15min
     steps:
       - system_check runs 4 deterministic checks (zero LLM)
-      - checks cockpit API, vault, Qdrant, LiteLLM
+      - checks logos API, vault, Qdrant, LiteLLM
       - desktop notification on failures
     components:
       - system_check

@@ -1,7 +1,7 @@
-# Cross-Project Boundary: Hapax System ↔ Management Cockpit
+# Cross-Project Boundary: Hapax System ↔ Logos
 
 This document defines the relationship between the wider hapax system and the
-containerized management cockpit. It must be byte-identical in both repos:
+containerized logos system. It must be byte-identical in both repos:
 
 - `~/projects/hapaxromana/docs/cross-project-boundary.md`
 - `~/projects/hapax-officium/docs/cross-project-boundary.md`
@@ -16,7 +16,7 @@ function platform for a single operator. Covers all domains — management,
 personal knowledge, health monitoring, audio capture, content sync, creative
 production. 28+ agents across sync, RAG, analysis, and automation.
 
-**Management Cockpit** (`hapax-officium`): A management-only decision
+**Logos** (`hapax-officium`): A management-only decision
 support system extracted from the wider system in March 2026. Purpose-built
 for team leadership — 1:1 prep, coaching tracking, management self-awareness
 profiling, actionable nudges. 15 agents, all management-scoped. Safety
@@ -24,7 +24,7 @@ principle: LLMs prepare, humans deliver.
 
 ## Shared Lineage
 
-Both projects share the same origin codebase. The management cockpit was
+Both projects share the same origin codebase. The logos system was
 extracted via a deliberate conversion that:
 
 - Removed 22 agents outside management scope
@@ -108,7 +108,7 @@ capacity.py, dimensions.py, email_utils.py, service_*.py, etc.).
 Each system runs its own infrastructure stack. No shared services, databases,
 collections, or traces.
 
-| Service | Wider System | Management Cockpit |
+| Service | Wider System | Logos |
 |---------|-------------|-------------------|
 | Qdrant | localhost:6333 | localhost:6433 |
 | LiteLLM | localhost:4000 | localhost:4100 |
@@ -125,7 +125,7 @@ Infrastructure isolation completed March 2026. Each system has its own
 Qdrant collections, LiteLLM proxy, Langfuse traces, and PostgreSQL databases.
 Ollama remains shared (single GPU constraint, stateless inference).
 
-Data source isolation in progress — the management cockpit's vault dependency
+Data source isolation in progress — the logos system's vault dependency
 has been excised. VS Code + Qdrant integration is the planned replacement.
 
 ## Boundary Rules

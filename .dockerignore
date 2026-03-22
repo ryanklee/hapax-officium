@@ -4,8 +4,8 @@ __pycache__/
 *.pyc
 node_modules/
 .venv/
-cockpit-web/node_modules/
-cockpit-web/dist/
+officium-web/node_modules/
+officium-web/dist/
 ai-agents/.venv/
 ai-agents/tests/
 ai-agents/.envrc

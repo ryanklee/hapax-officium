@@ -109,7 +109,7 @@ class DeliveryQueue:
         notify_priority = _NOTIFY_PRIORITY_MAP.get(highest.priority, "default")
 
         message = self._format_batch(items)
-        title = "Cockpit"
+        title = "Logos"
 
         loop = asyncio.get_running_loop()
         await loop.run_in_executor(

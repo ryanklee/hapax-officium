@@ -220,7 +220,7 @@ class TestInferRole:
 
     def test_infers_em(self):
         """Recognizes engineering manager keywords."""
-        assert infer_role("engineering manager cockpit") == "engineering-manager"
+        assert infer_role("engineering manager dashboard") == "engineering-manager"
 
     def test_defaults_to_em(self):
         """Falls back to engineering-manager when no hints match."""

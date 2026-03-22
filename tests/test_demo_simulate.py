@@ -55,7 +55,7 @@ class TestDemoSimulateOrchestration:
             patch("agents.demo.config"),
         ):
             await _run_simulated_demo(
-                request="the management cockpit for a technical peer",
+                request="the logos dashboard for a technical peer",
                 window="5d",
                 variant="experienced-em",
                 scenario=None,
@@ -198,7 +198,7 @@ class TestDemoSimulateRoleInference:
             patch("agents.demo.config"),
         ):
             await _run_simulated_demo(
-                request="show the management cockpit",
+                request="show the logos dashboard",
                 window="5d",
                 variant="experienced-em",
                 org_dossier=dossier_path,
@@ -231,7 +231,7 @@ class TestDemoSimulateRoleInference:
             patch("agents.demo.config"),
         ):
             await _run_simulated_demo(
-                request="show the management cockpit",
+                request="show the logos dashboard",
                 window="5d",
                 variant="experienced-em",
             )

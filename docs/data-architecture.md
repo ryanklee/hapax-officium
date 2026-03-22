@@ -1,8 +1,8 @@
 # Data Architecture
 
 This document describes the data storage topology, flow patterns, and lifecycle
-for the management cockpit system. All claims are derived from code in
-`shared/` and `cockpit/`.
+for the logos system. All claims are derived from code in
+`shared/` and `logos/`.
 
 ## 1. Data Storage Topology
 
@@ -30,7 +30,7 @@ never the source of truth. Connection configured via `QDRANT_URL` (default
 ### PostgreSQL
 
 Used exclusively by Langfuse for LLM trace storage. No application data is
-stored in PostgreSQL. The cockpit system does not read from or write to
+stored in PostgreSQL. The logos system does not read from or write to
 PostgreSQL.
 
 ## 2. Filesystem-as-Bus Pattern
@@ -112,7 +112,7 @@ canonical regex in `shared/frontmatter.py`.
 
 **Directory:** `decisions/`
 **Key frontmatter fields:** `type: decision`, `date` (ISO date), `meeting_ref` (optional)
-**Read by:** `shared/management_bridge.py` (not currently collected by cockpit/data)
+**Read by:** `shared/management_bridge.py` (not currently collected by logos/data)
 **Nudges produced:** None. Triggers `decision_logged` reactive rule (cache refresh only).
 
 ### okr

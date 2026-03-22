@@ -14,7 +14,7 @@ export function Header() {
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2">
           <Activity className="h-5 w-5 text-zinc-400" />
-          <span className="text-sm font-medium text-zinc-200">cockpit</span>
+          <span className="text-sm font-medium text-zinc-200">logos</span>
         </div>
         <nav className="flex items-center gap-1" aria-label="Main navigation">
           <NavLink to="/" end className={navLinkClass}>

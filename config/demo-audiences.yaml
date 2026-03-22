@@ -71,7 +71,7 @@ audiences:
     context: |
       The operator is the person who built this system. This is a self-review
       demo: the operator is evaluating the demo pipeline's output quality AND getting a current
-      overview of the management cockpit's feature set, functionality, and operational state.
+      overview of the logos dashboard's feature set, functionality, and operational state.
 
       Dual purpose:
       1. Demo quality review: Is the pipeline producing coherent, accurate, well-paced
@@ -92,7 +92,7 @@ audiences:
         - current state of all 15 ported agents — what each does, whether it's tested
         - demo data corpus — what's seeded, what states it produces
         - bootstrap pipeline — the hydration sequence and what it exercises
-        - cockpit API — endpoints, data collectors, nudge categories
+        - logos API — endpoints, data collectors, nudge categories
         - reactive engine — watcher, rules, executor, delivery
         - dashboard panels — what's rendered, what data flows in
         - axiom governance — the 3 active axioms and their enforcement

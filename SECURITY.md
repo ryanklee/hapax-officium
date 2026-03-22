@@ -1,6 +1,6 @@
 # Security Architecture
 
-This document describes the security posture of the management cockpit system.
+This document describes the security posture of the logos system.
 It is intended to be honest and precise rather than aspirational.
 
 ## Security Model Overview
@@ -37,10 +37,10 @@ the LAN or WAN. Port bindings from `llm-stack/docker-compose.yml`:
 | MinIO            | 127.0.0.1:9190, 9191   | 9000, 9001         |
 | ntfy             | 127.0.0.1:8190         | 80                 |
 | Chatterbox TTS   | 127.0.0.1:4223         | 5123               |
-| Cockpit Web      | 127.0.0.1:8052         | 80                 |
+| Logos Web        | 127.0.0.1:8052         | 80                 |
 | Logos API      | 127.0.0.1:8051         | 8050               |
 
-All containers share a single Docker network (`mgmt-cockpit`). There is no
+All containers share a single Docker network (`mgmt-logos`). There is no
 network segmentation between containers -- any container can reach any other
 container by service name. This is acceptable for a single-operator system
 but would be a concern in any shared environment.
@@ -122,7 +122,7 @@ Anthropic's data retention and usage policies apply to all cloud LLM calls.
 
 ## Container Isolation
 
-All containers run on a single shared Docker network (`mgmt-cockpit`). Resource
+All containers run on a single shared Docker network (`mgmt-logos`). Resource
 limits are set on every container:
 
 | Service          | Memory Limit |
@@ -138,7 +138,7 @@ limits are set on every container:
 | Redis            | 512 MB      |
 | ntfy             | 256 MB      |
 | Chatterbox TTS   | 4 GB        |
-| Cockpit Web      | 256 MB      |
+| Logos Web        | 256 MB      |
 
 Images use pinned digests (sha256) for reproducibility. The Ollama container has
 GPU passthrough via `nvidia-container-toolkit`. Data is persisted in named Docker

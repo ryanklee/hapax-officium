@@ -54,7 +54,7 @@ repos:
         archetype: operations
         covers:
           - "agents/"
-          - "cockpit/"
+          - "logos/"
           - "shared/"
         max_stale_days: 14
         auto_fixable: true
@@ -63,7 +63,7 @@ repos:
         archetype: operations
         covers:
           - "agents/"
-          - "cockpit/"
+          - "logos/"
           - "shared/"
         max_stale_days: 14
         auto_fixable: true
@@ -78,7 +78,7 @@ repos:
         archetype: architecture
         covers:
           - "agents/"
-          - "cockpit/engine/"
+          - "logos/engine/"
         max_stale_days: 21
         auto_fixable: true
 
@@ -86,7 +86,7 @@ repos:
         archetype: operations
         covers:
           - "agents/"
-          - "cockpit/"
+          - "logos/"
           - "scripts/"
         max_stale_days: 21
         auto_fixable: true
@@ -102,7 +102,7 @@ repos:
       - path: "docs/api-reference.md"
         archetype: reference
         covers:
-          - "cockpit/api/routes/"
+          - "logos/api/routes/"
         max_stale_days: 14
         auto_fixable: true
 
@@ -110,8 +110,8 @@ repos:
         archetype: architecture
         covers:
           - "shared/"
-          - "cockpit/data/"
-          - "cockpit/engine/"
+          - "logos/data/"
+          - "logos/engine/"
         max_stale_days: 21
         auto_fixable: true
 
@@ -148,14 +148,14 @@ coverage_rules:
     reference_section: "Repository Layout"
     match_by: "path"
     severity: "medium"
-    description: "Root CLAUDE.md must reflect changes to agents/, cockpit/, or shared/"
+    description: "Root CLAUDE.md must reflect changes to agents/, logos/, or shared/"
 
   - ci_type: "code_change"
     reference_doc: "CLAUDE.md"
     reference_section: "Project Layout"
     match_by: "path"
     severity: "medium"
-    description: "ai-agents CLAUDE.md must reflect changes to agents/, cockpit/, or shared/"
+    description: "ai-agents CLAUDE.md must reflect changes to agents/, logos/, or shared/"
 
   - ci_type: "code_change"
     reference_doc: "agent-architecture.md"
@@ -176,14 +176,14 @@ coverage_rules:
     reference_section: "Endpoints"
     match_by: "name"
     severity: "high"
-    description: "API reference must reflect route additions or removals in cockpit/api/routes/"
+    description: "API reference must reflect route additions or removals in logos/api/routes/"
 
   - ci_type: "code_change"
     reference_doc: "docs/data-architecture.md"
     reference_section: "Data Flow"
     match_by: "path"
     severity: "medium"
-    description: "Data architecture must reflect changes to shared/, cockpit/data/, or cockpit/engine/"
+    description: "Data architecture must reflect changes to shared/, logos/data/, or logos/engine/"
 
   - ci_type: "code_change"
     reference_doc: "SECURITY.md"

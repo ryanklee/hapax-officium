@@ -1,4 +1,4 @@
-"""Static agent registry for the management cockpit with structured flag metadata."""
+"""Static agent registry for logos with structured flag metadata."""
 
 from __future__ import annotations
 

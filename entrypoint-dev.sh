@@ -28,7 +28,7 @@ if [ ! -f "$CLAUDE_HOME/.initialized" ]; then
 
     # Ensure audit dir exists on data volume
     mkdir -p "${HAPAX_AUDIT_DIR:-/data/.cache/axiom-audit}"
-    mkdir -p "${HAPAX_CACHE_DIR:-/data/.cache}/cockpit/precedents"
+    mkdir -p "${HAPAX_CACHE_DIR:-/data/.cache}/logos/precedents"
 
     touch "$CLAUDE_HOME/.initialized"
     echo "hapax-dev: Configuration initialized."

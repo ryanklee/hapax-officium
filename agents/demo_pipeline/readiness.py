@@ -51,8 +51,8 @@ def check_readiness(
 
     Checks:
     1. System check (run_checks)
-    2. Cockpit API (:8050) reachable
-    3. Cockpit web (:5173) reachable
+    2. Logos API (:8050) reachable
+    3. Logos web (:5173) reachable
     4. TTS service (:4123) if require_tts=True
     5. Voice sample exists if require_tts=True
     """
@@ -93,27 +93,27 @@ def check_readiness(
     except Exception as e:
         warnings.append(f"System check unavailable: {e}")
 
-    # 2. Cockpit API
+    # 2. Logos API
     try:
         import urllib.request
 
         urllib.request.urlopen("http://localhost:8060/api/status", timeout=5)
-        progress("Cockpit API: OK")
+        progress("Logos API: OK")
     except Exception:
         issues.append(
-            "Cockpit API (:8060) not reachable — start with: "
+            "Logos API (:8060) not reachable — start with: "
             "cd ~/projects/hapax-officium/ai-agents && uv run python -m logos.api --port 8060"
         )
 
-    # 3. Cockpit web
+    # 3. Logos web
     try:
         import urllib.request
 
         urllib.request.urlopen("http://localhost:5173", timeout=5)
-        progress("Cockpit web: OK")
+        progress("Logos web: OK")
     except Exception:
         issues.append(
-            "Cockpit web (:5173) not reachable — start with: "
+            "Logos web (:5173) not reachable — start with: "
             "cd ~/projects/hapax-officium/officium-web && pnpm dev"
         )
 

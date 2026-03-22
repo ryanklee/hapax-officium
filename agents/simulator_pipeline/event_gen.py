@@ -20,7 +20,7 @@ _log = logging.getLogger(__name__)
 _event_agent = Agent(
     get_model("balanced"),
     system_prompt=(
-        "You are a temporal simulation engine for a management cockpit system. "
+        "You are a temporal simulation engine for a logos system. "
         "You generate plausible management activity events for a single workday. "
         "Each event represents a file that would be created or updated in the "
         "manager's data directory. Output 0-3 events per day.\n\n"

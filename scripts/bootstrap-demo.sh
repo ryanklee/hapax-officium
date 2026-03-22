@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # ============================================================================
-# bootstrap-demo.sh — Hydrate the management cockpit from demo seed data
+# bootstrap-demo.sh — Hydrate the logos system from demo seed data
 #
 # Takes the system from empty to fully warm:
 #   Phase 0: Pre-flight checks (infrastructure healthy)
@@ -232,7 +232,7 @@ echo ""
 if $SKIP_LLM; then
     echo "  Note: LLM agents were skipped. Run without --skip-llm for full hydration."
 fi
-echo "  Start the cockpit API:  uv run python -m cockpit.api --host 127.0.0.1 --port 8050"
+echo "  Start the logos API:  uv run python -m logos.api --host 127.0.0.1 --port 8050"
 echo "  The dashboard will show live management state at http://127.0.0.1:8052"
 echo ""
 

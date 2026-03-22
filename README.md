@@ -85,12 +85,12 @@ uv run pytest tests/ -q
 ./scripts/bootstrap-demo.sh --skip-llm
 
 # Start the logos API
-uv run python -m cockpit.api --host 127.0.0.1 --port 8050
+uv run python -m logos.api --host 127.0.0.1 --port 8050
 ```
 
 ## Infrastructure
 
-The cockpit requires three services:
+The logos API requires three services:
 
 | Service | Purpose | Default |
 |---------|---------|---------|
