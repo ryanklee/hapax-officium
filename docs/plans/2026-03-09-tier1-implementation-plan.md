@@ -11,12 +11,12 @@
 **Design doc:** `docs/plans/2026-03-09-tier1-document-expansion-design.md`
 
 **Existing patterns to follow:**
-- Collector: `cockpit/data/management.py` (dataclasses + `_collect_*` functions + public `collect_*_state()`)
-- Nudges: `cockpit/data/nudges.py` (sub-collectors appending to shared list)
+- Collector: `logos/data/management.py` (dataclasses + `_collect_*` functions + public `collect_*_state()`)
+- Nudges: `logos/data/nudges.py` (sub-collectors appending to shared list)
 - Bridge: `shared/management_bridge.py` (`_*_facts()` → `_make_fact()` → `generate_facts()`)
-- Engine: `cockpit/engine/reactive_rules.py` (Rule + `build_default_rules()`)
-- Cache: `cockpit/api/cache.py` (DataCache fields + `_refresh_sync()`)
-- API: `cockpit/api/routes/data.py` (`@router.get` + `_response(_to_dict(...))`)
+- Engine: `logos/engine/reactive_rules.py` (Rule + `build_default_rules()`)
+- Cache: `logos/api/cache.py` (DataCache fields + `_refresh_sync()`)
+- API: `logos/api/routes/data.py` (`@router.get` + `_response(_to_dict(...))`)
 - Frontend types: `hapax-mgmt-web/src/api/types.ts`
 - Frontend hooks: `hapax-mgmt-web/src/api/hooks.ts` (`useQuery` with `refetchInterval: SLOW`)
 - Frontend client: `hapax-mgmt-web/src/api/client.ts` (api object with `get<T>` calls)
@@ -29,13 +29,13 @@
 ### Task 1: OKR Collector
 
 **Files:**
-- Create: `cockpit/data/okrs.py`
+- Create: `logos/data/okrs.py`
 - Test: `tests/test_okrs.py`
 
 **Step 1: Write tests**
 
 ```python
-"""Tests for cockpit/data/okrs.py — OKR state collection."""
+"""Tests for logos/data/okrs.py — OKR state collection."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -175,7 +175,7 @@ Expected: ImportError — `cockpit.data.okrs` does not exist
 
 **Step 3: Write the collector**
 
-Create `cockpit/data/okrs.py`:
+Create `logos/data/okrs.py`:
 
 ```python
 """OKR state collector — reads from DATA_DIR/okrs/.
@@ -322,7 +322,7 @@ Expected: All 7 tests PASS
 **Step 5: Commit**
 
 ```bash
-git add cockpit/data/okrs.py tests/test_okrs.py
+git add logos/data/okrs.py tests/test_okrs.py
 git commit -m "feat: add OKR collector with nested key-result parsing"
 ```
 
@@ -331,13 +331,13 @@ git commit -m "feat: add OKR collector with nested key-result parsing"
 ### Task 2: SMART Goal Collector
 
 **Files:**
-- Create: `cockpit/data/smart_goals.py`
+- Create: `logos/data/smart_goals.py`
 - Test: `tests/test_smart_goals.py`
 
 **Step 1: Write tests**
 
 ```python
-"""Tests for cockpit/data/smart_goals.py — SMART goal collection."""
+"""Tests for logos/data/smart_goals.py — SMART goal collection."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -444,7 +444,7 @@ class TestCollectSmartGoals:
 
 **Step 3: Write the collector**
 
-Create `cockpit/data/smart_goals.py`:
+Create `logos/data/smart_goals.py`:
 
 ```python
 """SMART goal collector — reads from DATA_DIR/goals/.
@@ -586,7 +586,7 @@ def collect_smart_goal_state() -> SmartGoalSnapshot:
 **Step 5: Commit**
 
 ```bash
-git add cockpit/data/smart_goals.py tests/test_smart_goals.py
+git add logos/data/smart_goals.py tests/test_smart_goals.py
 git commit -m "feat: add SMART goal collector with deadline and review tracking"
 ```
 
@@ -595,13 +595,13 @@ git commit -m "feat: add SMART goal collector with deadline and review tracking"
 ### Task 3: Incident Collector
 
 **Files:**
-- Create: `cockpit/data/incidents.py`
+- Create: `logos/data/incidents.py`
 - Test: `tests/test_incidents.py`
 
 **Step 1: Write tests**
 
 ```python
-"""Tests for cockpit/data/incidents.py — incident state collection."""
+"""Tests for logos/data/incidents.py — incident state collection."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -703,7 +703,7 @@ class TestCollectIncidents:
 
 **Step 3: Write the collector**
 
-Create `cockpit/data/incidents.py`:
+Create `logos/data/incidents.py`:
 
 ```python
 """Incident state collector — reads from DATA_DIR/incidents/.
@@ -803,7 +803,7 @@ def collect_incident_state() -> IncidentSnapshot:
 **Step 5: Commit**
 
 ```bash
-git add cockpit/data/incidents.py tests/test_incidents.py
+git add logos/data/incidents.py tests/test_incidents.py
 git commit -m "feat: add incident collector with postmortem tracking"
 ```
 
@@ -812,13 +812,13 @@ git commit -m "feat: add incident collector with postmortem tracking"
 ### Task 4: Postmortem Action Collector
 
 **Files:**
-- Create: `cockpit/data/postmortem_actions.py`
+- Create: `logos/data/postmortem_actions.py`
 - Test: `tests/test_postmortem_actions.py`
 
 **Step 1: Write tests**
 
 ```python
-"""Tests for cockpit/data/postmortem_actions.py."""
+"""Tests for logos/data/postmortem_actions.py."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -894,7 +894,7 @@ class TestCollectPostmortemActions:
 
 **Step 3: Write the collector**
 
-Create `cockpit/data/postmortem_actions.py`:
+Create `logos/data/postmortem_actions.py`:
 
 ```python
 """Postmortem action collector — reads from DATA_DIR/postmortem-actions/.
@@ -994,7 +994,7 @@ def collect_postmortem_action_state() -> PostmortemActionSnapshot:
 **Step 5: Commit**
 
 ```bash
-git add cockpit/data/postmortem_actions.py tests/test_postmortem_actions.py
+git add logos/data/postmortem_actions.py tests/test_postmortem_actions.py
 git commit -m "feat: add postmortem action collector with deadline tracking"
 ```
 
@@ -1003,13 +1003,13 @@ git commit -m "feat: add postmortem action collector with deadline tracking"
 ### Task 5: Review Cycle Collector
 
 **Files:**
-- Create: `cockpit/data/review_cycles.py`
+- Create: `logos/data/review_cycles.py`
 - Test: `tests/test_review_cycles.py`
 
 **Step 1: Write tests**
 
 ```python
-"""Tests for cockpit/data/review_cycles.py."""
+"""Tests for logos/data/review_cycles.py."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -1104,7 +1104,7 @@ class TestCollectReviewCycles:
 
 **Step 3: Write the collector**
 
-Create `cockpit/data/review_cycles.py`:
+Create `logos/data/review_cycles.py`:
 
 ```python
 """Review cycle collector — reads from DATA_DIR/review-cycles/.
@@ -1213,7 +1213,7 @@ def collect_review_cycle_state() -> ReviewCycleSnapshot:
 **Step 5: Commit**
 
 ```bash
-git add cockpit/data/review_cycles.py tests/test_review_cycles.py
+git add logos/data/review_cycles.py tests/test_review_cycles.py
 git commit -m "feat: add review cycle collector with process deadline tracking"
 ```
 
@@ -1222,13 +1222,13 @@ git commit -m "feat: add review cycle collector with process deadline tracking"
 ### Task 6: Status Report Collector
 
 **Files:**
-- Create: `cockpit/data/status_reports.py`
+- Create: `logos/data/status_reports.py`
 - Test: `tests/test_status_reports.py`
 
 **Step 1: Write tests**
 
 ```python
-"""Tests for cockpit/data/status_reports.py."""
+"""Tests for logos/data/status_reports.py."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -1305,7 +1305,7 @@ class TestCollectStatusReports:
 
 **Step 3: Write the collector**
 
-Create `cockpit/data/status_reports.py`:
+Create `logos/data/status_reports.py`:
 
 ```python
 """Status report collector — reads from DATA_DIR/status-reports/.
@@ -1413,7 +1413,7 @@ def collect_status_report_state() -> StatusReportSnapshot:
 **Step 5: Commit**
 
 ```bash
-git add cockpit/data/status_reports.py tests/test_status_reports.py
+git add logos/data/status_reports.py tests/test_status_reports.py
 git commit -m "feat: add status report collector with cadence-based staleness"
 ```
 
@@ -1693,7 +1693,7 @@ Expected: All existing tests still PASS
 ### Task 9: Category-Slotted Nudge System
 
 **Files:**
-- Modify: `cockpit/data/nudges.py` (refactor `collect_nudges`, change category field on existing nudges, add 6 new sub-collectors)
+- Modify: `logos/data/nudges.py` (refactor `collect_nudges`, change category field on existing nudges, add 6 new sub-collectors)
 - Modify: `tests/test_nudges.py` (add tests for category allocation)
 - Test: `tests/test_nudge_categories.py` (new, focused on slot redistribution)
 
@@ -1806,7 +1806,7 @@ class TestCategoryAllocation:
 
 **Step 3: Refactor nudges.py**
 
-Key changes to `cockpit/data/nudges.py`:
+Key changes to `logos/data/nudges.py`:
 
 1. Add `CATEGORY_SLOTS` constant
 2. Change existing nudge `category` values from `"management"` to `"people"`
@@ -1871,7 +1871,7 @@ Expected: All PASS. Note: existing tests that check `category == "management"` n
 **Step 6: Commit**
 
 ```bash
-git add cockpit/data/nudges.py tests/test_nudge_categories.py tests/test_nudges.py
+git add logos/data/nudges.py tests/test_nudge_categories.py tests/test_nudges.py
 git commit -m "feat: category-slotted nudge system with 6 new collectors"
 ```
 
@@ -1880,7 +1880,7 @@ git commit -m "feat: category-slotted nudge system with 6 new collectors"
 ### Task 10: Engine Rules for New Types
 
 **Files:**
-- Modify: `cockpit/engine/reactive_rules.py` (add 6 rules, update `build_default_rules`)
+- Modify: `logos/engine/reactive_rules.py` (add 6 rules, update `build_default_rules`)
 
 **Step 1: Add 6 new rules**
 
@@ -1976,7 +1976,7 @@ Expected: PASS
 **Step 3: Commit**
 
 ```bash
-git add cockpit/engine/reactive_rules.py
+git add logos/engine/reactive_rules.py
 git commit -m "feat: add 6 reactive engine rules for new document types"
 ```
 
@@ -1985,8 +1985,8 @@ git commit -m "feat: add 6 reactive engine rules for new document types"
 ### Task 11: Cache + API Endpoints
 
 **Files:**
-- Modify: `cockpit/api/cache.py` (add 6 fields, update `_refresh_sync`)
-- Modify: `cockpit/api/routes/data.py` (add 6 endpoints)
+- Modify: `logos/api/cache.py` (add 6 fields, update `_refresh_sync`)
+- Modify: `logos/api/routes/data.py` (add 6 endpoints)
 
 **Step 1: Update cache.py**
 
@@ -2066,7 +2066,7 @@ Expected: PASS
 **Step 4: Commit**
 
 ```bash
-git add cockpit/api/cache.py cockpit/api/routes/data.py
+git add logos/api/cache.py logos/api/routes/data.py
 git commit -m "feat: add cache fields and API endpoints for 6 new document types"
 ```
 

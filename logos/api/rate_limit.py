@@ -1,4 +1,4 @@
-"""Simple in-memory rate limiter for cockpit API endpoints.
+"""Simple in-memory rate limiter for logos API endpoints.
 
 No external dependencies — uses a dict of timestamps. Designed for a
 single-operator system; protects against accidental runaway clients,

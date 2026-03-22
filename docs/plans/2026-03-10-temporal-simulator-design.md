@@ -2,7 +2,7 @@
 
 ## Goal
 
-A self-exercising temporal simulation engine that discovers system capabilities and generates realistic usage patterns over configurable time windows, producing ephemeral DATA_DIR snapshots that the demo agent or cockpit API can operate against.
+A self-exercising temporal simulation engine that discovers system capabilities and generates realistic usage patterns over configurable time windows, producing ephemeral DATA_DIR snapshots that the demo agent or logos API can operate against.
 
 ## Requirements
 

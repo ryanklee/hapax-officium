@@ -4,7 +4,7 @@
 
 **Goal:** Simplify the development surface from 16 repos to 10, eliminate code duplication, and containerize the RAG sync pipeline as a single container replacing 8 systemd timers.
 
-**Architecture:** ai-agents becomes the single Python source of truth with Dockerfiles for cockpit-api and sync-pipeline. hapax-containerization is renamed to hapax-mgmt and stripped of duplicated Python code, retaining only demo-data, bootstrap scripts, and compose overrides. Six dead/deprecated repos are deleted.
+**Architecture:** ai-agents becomes the single Python source of truth with Dockerfiles for logos-api and sync-pipeline. hapax-containerization is renamed to hapax-mgmt and stripped of duplicated Python code, retaining only demo-data, bootstrap scripts, and compose overrides. Six dead/deprecated repos are deleted.
 
 **Tech Stack:** Python 3.12, Docker, uv, cron, FastAPI, Qdrant, LiteLLM
 
@@ -242,7 +242,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-cockpit-api = [
+logos-api = [
     "fastapi>=0.115.0",
     "uvicorn>=0.34.0",
     "pydantic-ai[litellm]>=1.63.0",
@@ -286,7 +286,7 @@ host = [
 ]
 ```
 
-The `host` group includes everything — it's what `uv sync --all-extras` installs on the development machine. The cockpit-api and sync-pipeline groups are for Docker builds.
+The `host` group includes everything — it's what `uv sync --all-extras` installs on the development machine. The logos-api and sync-pipeline groups are for Docker builds.
 
 **Important:** `uv sync` on host should still install everything. Verify:
 
@@ -312,24 +312,24 @@ cd ~/projects/ai-agents
 git add pyproject.toml uv.lock
 git commit -m "refactor: split dependencies into groups for container builds
 
-cockpit-api, sync-pipeline, and host groups allow Dockerfiles
+logos-api, sync-pipeline, and host groups allow Dockerfiles
 to install only what they need."
 ```
 
 ---
 
-### Task 6: Create Dockerfile.cockpit-api in ai-agents
+### Task 6: Create Dockerfile.logos-api in ai-agents
 
-**Context:** This Dockerfile builds the cockpit API image. It's based on the existing Dockerfile in `hapax-containerization/Dockerfile` but simplified — no Playwright, no d2, no Node.js (those were for the demo agent). Uses the `cockpit-api` dependency group.
+**Context:** This Dockerfile builds the logos API image. It's based on the existing Dockerfile in `hapax-containerization/Dockerfile` but simplified — no Playwright, no d2, no Node.js (those were for the demo agent). Uses the `logos-api` dependency group.
 
 **Files:**
-- Create: `~/projects/Dockerfile.cockpit-api`
+- Create: `~/projects/Dockerfile.logos-api`
 
 **Step 1: Write the Dockerfile**
 
 ```dockerfile
 # ============================================================================
-# cockpit-api — FastAPI management cockpit API server
+# logos-api — FastAPI management logos API server
 # ============================================================================
 
 # ── Stage 1: Build ──────────────────────────────────────────────────────
@@ -340,7 +340,7 @@ WORKDIR /app
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
 COPY pyproject.toml uv.lock README.md ./
-RUN uv sync --frozen --no-dev --extra cockpit-api
+RUN uv sync --frozen --no-dev --extra logos-api
 
 # ── Stage 2: Runtime ────────────────────────────────────────────────────
 FROM python:3.12-slim
@@ -383,7 +383,7 @@ CMD ["uv", "run", "python", "-m", "cockpit.api", "--host", "0.0.0.0", "--port", 
 
 ```bash
 cd ~/projects/ai-agents
-docker build -f Dockerfile.cockpit-api -t cockpit-api:test .
+docker build -f Dockerfile.logos-api -t logos-api:test .
 ```
 
 Expected: Build succeeds. Image should be significantly smaller than the current all-in-one image (no Playwright, Node.js, d2, Chromium).
@@ -394,7 +394,7 @@ Expected: Build succeeds. Image should be significantly smaller than the current
 docker run --rm -p 127.0.0.1:8050:8050 \
     -e QDRANT_URL=http://host.docker.internal:6333 \
     -e LITELLM_BASE_URL=http://host.docker.internal:4000 \
-    cockpit-api:test
+    logos-api:test
 ```
 
 In another terminal:
@@ -409,10 +409,10 @@ Stop the container with Ctrl+C.
 
 ```bash
 cd ~/projects/ai-agents
-git add Dockerfile.cockpit-api
-git commit -m "feat: add Dockerfile.cockpit-api for containerized API server
+git add Dockerfile.logos-api
+git commit -m "feat: add Dockerfile.logos-api for containerized API server
 
-Multi-stage build using cockpit-api dependency group.
+Multi-stage build using logos-api dependency group.
 No Playwright, Node, or demo dependencies — minimal image."
 ```
 
@@ -664,7 +664,7 @@ Includes ffmpeg for audio_processor. Cycle mode via CYCLE_MODE env."
 
 ### Task 9: Create docker-compose.yml in ai-agents
 
-**Context:** This compose file wires together cockpit-api, sync-pipeline, and cockpit-web. It connects to the existing llm-stack services (Qdrant, LiteLLM, Ollama) running on the host.
+**Context:** This compose file wires together logos-api, sync-pipeline, and cockpit-web. It connects to the existing llm-stack services (Qdrant, LiteLLM, Ollama) running on the host.
 
 **Files:**
 - Create: `~/projects/ai-agents/ docker-compose.yml`
@@ -678,11 +678,11 @@ Includes ffmpeg for audio_processor. Cycle mode via CYCLE_MODE env."
 # ============================================================================
 
 services:
-  cockpit-api:
+  logos-api:
     build:
       context: .
-      dockerfile: Dockerfile.cockpit-api
-    container_name: hapax-cockpit-api
+      dockerfile: Dockerfile.logos-api
+    container_name: hapax-logos-api
     ports:
       - "127.0.0.1:8050:8050"
     volumes:
@@ -775,7 +775,7 @@ cd ~/projects/ai-agents
 git add docker-compose.yml .env.example
 git commit -m "feat: add docker-compose.yml for agent services
 
-Wires cockpit-api, sync-pipeline, and cockpit-web.
+Wires logos-api, sync-pipeline, and cockpit-web.
 Connects to llm-stack infrastructure on host."
 ```
 
@@ -783,7 +783,7 @@ Connects to llm-stack infrastructure on host."
 
 ### Task 10: Test full compose stack
 
-**Context:** Build all images and verify they start correctly together. This is an integration test — all three services should come up and the cockpit-api should respond to requests.
+**Context:** Build all images and verify they start correctly together. This is an integration test — all three services should come up and the logos-api should respond to requests.
 
 **Step 1: Build all images**
 
@@ -807,7 +807,7 @@ docker compose up -d
 docker compose ps
 # All three should show "Up" status
 
-# Cockpit API health
+# Logos API health
 curl -s http://localhost:8050/ | head -5
 
 # Cockpit web
@@ -939,9 +939,9 @@ rm -f agent-architecture.md operations-manual.md Dockerfile.dev entrypoint-dev.s
 # ============================================================================
 
 services:
-  cockpit-api:
-    image: hapax-cockpit-api:latest
-    container_name: hapax-mgmt-cockpit-api
+  logos-api:
+    image: hapax-logos-api:latest
+    container_name: hapax-mgmt-logos-api
     ports:
       - "127.0.0.1:8060:8050"
     volumes:
@@ -969,7 +969,7 @@ Note: demo uses different ports (8060/8062) to avoid conflicting with production
 
 Read and update `~/projects/hapax-mgmt/scripts/bootstrap-demo.sh` to:
 1. Copy `demo-data/` to `data/` (was `demo-data/` to `data/`)
-2. Run agents via `docker compose run cockpit-api uv run python -m agents.<name>` instead of local `uv run`
+2. Run agents via `docker compose run logos-api uv run python -m agents.<name>` instead of local `uv run`
 3. Adjust paths for the new flat structure
 
 This script needs careful updating — read it first, understand the current flow, then adapt paths.
@@ -1003,7 +1003,7 @@ The new CLAUDE.md should describe:
 - How to run (bootstrap-demo.sh → docker compose up)
 - Relationship to ai-agents (source of truth for all Python code)
 
-Keep it concise. Remove all references to agents, shared modules, cockpit API internals — those are documented in CLAUDE.md.
+Keep it concise. Remove all references to agents, shared modules, logos API internals — those are documented in CLAUDE.md.
 
 **Step 2: Commit**
 
@@ -1023,9 +1023,9 @@ git commit -m "docs: rewrite CLAUDE.md for thin demo orchestration layer"
 
 ```bash
 cd ~/projects/ai-agents
-docker compose build cockpit-api
+docker compose build logos-api
 # Tag for demo compose
-docker tag hapax-cockpit-api:latest hapax-cockpit-api:latest
+docker tag hapax-logos-api:latest hapax-logos-api:latest
 ```
 
 **Step 2: Build cockpit-web image**

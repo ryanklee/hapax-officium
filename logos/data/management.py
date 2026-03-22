@@ -2,7 +2,7 @@
 
 Scans DATA_DIR subdirectories (people/, coaching/, feedback/) for markdown
 files with YAML frontmatter. Computes staleness, overdue status, and
-aggregates into a ManagementSnapshot for the cockpit API.
+aggregates into a ManagementSnapshot for the logos API.
 """
 
 from __future__ import annotations

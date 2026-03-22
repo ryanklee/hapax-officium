@@ -5,7 +5,7 @@ from __future__ import annotations
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from cockpit.api.cache import cache
+from logos.api.cache import cache
 
 router = APIRouter(prefix="/api/nudges", tags=["nudges"])
 
@@ -31,7 +31,7 @@ async def dismiss_nudge(source_id: str) -> NudgeActionResponse:
 def _record(source_id: str, action: str) -> NudgeActionResponse:
     """Find the nudge and record the action.
 
-    Decision tracking was removed with the personal cockpit modules.
+    Decision tracking was removed with the personal logos modules.
     This now validates the nudge exists and returns the response.
     """
     # Find matching nudge in cache

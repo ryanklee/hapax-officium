@@ -79,7 +79,7 @@ uv run python -m agents.demo "the entire system for a family member"
 uv run python -m agents.demo "health monitoring" --audience family --format slides-only
 ```
 
-**Also:** `POST /api/agents/demo/run` via cockpit API with SSE progress streaming.
+**Also:** `POST /api/agents/demo/run` via logos API with SSE progress streaming.
 
 ### Agent Responsibilities (LLM-driven)
 
@@ -140,7 +140,7 @@ Four deterministic stages, each a standalone Python module.
 - Drives Playwright via Python package (not MCP — headless Chromium directly)
 - For each scene: navigate to URL, execute actions, wait, capture at 1920x1080
 - Save to `output/{demo-id}/screenshots/`
-- Requires cockpit API (:8050) + cockpit-web (:5173) running — fails fast with actionable error if not
+- Requires logos API (:8050) + cockpit-web (:5173) running — fails fast with actionable error if not
 
 ### Stage 2: Voice Generation (`pipeline/voice.py`)
 
@@ -170,7 +170,7 @@ Four deterministic stages, each a standalone Python module.
 DemoScript → screenshots → voice → video → output
 ```
 
-Each stage reports progress via callback. Claude Code / cockpit API see streaming updates: "Capturing screenshot 3/8...", "Generating voice for scene 2/8...", "Rendering video..."
+Each stage reports progress via callback. Claude Code / logos API see streaming updates: "Capturing screenshot 3/8...", "Generating voice for scene 2/8...", "Rendering video..."
 
 ---
 
@@ -235,13 +235,13 @@ One-time setup: record 10-30 seconds speaking naturally, save to `~/projects/pro
 ### Claude Code (primary interface)
 
 Slash command or natural language. Claude Code:
-1. Ensures cockpit API + web dev server running
+1. Ensures logos API + web dev server running
 2. Starts Chatterbox container if needed
 3. Invokes `uv run python -m agents.demo "X for Y"`
 4. Streams progress
 5. Returns path to MP4
 
-### Cockpit API
+### Logos API
 
 `POST /api/agents/demo/run` — body: `{"prompt": "..."}`, SSE progress events.
 
@@ -270,7 +270,7 @@ Each phase produces a usable artifact:
 - **Deliverable:** narrated MP4 video
 
 ### Phase 3: Polish
-- Cockpit API integration
+- Logos API integration
 - Claude Code slash command
 - VRAM management automation
 - Langfuse tracing

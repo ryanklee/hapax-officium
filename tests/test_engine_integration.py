@@ -8,7 +8,7 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from cockpit.engine import ReactiveEngine
+from logos.engine import ReactiveEngine
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -81,7 +81,7 @@ class TestPersonFileCascade:
     """Person file change triggers refresh_cache (which includes nudges + team health)."""
 
     @patch(
-        "cockpit.engine.reactive_rules._refresh_cache",
+        "logos.engine.reactive_rules._refresh_cache",
         new_callable=AsyncMock,
         return_value="cache refreshed",
     )
@@ -114,7 +114,7 @@ class TestErrorDelivery:
     """Failed actions produce high-priority error delivery items."""
 
     @patch(
-        "cockpit.engine.reactive_rules._refresh_cache",
+        "logos.engine.reactive_rules._refresh_cache",
         new_callable=AsyncMock,
         side_effect=RuntimeError("cache exploded"),
     )

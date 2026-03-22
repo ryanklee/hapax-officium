@@ -1,7 +1,7 @@
-"""FastAPI application for the cockpit API.
+"""FastAPI application for the logos API.
 
-Serves data from cockpit/data/ collectors over HTTP.
-Designed to be consumed by the React SPA at cockpit-web/.
+Serves data from logos/data/ collectors over HTTP.
+Designed to be consumed by the React SPA at hapax-logos/.
 """
 
 from __future__ import annotations
@@ -11,14 +11,14 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from cockpit.api.cache import start_refresh_loop
-from cockpit.api.sessions import agent_run_manager
+from logos.api.cache import start_refresh_loop
+from logos.api.sessions import agent_run_manager
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await start_refresh_loop()
-    from cockpit.engine import ReactiveEngine
+    from logos.engine import ReactiveEngine
 
     engine = ReactiveEngine(agent_run_manager=agent_run_manager)
     set_engine(engine)
@@ -29,8 +29,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="management-cockpit-api",
-    description="Management cockpit API",
+    title="management-logos-api",
+    description="Management logos API",
     version="0.2.0",
     lifespan=lifespan,
 )
@@ -64,15 +64,15 @@ try:
 except Exception:
     pass  # Prometheus is optional
 
-from cockpit.api.routes.agents import router as agents_router
-from cockpit.api.routes.cycle_mode import router as cycle_mode_router
-from cockpit.api.routes.data import router as data_router
-from cockpit.api.routes.demos import router as demos_router
-from cockpit.api.routes.engine import router as engine_router
-from cockpit.api.routes.engine import set_engine
-from cockpit.api.routes.nudges import router as nudges_router
-from cockpit.api.routes.profile import router as profile_router
-from cockpit.api.routes.scout import router as scout_router
+from logos.api.routes.agents import router as agents_router
+from logos.api.routes.cycle_mode import router as cycle_mode_router
+from logos.api.routes.data import router as data_router
+from logos.api.routes.demos import router as demos_router
+from logos.api.routes.engine import router as engine_router
+from logos.api.routes.engine import set_engine
+from logos.api.routes.nudges import router as nudges_router
+from logos.api.routes.profile import router as profile_router
+from logos.api.routes.scout import router as scout_router
 
 app.include_router(data_router)
 app.include_router(nudges_router)
@@ -86,7 +86,7 @@ app.include_router(scout_router)
 
 @app.get("/")
 async def root():
-    return {"name": "cockpit-api", "version": "0.2.0"}
+    return {"name": "logos-api", "version": "0.2.0"}
 
 
 from pathlib import Path

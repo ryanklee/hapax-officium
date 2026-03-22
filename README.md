@@ -20,7 +20,7 @@ This is a working system, not a SaaS product, framework, or library. Clone, seed
 ./scripts/bootstrap-demo.sh
 ```
 
-This copies a synthetic seed corpus (3 teams, 8 people, full management state) into the data directory, creates Qdrant collections, runs deterministic agents in parallel, then chains LLM synthesis agents: profiler, briefing, digest, team snapshot. After approximately 2 minutes, the cockpit API serves live management state — nudges, team health scores, and briefings generated from the synthetic data.
+This copies a synthetic seed corpus (3 teams, 8 people, full management state) into the data directory, creates Qdrant collections, runs deterministic agents in parallel, then chains LLM synthesis agents: profiler, briefing, digest, team snapshot. After approximately 2 minutes, the logos API serves live management state — nudges, team health scores, and briefings generated from the synthetic data.
 
 The demo agent profiles the audience, generates a tailored demonstration against the live system, and the demo_eval agent critiques and iterates on the result. `system_check` runs health checks across core services, and `knowledge_maint` prunes the knowledge base for staleness and near-duplicates.
 
@@ -84,7 +84,7 @@ uv run pytest tests/ -q
 # Data pipeline only — no LLM calls, exercises collectors and nudges
 ./scripts/bootstrap-demo.sh --skip-llm
 
-# Start the cockpit API
+# Start the logos API
 uv run python -m cockpit.api --host 127.0.0.1 --port 8050
 ```
 
@@ -104,7 +104,7 @@ The cockpit requires three services:
 hapax-officium/
 ├── agents/           17 agents + 2 agent packages (demo_pipeline, simulator_pipeline)
 ├── shared/           33 shared modules (config, data bridge, profile, axioms, frontmatter)
-├── cockpit/          FastAPI API (32 endpoints) + 11 data collectors + reactive engine
+├── logos/          FastAPI API (32 endpoints) + 11 data collectors + reactive engine
 ├── data/             Management state directory — the filesystem bus (gitignored contents)
 ├── demo-data/        Synthetic seed corpus (checked in)
 ├── officium-web/     React SPA dashboard

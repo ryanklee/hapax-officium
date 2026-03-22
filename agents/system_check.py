@@ -1,7 +1,7 @@
 """system_check.py — Minimal management system health checks.
 
 Zero LLM calls. Checks the 3 services needed for the management system:
-cockpit API, Qdrant, and LiteLLM.
+logos API, Qdrant, and LiteLLM.
 
 Usage:
     uv run python -m agents.system_check              # Human output
@@ -62,13 +62,13 @@ async def _http_get(url: str, timeout: float = 5.0) -> tuple[int, str]:
 # -- Checks -------------------------------------------------------------------
 
 
-async def check_cockpit_api() -> CheckResult:
-    """Check if the cockpit API is responding."""
+async def check_logos_api() -> CheckResult:
+    """Check if the logos API is responding."""
     try:
         code, _ = await _http_get("http://127.0.0.1:8051/")
-        return CheckResult("cockpit_api", code == 200, f"status {code}")
+        return CheckResult("logos_api", code == 200, f"status {code}")
     except Exception as e:
-        return CheckResult("cockpit_api", False, str(e))
+        return CheckResult("logos_api", False, str(e))
 
 
 async def check_qdrant() -> CheckResult:
@@ -91,7 +91,7 @@ async def check_litellm() -> CheckResult:
         return CheckResult("litellm", False, str(e))
 
 
-ALL_CHECKS = [check_cockpit_api, check_qdrant, check_litellm]
+ALL_CHECKS = [check_logos_api, check_qdrant, check_litellm]
 
 
 # -- Runner -------------------------------------------------------------------

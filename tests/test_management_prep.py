@@ -24,7 +24,7 @@ from agents.management_prep import (
     generate_overview,
     generate_team_snapshot,
 )
-from cockpit.data.management import (
+from logos.data.management import (
     CoachingState,
     FeedbackState,
     ManagementSnapshot,

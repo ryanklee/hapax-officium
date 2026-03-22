@@ -22,7 +22,7 @@ from watchdog.events import (
 )
 from watchdog.observers import Observer
 
-from cockpit.engine.models import ChangeEvent
+from logos.engine.models import ChangeEvent
 from shared.frontmatter import parse_frontmatter_text
 
 if TYPE_CHECKING:

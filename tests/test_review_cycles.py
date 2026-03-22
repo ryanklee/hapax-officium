@@ -1,4 +1,4 @@
-"""Tests for cockpit/data/review_cycles.py."""
+"""Tests for logos/data/review_cycles.py."""
 
 from __future__ import annotations
 
@@ -20,7 +20,7 @@ def _write_md(path: Path, frontmatter: dict, body: str = "") -> None:
 
 class TestCollectReviewCycles:
     def test_active_cycle(self, tmp_path: Path):
-        from cockpit.data.review_cycles import collect_review_cycle_state
+        from logos.data.review_cycles import collect_review_cycle_state
 
         _write_md(
             tmp_path / "review-cycles" / "2026-h1-sarah.md",
@@ -50,7 +50,7 @@ class TestCollectReviewCycles:
         assert snap.cycles[0].peer_feedback_gap == 2
 
     def test_overdue_cycle(self, tmp_path: Path):
-        from cockpit.data.review_cycles import collect_review_cycle_state
+        from logos.data.review_cycles import collect_review_cycle_state
 
         _write_md(
             tmp_path / "review-cycles" / "2025-h2-late.md",
@@ -74,7 +74,7 @@ class TestCollectReviewCycles:
         assert snap.cycles[0].overdue is True
 
     def test_delivered_excluded_from_active(self, tmp_path: Path):
-        from cockpit.data.review_cycles import collect_review_cycle_state
+        from logos.data.review_cycles import collect_review_cycle_state
 
         _write_md(
             tmp_path / "review-cycles" / "2025-h2-done.md",
@@ -96,7 +96,7 @@ class TestCollectReviewCycles:
         assert snap.active_count == 0
 
     def test_peer_feedback_gap_total(self, tmp_path: Path):
-        from cockpit.data.review_cycles import collect_review_cycle_state
+        from logos.data.review_cycles import collect_review_cycle_state
 
         _write_md(
             tmp_path / "review-cycles" / "2026-h1-a.md",
@@ -128,7 +128,7 @@ class TestCollectReviewCycles:
         assert snap.peer_feedback_gap_total == 4  # (3-1) + (4-2)
 
     def test_missing_dir(self, tmp_path: Path):
-        from cockpit.data.review_cycles import collect_review_cycle_state
+        from logos.data.review_cycles import collect_review_cycle_state
 
         config.set_data_dir(tmp_path)
         try:

@@ -1260,14 +1260,14 @@ git commit -m "feat(demo): demo agent with audience resolution and pipeline orch
 
 ---
 
-### Task 7: Cockpit API Route
+### Task 7: Logos API Route
 
 **Files:**
-- Modify: `~/projects/cockpit/data/agents.py` (add demo to agent list)
+- Modify: `~/projects/logos/data/agents.py` (add demo to agent list)
 
 **Step 1: Check existing agent registration**
 
-Read `~/projects/cockpit/data/agents.py` to see how agents are registered. The demo agent should appear in the agent list so the cockpit API can invoke it via `POST /api/agents/demo/run`.
+Read `~/projects/logos/data/agents.py` to see how agents are registered. The demo agent should appear in the agent list so the logos API can invoke it via `POST /api/agents/demo/run`.
 
 **Step 2: Add demo agent to the registry**
 
@@ -1285,14 +1285,14 @@ Add to the `AGENTS` list (following the existing pattern):
 
 **Step 3: Verify**
 
-Run: `cd ~/projects/ai-agents && uv run cockpit --once 2>/dev/null | grep -i demo || echo "Check agent list manually"`
+Run: `cd ~/projects/ai-agents && uv run logos --once 2>/dev/null | grep -i demo || echo "Check agent list manually"`
 
 **Step 4: Commit**
 
 ```bash
 cd ~/projects/ai-agents
-git add cockpit/data/agents.py
-git commit -m "feat(demo): register demo agent in cockpit API"
+git add logos/data/agents.py
+git commit -m "feat(demo): register demo agent in logos API"
 ```
 
 ---
@@ -1475,8 +1475,8 @@ uv run pytest tests/test_demo*.py -v
 # Dry run (plan only, no screenshots)
 uv run python -m agents.demo "the entire system for a family member" --json
 
-# Full run (requires cockpit API + web server running)
-# Terminal 1: uv run cockpit
+# Full run (requires logos API + web server running)
+# Terminal 1: uv run logos
 # Terminal 2: cd ~/projects/cockpit-web && pnpm dev
 # Terminal 3:
 uv run python -m agents.demo "the entire system for a family member"

@@ -35,8 +35,8 @@ try:
 except ImportError:
     pass
 
-from cockpit.data.goals import GoalSnapshot, collect_goals
-from cockpit.data.management import ManagementSnapshot, collect_management_state
+from logos.data.goals import GoalSnapshot, collect_goals
+from logos.data.management import ManagementSnapshot, collect_management_state
 
 # ── Schemas ──────────────────────────────────────────────────────────────────
 

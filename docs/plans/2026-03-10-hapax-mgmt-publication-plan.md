@@ -409,7 +409,7 @@ dev = [
 
 [project.scripts]
 cockpit = "cockpit.__main__:main"
-cockpit-api = "cockpit.api.__main__:main"
+logos-api = "cockpit.api.__main__:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["agents", "cockpit", "shared"]
@@ -874,7 +874,7 @@ uv run pytest tests/ -q
 # Bootstrap with demo data (requires Qdrant, LiteLLM, Ollama)
 ./scripts/bootstrap-demo.sh
 
-# Run the cockpit API
+# Run the logos API
 uv run python -m cockpit.api --host 127.0.0.1 --port 8050
 ```
 
@@ -884,7 +884,7 @@ uv run python -m cockpit.api --host 127.0.0.1 --port 8050
 hapax-mgmt/
 ├── agents/           AI agents (management prep, briefing, profiling, simulator, demo)
 ├── shared/           Shared modules (config, notifications, data bridge, axiom governance)
-├── cockpit/          FastAPI API server + reactive engine
+├── logos/          FastAPI API server + reactive engine
 ├── hapax-mgmt-web/   React dashboard
 ├── vscode/           VS Code extension
 ├── demo-data/        Synthetic seed corpus for demo hydration
@@ -915,7 +915,7 @@ hapax-mgmt/
 
 ## Demo System
 
-The demo seed system produces a fully-hydrated replica with realistic synthetic data. Bootstrap it with `./scripts/bootstrap-demo.sh` — this copies `demo-data/` into `data/`, runs deterministic agents, then LLM synthesis agents. After completion, the cockpit API serves live management state with real nudges, team health indicators, and briefings.
+The demo seed system produces a fully-hydrated replica with realistic synthetic data. Bootstrap it with `./scripts/bootstrap-demo.sh` — this copies `demo-data/` into `data/`, runs deterministic agents, then LLM synthesis agents. After completion, the logos API serves live management state with real nudges, team health indicators, and briefings.
 
 Use `--skip-llm` for data-pipeline-only testing (no external services needed beyond the filesystem).
 

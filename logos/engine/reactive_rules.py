@@ -14,8 +14,8 @@ from __future__ import annotations
 from collections.abc import Callable
 from pathlib import Path
 
-from cockpit.engine.models import Action, ChangeEvent
-from cockpit.engine.rules import Rule, RuleRegistry
+from logos.engine.models import Action, ChangeEvent
+from logos.engine.rules import Rule, RuleRegistry
 
 # Type alias for the watcher's ignore function
 IgnoreFn = Callable[[Path], None] | None
@@ -27,7 +27,7 @@ IgnoreFn = Callable[[Path], None] | None
 
 
 async def _refresh_cache() -> str:
-    from cockpit.api.cache import cache
+    from logos.api.cache import cache
 
     await cache.refresh()
     return "cache refreshed"

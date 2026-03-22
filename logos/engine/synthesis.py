@@ -14,14 +14,14 @@ import time
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
-from cockpit.engine.models import Action, ActionPlan, DeliveryItem
+from logos.engine.models import Action, ActionPlan, DeliveryItem
 
 if TYPE_CHECKING:
     from collections.abc import Callable
     from pathlib import Path
 
-    from cockpit.engine.delivery import DeliveryQueue
-    from cockpit.engine.executor import PhasedExecutor
+    from logos.engine.delivery import DeliveryQueue
+    from logos.engine.executor import PhasedExecutor
 
 _log = logging.getLogger(__name__)
 
@@ -302,7 +302,7 @@ class SynthesisScheduler:
 
         # Refresh cache so API serves fresh artifacts
         try:
-            from cockpit.api.cache import cache
+            from logos.api.cache import cache
 
             await cache.refresh()
         except Exception:

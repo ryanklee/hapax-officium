@@ -2,7 +2,7 @@
 
 **Date:** 2026-03-09
 **Status:** Approved
-**Scope:** Reactive event loop inside cockpit API — Phase 1 (filesystem-triggered cascades)
+**Scope:** Reactive event loop inside logos API — Phase 1 (filesystem-triggered cascades)
 
 ## Problem
 
@@ -12,7 +12,7 @@ The data loop is fragmented. Inputs require manual chaining of 3-5 agent invocat
 
 | Decision | Choice | Rationale |
 |----------|--------|-----------|
-| Where the brain lives | Inside cockpit API process | Already always-on, has cache loop, single-operator axiom means no scaling concern |
+| Where the brain lives | Inside logos API process | Already always-on, has cache loop, single-operator axiom means no scaling concern |
 | Proactive detection cadence | 60s tick (future), batched delivery | Fast detection, consolidated delivery respects attention budget |
 | Autonomous action boundary | Write + notify + internal chaining | Single-operator axiom = safe. Management safety axiom = no people-facing actions |
 | Implementation priority | Reactive path first | Most visibly broken today — manual chaining should cascade automatically |
@@ -145,7 +145,7 @@ Batch flush consolidates items into a single notification. Max 1 notification pe
 ### Integration
 
 ```python
-# cockpit/api/app.py lifespan
+# logos/api/app.py lifespan
 async def lifespan(app):
     cache.start_refresh_loop()      # existing — kept as safety net
     engine = ReactiveEngine()
@@ -186,5 +186,5 @@ ENGINE_ACTION_TIMEOUT_S=60         # per-action LLM timeout
 - Phased async executor with bounded LLM concurrency
 - Batched delivery queue with critical override
 - 3 new API endpoints
-- Engine integration into cockpit API lifespan
+- Engine integration into logos API lifespan
 - Tests for all new components

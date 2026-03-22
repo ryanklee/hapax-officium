@@ -19,7 +19,7 @@
 These Phase 3 design items were implemented early:
 - **VRAM management automation** — `agents/demo_pipeline/vram.py`, wired into demo.py
 - **Title card generation** — `agents/demo_pipeline/title_cards.py`, Gruvbox-styled
-- **Cockpit API agent registration** — demo agent in `cockpit/data/agents.py`, invokable via generic `/api/agents/demo/run` SSE endpoint
+- **Logos API agent registration** — demo agent in `logos/data/agents.py`, invokable via generic `/api/agents/demo/run` SSE endpoint
 
 ---
 
@@ -333,11 +333,11 @@ git commit -m "feat(demo): demo history listing — list and inspect generated d
 
 ---
 
-### Task 5: Cockpit API Demo Endpoints
+### Task 5: Logos API Demo Endpoints
 
 **Files:**
-- Create: `~/projects/cockpit/api/routes/demos.py`
-- Modify: `~/projects/cockpit/api/app.py`
+- Create: `~/projects/logos/api/routes/demos.py`
+- Modify: `~/projects/logos/api/app.py`
 - Create: `~/projects/tests/test_cockpit_demos.py`
 
 **Step 1: Write the test**
@@ -431,7 +431,7 @@ async def serve_demo_file(demo_id: str, file_path: str):
 
 **Step 3: Register the router**
 
-In `cockpit/api/app.py`, add the demo routes. Find the existing router includes and add:
+In `logos/api/app.py`, add the demo routes. Find the existing router includes and add:
 
 ```python
 from cockpit.api.routes.demos import router as demos_router
@@ -449,7 +449,7 @@ Expected: PASS.
 
 ```bash
 cd ~/projects/ai-agents
-git add cockpit/api/routes/demos.py cockpit/api/app.py tests/test_cockpit_demos.py
+git add logos/api/routes/demos.py logos/api/app.py tests/test_cockpit_demos.py
 git commit -m "feat(cockpit): demo API endpoints — list, detail, file serving"
 ```
 
@@ -508,8 +508,8 @@ cd ~/projects/ai-agents && uv run pytest tests/test_demo*.py -v
 # Skill is discoverable
 ls ~/projects/hapax-system/skills/demo/SKILL.md
 
-# Cockpit API serves demo endpoints
-cd ~/projects/ai-agents && uv run cockpit &
+# Logos API serves demo endpoints
+cd ~/projects/ai-agents && uv run logos &
 curl http://localhost:8050/api/demos
 kill %1
 

@@ -227,7 +227,7 @@ class TestValidateScreenshotSpecs:
         assert result[0][1].actions == []
 
     def test_wrong_port_rewritten_to_root(self):
-        """Wrong port rewrites to cockpit-web with closest matching route."""
+        """Wrong port rewrites to hapax-logos with closest matching route."""
         specs = [("page", ScreenshotSpec(url="http://localhost:3000/unknown"))]
         result = validate_screenshot_specs(specs)
         assert "5173" in result[0][1].url

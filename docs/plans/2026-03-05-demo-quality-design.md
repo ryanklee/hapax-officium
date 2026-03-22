@@ -87,7 +87,7 @@ Before generating any demo, ensure the system is presentable.
 1. **Health monitor** (`--fix` mode) — auto-fix what's fixable
 2. **Briefing** (recent window) — get fresh operational summary
 3. **Scout** (check staleness) — ensure horizon scan is current
-4. **Cockpit services** — cockpit API (:8050) + web (:5173) must be running
+4. **Cockpit services** — logos API (:8050) + web (:5173) must be running
 5. **TTS** (if video format) — Chatterbox container up, voice sample present
 
 ### Behavior
@@ -340,5 +340,5 @@ uv run python -m agents.demo "agent architecture for peers" --duration 15m --for
 - Audience persona YAML structure (extended, not replaced)
 - DemoScript model (extended with new fields, backward compatible)
 - Output directory structure
-- Cockpit API integration
+- Logos API integration
 - Langfuse tracing

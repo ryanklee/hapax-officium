@@ -1,4 +1,4 @@
-"""Tests for cockpit.engine.watcher — DataDirWatcher.
+"""Tests for logos.engine.watcher — DataDirWatcher.
 
 Self-contained, no conftest. Uses tmp_path for isolated test directories.
 asyncio_mode = "auto" in pytest config — async tests work without decorator.
@@ -10,12 +10,12 @@ import asyncio
 from typing import TYPE_CHECKING
 from unittest.mock import AsyncMock
 
-from cockpit.engine.watcher import DataDirWatcher
+from logos.engine.watcher import DataDirWatcher
 
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from cockpit.engine.models import ChangeEvent
+    from logos.engine.models import ChangeEvent
 
 
 async def test_file_creation_detected(tmp_path: Path):

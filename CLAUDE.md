@@ -30,13 +30,13 @@ Shared conventions (uv, ruff, testing, git workflow, pydantic-ai) are in the wor
 | system_check | No | Health checks for 3 core services |
 | simulator | Yes | Temporal simulation of management scenarios |
 
-## Cockpit API
+## Logos API
 
 FastAPI on `:8050`. 32 endpoints across 8 route groups: data, profile, agents, nudges, demos, engine, cycle_mode, scout.
 
 ## Reactive Engine
 
-`cockpit/engine/` watches `DATA_DIR` for changes, evaluates 12 rules, executes cascading actions. Nudges: 3 categories (people, goals, operational), 9 collectors, category-slotted attention caps.
+`logos/engine/` watches `DATA_DIR` for changes, evaluates 12 rules, executes cascading actions. Nudges: 3 categories (people, goals, operational), 9 collectors, category-slotted attention caps.
 
 | Variable | Default | Purpose |
 |----------|---------|---------||
@@ -59,7 +59,7 @@ FastAPI on `:8050`. 32 endpoints across 8 route groups: data, profile, agents, n
 
 ## SDLC Pipeline
 
-Same pattern as council. Management_safety is primary review focus. Scripts in `scripts/`, workflows in `.github/workflows/`. Protected paths: `agents/system_check.py`, `shared/axiom_*`, `shared/config.py`, `axioms/`, `cockpit/engine/`, `.github/`.
+Same pattern as council. Management_safety is primary review focus. Scripts in `scripts/`, workflows in `.github/workflows/`. Protected paths: `agents/system_check.py`, `shared/axiom_*`, `shared/config.py`, `axioms/`, `logos/engine/`, `.github/`.
 
 ## Key Paths
 
@@ -69,8 +69,8 @@ Same pattern as council. Management_safety is primary review focus. Scripts in `
 | `shared/management_bridge.py` | Reads DATA_DIR |
 | `shared/vault_writer.py` | Writes DATA_DIR |
 | `shared/profile_store.py` | Management profile facts in Qdrant (6 dimensions) |
-| `cockpit/api/routes/` | REST endpoints |
-| `cockpit/engine/` | Reactive engine |
+| `logos/api/routes/` | REST endpoints |
+| `logos/engine/` | Reactive engine |
 | `axioms/registry.yaml` | Axiom definitions |
 | `data/` | Local management data (DATA_DIR, gitignored) |
 

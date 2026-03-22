@@ -16,14 +16,14 @@
 
 | File | Responsibility |
 |------|---------------|
-| `cockpit/engine/models.py` | Make `ActionPlan.trigger` optional (field reorder) |
-| `cockpit/engine/rules.py` | Update `evaluate_rules` to use keyword args for ActionPlan |
-| `cockpit/engine/synthesis.py` | **NEW** — SynthesisScheduler class + 4 synthesis handlers |
-| `cockpit/engine/__init__.py` | Wire scheduler into ReactiveEngine lifecycle |
-| `cockpit/api/app.py` | Pass `agent_run_manager` to engine constructor |
-| `cockpit/api/cache.py` | Add hot/warm change timestamps + accessors |
-| `cockpit/api/routes/engine.py` | Add `POST /api/engine/synthesize` endpoint |
-| `cockpit/api/routes/data.py` | Add `_freshness` metadata to 4 artifact endpoints |
+| `logos/engine/models.py` | Make `ActionPlan.trigger` optional (field reorder) |
+| `logos/engine/rules.py` | Update `evaluate_rules` to use keyword args for ActionPlan |
+| `logos/engine/synthesis.py` | **NEW** — SynthesisScheduler class + 4 synthesis handlers |
+| `logos/engine/__init__.py` | Wire scheduler into ReactiveEngine lifecycle |
+| `logos/api/app.py` | Pass `agent_run_manager` to engine constructor |
+| `logos/api/cache.py` | Add hot/warm change timestamps + accessors |
+| `logos/api/routes/engine.py` | Add `POST /api/engine/synthesize` endpoint |
+| `logos/api/routes/data.py` | Add `_freshness` metadata to 4 artifact endpoints |
 | `tests/test_synthesis_scheduler.py` | **NEW** — 14 tests for scheduler behavior |
 
 ---
@@ -35,8 +35,8 @@ Safe, behavior-preserving refactor. Makes `trigger` optional so synthesis can cr
 ### Task 1: Make ActionPlan.trigger optional
 
 **Files:**
-- Modify: `cockpit/engine/models.py:38-47`
-- Modify: `cockpit/engine/rules.py:72-76`
+- Modify: `logos/engine/models.py:38-47`
+- Modify: `logos/engine/rules.py:72-76`
 - Test: existing tests (no new test needed — behavior unchanged)
 
 - [ ] **Step 1: Write a test that ActionPlan works with trigger=None**
@@ -44,7 +44,7 @@ Safe, behavior-preserving refactor. Makes `trigger` optional so synthesis can cr
 Add to `tests/test_engine_models.py` (create if needed — check first):
 
 ```python
-"""Tests for cockpit/engine/models.py."""
+"""Tests for logos/engine/models.py."""
 from __future__ import annotations
 
 from datetime import datetime, timezone
@@ -80,7 +80,7 @@ Expected: FAIL — `trigger` is a required positional arg (no default).
 
 - [ ] **Step 3: Reorder ActionPlan fields**
 
-In `cockpit/engine/models.py`, change the `ActionPlan` class:
+In `logos/engine/models.py`, change the `ActionPlan` class:
 
 ```python
 @dataclass
@@ -97,7 +97,7 @@ class ActionPlan:
 
 - [ ] **Step 4: Update evaluate_rules to use keyword args**
 
-In `cockpit/engine/rules.py` line 72-76, change to:
+In `logos/engine/rules.py` line 72-76, change to:
 
 ```python
     return ActionPlan(
@@ -117,7 +117,7 @@ Expected: ALL PASS
 - [ ] **Step 6: Commit**
 
 ```bash
-git add cockpit/engine/models.py cockpit/engine/rules.py tests/test_engine_models.py
+git add logos/engine/models.py logos/engine/rules.py tests/test_engine_models.py
 git commit -m "refactor: make ActionPlan.trigger optional for timer-driven plans"
 ```
 
@@ -135,7 +135,7 @@ The main implementation. TDD: write tests first, then implement to make them pas
 - [ ] **Step 1: Write the test file with 7 core tests**
 
 ```python
-"""Tests for cockpit/engine/synthesis.py — SynthesisScheduler."""
+"""Tests for logos/engine/synthesis.py — SynthesisScheduler."""
 from __future__ import annotations
 
 import asyncio
@@ -314,7 +314,7 @@ Expected: FAIL — `cockpit.engine.synthesis` doesn't exist yet.
 ### Task 3: Implement SynthesisScheduler core
 
 **Files:**
-- Create: `cockpit/engine/synthesis.py`
+- Create: `logos/engine/synthesis.py`
 
 - [ ] **Step 3: Create the synthesis module**
 
@@ -715,7 +715,7 @@ Expected: PASS for all 7 core tests.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add cockpit/engine/synthesis.py tests/test_synthesis_scheduler.py
+git add logos/engine/synthesis.py tests/test_synthesis_scheduler.py
 git commit -m "feat: add SynthesisScheduler with quiet-window batching and 4 handlers"
 ```
 
@@ -826,12 +826,12 @@ Wire the scheduler into the reactive engine and expose via API.
 ### Task 5: Wire SynthesisScheduler into ReactiveEngine
 
 **Files:**
-- Modify: `cockpit/engine/__init__.py`
-- Modify: `cockpit/api/app.py:21`
+- Modify: `logos/engine/__init__.py`
+- Modify: `logos/api/app.py:21`
 
 - [ ] **Step 1: Update ReactiveEngine to accept agent_run_manager and create scheduler**
 
-In `cockpit/engine/__init__.py`, make these changes:
+In `logos/engine/__init__.py`, make these changes:
 
 1. Add import at top:
 
@@ -900,7 +900,7 @@ from cockpit.engine.synthesis import SynthesisScheduler
 
 - [ ] **Step 2: Update app.py to pass agent_run_manager**
 
-In `cockpit/api/app.py` line 21, change:
+In `logos/api/app.py` line 21, change:
 
 ```python
     engine = ReactiveEngine()
@@ -920,18 +920,18 @@ Expected: PASS (agent_run_manager defaults to None, scheduler is created but dor
 - [ ] **Step 4: Commit**
 
 ```bash
-git add cockpit/engine/__init__.py cockpit/api/app.py
+git add logos/engine/__init__.py logos/api/app.py
 git commit -m "feat: wire SynthesisScheduler into ReactiveEngine lifecycle"
 ```
 
 ### Task 6: Add cache freshness timestamps
 
 **Files:**
-- Modify: `cockpit/api/cache.py:17-34`
+- Modify: `logos/api/cache.py:17-34`
 
 - [ ] **Step 5: Add timestamp fields and accessors to DataCache**
 
-In `cockpit/api/cache.py`, add two new fields to `DataCache` and two accessor methods.
+In `logos/api/cache.py`, add two new fields to `DataCache` and two accessor methods.
 
 After `_refreshed_at: float = 0.0` (line 33), add:
 
@@ -966,7 +966,7 @@ After `cache_age()` method, add:
 
 - [ ] **Step 6: Set timestamps from engine _handle_change**
 
-In `cockpit/engine/__init__.py`, in `_handle_change()`, after the `self._scheduler.signal(...)` call, add:
+In `logos/engine/__init__.py`, in `_handle_change()`, after the `self._scheduler.signal(...)` call, add:
 
 ```python
         from cockpit.engine.synthesis import HOT_PATH, WARM_PATH
@@ -986,19 +986,19 @@ Expected: PASS
 - [ ] **Step 8: Commit**
 
 ```bash
-git add cockpit/api/cache.py cockpit/engine/__init__.py
+git add logos/api/cache.py logos/engine/__init__.py
 git commit -m "feat: add hot/warm change timestamps to cache for freshness signaling"
 ```
 
 ### Task 7: Add API endpoints
 
 **Files:**
-- Modify: `cockpit/api/routes/engine.py`
-- Modify: `cockpit/api/routes/data.py`
+- Modify: `logos/api/routes/engine.py`
+- Modify: `logos/api/routes/data.py`
 
 - [ ] **Step 9: Add POST /api/engine/synthesize endpoint**
 
-In `cockpit/api/routes/engine.py`, add after the `engine_rules` endpoint:
+In `logos/api/routes/engine.py`, add after the `engine_rules` endpoint:
 
 ```python
 @router.post("/synthesize")
@@ -1013,7 +1013,7 @@ async def engine_synthesize() -> dict:
 
 - [ ] **Step 10: Add _freshness metadata to artifact endpoints**
 
-In `cockpit/api/routes/data.py`, add a helper and modify 4 endpoints.
+In `logos/api/routes/data.py`, add a helper and modify 4 endpoints.
 
 Add helper after `_response()`:
 
@@ -1071,7 +1071,7 @@ Expected: ALL PASS
 - [ ] **Step 12: Commit**
 
 ```bash
-git add cockpit/api/routes/engine.py cockpit/api/routes/data.py
+git add logos/api/routes/engine.py logos/api/routes/data.py
 git commit -m "feat: add POST /api/engine/synthesize and briefing freshness metadata"
 ```
 
@@ -1101,4 +1101,4 @@ Expected: `OK`
 - [ ] **Step 4: Verify API app starts without errors**
 
 Run: `cd ai-agents && timeout 3 uv run python -c "from cockpit.api.app import app; print('App created:', app.title)" 2>&1 || true`
-Expected: `App created: management-cockpit-api`
+Expected: `App created: management-logos-api`

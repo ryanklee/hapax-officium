@@ -512,7 +512,7 @@ def _gather_major_components() -> str:
         # Multi-Channel Access
         if "## Multi-Channel Access" in content:
             components.append(
-                "- **Web Dashboard** (cockpit-web): Management command center with "
+                "- **Web Dashboard** (hapax-logos): Management command center with "
                 "action items, agents grid, team health sidebar, briefing panel, and goals tracking."
             )
 

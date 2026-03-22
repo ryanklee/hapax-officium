@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from cockpit.data.nudges import CATEGORY_SLOTS, Nudge, _allocate_by_category
+from logos.data.nudges import CATEGORY_SLOTS, Nudge, _allocate_by_category
 
 
 class TestCategoryAllocation:

@@ -12,7 +12,7 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from cockpit.engine.models import Action, ActionPlan
+    from logos.engine.models import Action, ActionPlan
 
 
 @dataclass

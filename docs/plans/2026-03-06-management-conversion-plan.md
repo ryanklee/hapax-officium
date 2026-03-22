@@ -585,37 +585,37 @@ Run: `cd ai-agents && uv run python -c "import agents.system_check"`
 git add agents/
 git commit -m "feat: reduce health_monitor -> system_check
 
-4 checks: cockpit API, vault access, Qdrant, LiteLLM.
+4 checks: logos API, vault access, Qdrant, LiteLLM.
 Removed 11 infrastructure-only check groups."
 ```
 
 ---
 
-## Batch 4: Cockpit API Conversion
+## Batch 4: Logos API Conversion
 
 Remove personal collectors and routes. Transform the data cache and data endpoints.
 
 ### Task 4.1: Remove personal data collectors
 
 **Files:**
-- Delete: `cockpit/data/health.py`
-- Delete: `cockpit/data/gpu.py`
-- Delete: `cockpit/data/infrastructure.py`
-- Delete: `cockpit/data/briefing.py` (replaced by management_briefing agent)
-- Delete: `cockpit/data/scout.py`
-- Delete: `cockpit/data/cost.py`
-- Delete: `cockpit/data/readiness.py`
-- Delete: `cockpit/data/drift.py`
-- Delete: `cockpit/data/momentum.py`
-- Delete: `cockpit/data/emergence.py`
-- Delete: `cockpit/data/knowledge_sufficiency.py`
-- Delete: `cockpit/data/domain_health.py`
-- Delete: `cockpit/data/decisions.py` (verify not used by management)
+- Delete: `logos/data/health.py`
+- Delete: `logos/data/gpu.py`
+- Delete: `logos/data/infrastructure.py`
+- Delete: `logos/data/briefing.py` (replaced by management_briefing agent)
+- Delete: `logos/data/scout.py`
+- Delete: `logos/data/cost.py`
+- Delete: `logos/data/readiness.py`
+- Delete: `logos/data/drift.py`
+- Delete: `logos/data/momentum.py`
+- Delete: `logos/data/emergence.py`
+- Delete: `logos/data/knowledge_sufficiency.py`
+- Delete: `logos/data/domain_health.py`
+- Delete: `logos/data/decisions.py` (verify not used by management)
 
 **Step 1: Verify kept code doesn't import deleted collectors**
 
 ```bash
-rg "from cockpit\.data\.(health|gpu|infrastructure|briefing|scout|cost|readiness|drift|momentum|emergence|knowledge_sufficiency|domain_health|decisions)" cockpit/data/management.py cockpit/data/team_health.py cockpit/data/nudges.py cockpit/data/goals.py cockpit/data/agents.py
+rg "from cockpit\.data\.(health|gpu|infrastructure|briefing|scout|cost|readiness|drift|momentum|emergence|knowledge_sufficiency|domain_health|decisions)" logos/data/management.py logos/data/team_health.py logos/data/nudges.py logos/data/goals.py logos/data/agents.py
 ```
 
 Expected: nudges.py may import briefing — that import will be removed in Task 4.3.
@@ -630,35 +630,35 @@ rm health.py gpu.py infrastructure.py briefing.py scout.py cost.py readiness.py 
 **Step 3: Commit**
 
 ```bash
-git add -A cockpit/data/
+git add -A logos/data/
 git commit -m "feat: remove 13 non-management cockpit data collectors"
 ```
 
 ### Task 4.2: Remove personal API routes
 
 **Files:**
-- Delete: `cockpit/api/routes/chat.py`
-- Delete: `cockpit/api/routes/copilot.py`
-- Delete: `cockpit/api/routes/accommodations.py`
+- Delete: `logos/api/routes/chat.py`
+- Delete: `logos/api/routes/copilot.py`
+- Delete: `logos/api/routes/accommodations.py`
 
 **Step 1: Delete the files**
 
 ```bash
-cd cockpit/api/routes
+cd logos/api/routes
 rm chat.py copilot.py accommodations.py
 ```
 
 **Step 2: Commit**
 
 ```bash
-git add -A cockpit/api/routes/
+git add -A logos/api/routes/
 git commit -m "feat: remove chat, copilot, and accommodations route files"
 ```
 
-### Task 4.3: Rewrite cockpit/api/app.py
+### Task 4.3: Rewrite logos/api/app.py
 
 **Files:**
-- Modify: `cockpit/api/app.py:44-60`
+- Modify: `logos/api/app.py:44-60`
 
 **Step 1: Remove deleted router imports and registrations**
 
@@ -671,25 +671,25 @@ Remove these lines from `app.py`:
 - Line 59: `app.include_router(copilot_router)`
 
 Update app title/description:
-- Line 25: `title="management-cockpit-api"`
-- Line 26: `description="Management cockpit API"`
+- Line 25: `title="management-logos-api"`
+- Line 26: `description="Management logos API"`
 
 **Step 2: Verify the app module loads**
 
 Run: `cd ai-agents && uv run python -c "from cockpit.api.app import app; print(app.title)"`
-Expected: `management-cockpit-api`
+Expected: `management-logos-api`
 
 **Step 3: Commit**
 
 ```bash
-git add cockpit/api/app.py
-git commit -m "feat: remove personal route registrations from cockpit API app"
+git add logos/api/app.py
+git commit -m "feat: remove personal route registrations from logos API app"
 ```
 
-### Task 4.4: Rewrite cockpit/api/cache.py
+### Task 4.4: Rewrite logos/api/cache.py
 
 **Files:**
-- Modify: `cockpit/api/cache.py`
+- Modify: `logos/api/cache.py`
 
 **Step 1: Rewrite DataCache class**
 
@@ -774,17 +774,17 @@ Run: `cd ai-agents && uv run python -c "from cockpit.api.cache import DataCache;
 **Step 5: Commit**
 
 ```bash
-git add cockpit/api/cache.py
+git add logos/api/cache.py
 git commit -m "feat: rewrite data cache for management-only collectors
 
 Single refresh cadence (5min). Fields: management, nudges, goals,
 agents, team_health. Removed health/gpu/containers/timers/fast loop."
 ```
 
-### Task 4.5: Rewrite cockpit/api/routes/data.py
+### Task 4.5: Rewrite logos/api/routes/data.py
 
 **Files:**
-- Modify: `cockpit/api/routes/data.py`
+- Modify: `logos/api/routes/data.py`
 
 **Step 1: Remove all personal endpoints**
 
@@ -832,7 +832,7 @@ Run: `cd ai-agents && uv run python -c "from cockpit.api.routes.data import rout
 **Step 5: Commit**
 
 ```bash
-git add cockpit/api/routes/data.py
+git add logos/api/routes/data.py
 git commit -m "feat: reduce data routes to management endpoints only
 
 Keep: briefing, management, nudges, goals, agents.
@@ -844,11 +844,11 @@ accommodations, manual."
 ### Task 4.6: Transform nudges.py collector
 
 **Files:**
-- Modify: `cockpit/data/nudges.py`
+- Modify: `logos/data/nudges.py`
 
 **Step 1: Read the current nudges collector**
 
-Read `cockpit/data/nudges.py`. Identify all nudge categories.
+Read `logos/data/nudges.py`. Identify all nudge categories.
 
 **Step 2: Remove personal nudge categories**
 
@@ -867,18 +867,18 @@ Run: `cd ai-agents && uv run python -c "from cockpit.data.nudges import collect_
 **Step 5: Commit**
 
 ```bash
-git add cockpit/data/nudges.py
+git add logos/data/nudges.py
 git commit -m "feat: strip personal nudge categories, keep management nudges only"
 ```
 
 ### Task 4.7: Transform profile routes
 
 **Files:**
-- Modify: `cockpit/api/routes/profile.py`
+- Modify: `logos/api/routes/profile.py`
 
 **Step 1: Read the current profile routes**
 
-Read `cockpit/api/routes/profile.py`. Identify all endpoints.
+Read `logos/api/routes/profile.py`. Identify all endpoints.
 
 **Step 2: Keep only 3 endpoints**
 
@@ -897,7 +897,7 @@ Run: `cd ai-agents && uv run python -c "from cockpit.api.routes.profile import r
 **Step 4: Commit**
 
 ```bash
-git add cockpit/api/routes/profile.py
+git add logos/api/routes/profile.py
 git commit -m "feat: reduce profile routes to 3 management self-awareness endpoints"
 ```
 
@@ -1218,13 +1218,13 @@ Update Docker images and Claude Code configuration for management purpose.
 
 **Step 1: Read the existing Dockerfile**
 
-Read whichever Dockerfile exists for the cockpit API.
+Read whichever Dockerfile exists for the logos API.
 
 **Step 2: Update image metadata**
 
 ```dockerfile
 # management-cockpit — Management support system
-# 5 agents + cockpit API + demo (HTML/markdown mode)
+# 5 agents + logos API + demo (HTML/markdown mode)
 ```
 
 **Step 3: Ensure demo deps are included but heavy deps excluded**
@@ -1494,11 +1494,11 @@ git commit -m "feat: narrow context_tools to management-relevant constraints"
 ### Task 7.4: Update agent registry
 
 **Files:**
-- Modify: `cockpit/data/agents.py`
+- Modify: `logos/data/agents.py`
 
 **Step 1: Read the agent registry**
 
-Read `cockpit/data/agents.py`. Identify how agents are registered.
+Read `logos/data/agents.py`. Identify how agents are registered.
 
 **Step 2: Update to only list management agents**
 
@@ -1513,7 +1513,7 @@ Run: `cd ai-agents && uv run python -c "from cockpit.data.agents import get_agen
 **Step 4: Commit**
 
 ```bash
-git add cockpit/data/agents.py
+git add logos/data/agents.py
 git commit -m "feat: update agent registry to management agents only"
 ```
 
@@ -1694,7 +1694,7 @@ git commit -m "fix: resolve Docker build errors after management conversion"
 | 1 | 1.1-1.5 | Axiom amendment — constitutional foundation |
 | 2 | 2.1-2.2 | Agent & shared module deletions — remove non-management code |
 | 3 | 3.1-3.4 | Agent transformations — reframe for management purpose |
-| 4 | 4.1-4.8 | Cockpit API conversion — routes, cache, collectors |
+| 4 | 4.1-4.8 | Logos API conversion — routes, cache, collectors |
 | 5 | 5.1-5.6 | Frontend conversion — pages, panels, components |
 | 6 | 6.1-6.6 | Docker & config — images, compose, Claude Code customizations |
 | 7 | 7.1-7.7 | Shared module transforms & cleanup — profile, operator, docs |

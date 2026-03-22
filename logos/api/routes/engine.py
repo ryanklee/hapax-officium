@@ -10,8 +10,8 @@ from typing import Any
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from cockpit.api.cache import cache
-from cockpit.api.rate_limit import rate_limit
+from logos.api.cache import cache
+from logos.api.rate_limit import rate_limit
 from shared.config import config
 
 router = APIRouter(prefix="/api/engine", tags=["engine"])

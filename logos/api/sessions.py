@@ -12,7 +12,7 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 
-log = logging.getLogger("cockpit.api.sessions")
+log = logging.getLogger("logos.api.sessions")
 
 PROJECT_DIR = Path(__file__).parent.parent.parent
 

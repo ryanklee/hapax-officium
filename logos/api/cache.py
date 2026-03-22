@@ -1,4 +1,4 @@
-"""Background data cache for the cockpit API.
+"""Background data cache for the logos API.
 
 Refreshes management data collectors on a 5-minute interval.
 """
@@ -11,7 +11,7 @@ import time
 from dataclasses import dataclass, field
 from typing import Any
 
-log = logging.getLogger("cockpit.api")
+log = logging.getLogger("logos.api")
 
 
 @dataclass
@@ -74,11 +74,11 @@ class DataCache:
         """
         import json as _json
 
-        from cockpit.data.agents import get_agent_registry
-        from cockpit.data.goals import collect_goals
-        from cockpit.data.management import collect_management_state
-        from cockpit.data.nudges import collect_nudges
-        from cockpit.data.team_health import collect_team_health
+        from logos.data.agents import get_agent_registry
+        from logos.data.goals import collect_goals
+        from logos.data.management import collect_management_state
+        from logos.data.nudges import collect_nudges
+        from logos.data.team_health import collect_team_health
         from shared.config import PROFILES_DIR
 
         # Load latest briefing JSON (written by management_briefing --save)
@@ -113,16 +113,16 @@ class DataCache:
 
         # New Tier 1 collectors
         for name, import_path, fn_name in [
-            ("okrs", "cockpit.data.okrs", "collect_okr_state"),
-            ("smart_goals", "cockpit.data.smart_goals", "collect_smart_goal_state"),
-            ("incidents", "cockpit.data.incidents", "collect_incident_state"),
+            ("okrs", "logos.data.okrs", "collect_okr_state"),
+            ("smart_goals", "logos.data.smart_goals", "collect_smart_goal_state"),
+            ("incidents", "logos.data.incidents", "collect_incident_state"),
             (
                 "postmortem_actions",
-                "cockpit.data.postmortem_actions",
+                "logos.data.postmortem_actions",
                 "collect_postmortem_action_state",
             ),
-            ("review_cycles", "cockpit.data.review_cycles", "collect_review_cycle_state"),
-            ("status_reports", "cockpit.data.status_reports", "collect_status_report_state"),
+            ("review_cycles", "logos.data.review_cycles", "collect_review_cycle_state"),
+            ("status_reports", "logos.data.status_reports", "collect_status_report_state"),
         ]:
             try:
                 import importlib

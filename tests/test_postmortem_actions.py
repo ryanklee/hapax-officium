@@ -1,4 +1,4 @@
-"""Tests for cockpit/data/postmortem_actions.py."""
+"""Tests for logos/data/postmortem_actions.py."""
 
 from __future__ import annotations
 
@@ -20,7 +20,7 @@ def _write_md(path: Path, frontmatter: dict, body: str = "") -> None:
 
 class TestCollectPostmortemActions:
     def test_open_action(self, tmp_path: Path):
-        from cockpit.data.postmortem_actions import collect_postmortem_action_state
+        from logos.data.postmortem_actions import collect_postmortem_action_state
 
         _write_md(
             tmp_path / "postmortem-actions" / "add-alerting.md",
@@ -45,7 +45,7 @@ class TestCollectPostmortemActions:
         assert snap.actions[0].title == "Add alerting"
 
     def test_overdue_action(self, tmp_path: Path):
-        from cockpit.data.postmortem_actions import collect_postmortem_action_state
+        from logos.data.postmortem_actions import collect_postmortem_action_state
 
         _write_md(
             tmp_path / "postmortem-actions" / "overdue.md",
@@ -68,7 +68,7 @@ class TestCollectPostmortemActions:
         assert snap.actions[0].days_overdue > 0
 
     def test_completed_not_open(self, tmp_path: Path):
-        from cockpit.data.postmortem_actions import collect_postmortem_action_state
+        from logos.data.postmortem_actions import collect_postmortem_action_state
 
         _write_md(
             tmp_path / "postmortem-actions" / "done.md",
@@ -89,7 +89,7 @@ class TestCollectPostmortemActions:
         assert snap.open_count == 0
 
     def test_missing_dir(self, tmp_path: Path):
-        from cockpit.data.postmortem_actions import collect_postmortem_action_state
+        from logos.data.postmortem_actions import collect_postmortem_action_state
 
         config.set_data_dir(tmp_path)
         try:

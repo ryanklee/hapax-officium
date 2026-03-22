@@ -1,4 +1,4 @@
-"""Tests for cockpit/data/management.py — management state collection.
+"""Tests for logos/data/management.py — management state collection.
 
 Covers frontmatter parsing, people/coaching/feedback collection,
 staleness computation, and snapshot aggregates.
@@ -10,7 +10,7 @@ import dataclasses
 from datetime import date, timedelta
 from typing import TYPE_CHECKING
 
-from cockpit.data.management import (
+from logos.data.management import (
     CoachingState,
     FeedbackState,
     ManagementSnapshot,

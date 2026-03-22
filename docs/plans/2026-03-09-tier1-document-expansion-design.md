@@ -391,14 +391,14 @@ CATEGORY_SLOTS = {"people": 3, "goals": 2, "operational": 2}
 
 | Module | Scans | Returns |
 |--------|-------|---------|
-| `cockpit/data/okrs.py` | `data/okrs/*.md` | `OKRSnapshot` |
-| `cockpit/data/smart_goals.py` | `data/goals/*.md` | `SmartGoalSnapshot` |
-| `cockpit/data/incidents.py` | `data/incidents/*.md` | `IncidentSnapshot` |
-| `cockpit/data/postmortem_actions.py` | `data/postmortem-actions/*.md` | `PostmortemActionSnapshot` |
-| `cockpit/data/review_cycles.py` | `data/review-cycles/*.md` | `ReviewCycleSnapshot` |
-| `cockpit/data/status_reports.py` | `data/status-reports/*.md` | `StatusReportSnapshot` |
+| `logos/data/okrs.py` | `data/okrs/*.md` | `OKRSnapshot` |
+| `logos/data/smart_goals.py` | `data/goals/*.md` | `SmartGoalSnapshot` |
+| `logos/data/incidents.py` | `data/incidents/*.md` | `IncidentSnapshot` |
+| `logos/data/postmortem_actions.py` | `data/postmortem-actions/*.md` | `PostmortemActionSnapshot` |
+| `logos/data/review_cycles.py` | `data/review-cycles/*.md` | `ReviewCycleSnapshot` |
+| `logos/data/status_reports.py` | `data/status-reports/*.md` | `StatusReportSnapshot` |
 
-Existing `cockpit/data/goals.py` (operator system goals from operator.json) is unchanged.
+Existing `logos/data/goals.py` (operator system goals from operator.json) is unchanged.
 
 ### Management Bridge Facts
 

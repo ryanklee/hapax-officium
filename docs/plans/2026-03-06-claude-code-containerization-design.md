@@ -23,7 +23,7 @@ All of this currently lives across `~/.claude/`, `~/projects/hapax-system/`, and
 ### Third image: `hapax-dev`
 
 ```
-hapax-agents (runtime)     — agents + cockpit API, runs headless
+hapax-agents (runtime)     — agents + logos API, runs headless
 hapax-ingest (runtime)     — RAG ingestion, runs headless
 hapax-dev    (interactive) — Claude Code + full Hapax customization, interactive terminal
 ```
@@ -48,7 +48,7 @@ hapax-dev/
 │   └── hooks/scripts/         (hook scripts, adapted for container paths)
 ├── /app/ai-agents/             (full agent codebase)
 │   ├── agents/
-│   ├── cockpit/
+│   ├── logos/
 │   ├── shared/
 │   └── ...
 └── /app/axioms/               (axiom registry from hapaxromana)

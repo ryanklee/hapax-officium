@@ -16,9 +16,9 @@ management state. Default path: `data/`. Override via
 
 - Written by agents (`shared/vault_writer.py`), the operator (manual edits),
   and the ingest pipeline (`agents/ingest.py`).
-- Read by collectors (`cockpit/data/*.py`) and the management bridge
+- Read by collectors (`logos/data/*.py`) and the management bridge
   (`shared/management_bridge.py`).
-- Watched by the reactive engine (`cockpit/engine/`) via inotify.
+- Watched by the reactive engine (`logos/engine/`) via inotify.
 
 ### Qdrant (Vector Database)
 
@@ -54,7 +54,7 @@ DATA_DIR functions as a state bus. The reactive loop works as follows:
  Collectors recompute  -->  ManagementSnapshot / Nudges
    |                              |
    v                              v
- LLM agents                 Cockpit API --> Dashboard
+ LLM agents                 Logos API --> Dashboard
  (briefing, profiler)
    |
    v
@@ -83,7 +83,7 @@ canonical regex in `shared/frontmatter.py`.
 
 **Directory:** `people/`
 **Key frontmatter fields:** `name`, `team`, `role`, `cadence` (weekly|biweekly|monthly), `status` (active|inactive), `cognitive-load` (low|moderate|medium|high|critical), `growth-vector`, `feedback-style`, `last-1on1` (ISO date), `coaching-active` (bool), `career-goal-3y`, `current-gaps`, `current-focus`, `last-career-convo` (ISO date), `team-type`, `interaction-mode`, `skill-level`, `will-signal`, `domains` (list), `relationship`
-**Read by:** `cockpit/data/management.py` (PersonState), `cockpit/data/team_health.py` (TeamState), `shared/management_bridge.py` (profile facts)
+**Read by:** `logos/data/management.py` (PersonState), `logos/data/team_health.py` (TeamState), `shared/management_bridge.py` (profile facts)
 **Nudges produced:** Stale 1:1 (priority 70), high cognitive load (priority 60), stale career conversation (priority 50, >180 days), missing growth vector (priority 40), team falling behind (priority 75, via team_health aggregation)
 **Inactive filter:** Documents with `status: inactive` are excluded from all processing.
 
@@ -91,14 +91,14 @@ canonical regex in `shared/frontmatter.py`.
 
 **Directory:** `coaching/`
 **Key frontmatter fields:** `title`, `person`, `status` (active|completed|abandoned), `check-in-by` (ISO date), `type: coaching`
-**Read by:** `cockpit/data/management.py` (CoachingState), `shared/management_bridge.py`
+**Read by:** `logos/data/management.py` (CoachingState), `shared/management_bridge.py`
 **Nudges produced:** Overdue coaching check-in (priority 55, when `check-in-by` is past)
 
 ### feedback
 
 **Directory:** `feedback/`
 **Key frontmatter fields:** `title`, `person`, `direction` (given|received), `category` (growth|recognition|correction), `follow-up-by` (ISO date), `followed-up` (bool), `type: feedback`
-**Read by:** `cockpit/data/management.py` (FeedbackState), `shared/management_bridge.py`
+**Read by:** `logos/data/management.py` (FeedbackState), `shared/management_bridge.py`
 **Nudges produced:** Overdue feedback follow-up (priority 65, when `follow-up-by` is past and `followed-up` is false)
 
 ### meeting
@@ -119,7 +119,7 @@ canonical regex in `shared/frontmatter.py`.
 
 **Directory:** `okrs/`
 **Key frontmatter fields:** `objective`, `scope` (team|individual), `team`, `person`, `quarter`, `status` (active|scored|archived), `score`, `scored-at`, `key-results` (list of dicts with: `id`, `description`, `target`, `current`, `unit`, `direction`, `confidence` (0-1), `last-updated`)
-**Read by:** `cockpit/data/okrs.py` (OKRState), `shared/management_bridge.py`
+**Read by:** `logos/data/okrs.py` (OKRState), `shared/management_bridge.py`
 **Nudges produced:** At-risk KRs (priority 75, confidence < 0.5), stale KRs (priority 50, not updated in 14+ days)
 **Archived filter:** Documents with `status: archived` are excluded from bridge facts.
 
@@ -127,28 +127,28 @@ canonical regex in `shared/frontmatter.py`.
 
 **Directory:** `goals/`
 **Key frontmatter fields:** `person`, `specific`, `status` (active|completed|abandoned), `framework` (smart), `category`, `created`, `target-date` (ISO date), `last-reviewed` (ISO date), `review-cadence` (monthly|quarterly), `linked-okr`, `measurable`, `achievable`, `relevant`, `time-bound`
-**Read by:** `cockpit/data/smart_goals.py` (SmartGoalState), `shared/management_bridge.py`
+**Read by:** `logos/data/smart_goals.py` (SmartGoalState), `shared/management_bridge.py`
 **Nudges produced:** Overdue goal (priority 70, past `target-date`), review overdue (priority 45, monthly >35 days or quarterly >100 days since `last-reviewed`)
 
 ### incident
 
 **Directory:** `incidents/`
 **Key frontmatter fields:** `title`, `severity` (sev1|sev2|sev3), `status` (detected|mitigated|postmortem-complete|closed), `detected` (ISO datetime), `mitigated` (ISO datetime), `duration-minutes`, `impact`, `root-cause`, `owner`, `teams-affected` (list)
-**Read by:** `cockpit/data/incidents.py` (IncidentState), `shared/management_bridge.py`
+**Read by:** `logos/data/incidents.py` (IncidentState), `shared/management_bridge.py`
 **Nudges produced:** Open incident (priority 90 for sev1, 80 otherwise), missing postmortem (priority 65, for closed sev1/sev2 without postmortem-complete status)
 
 ### postmortem-action
 
 **Directory:** `postmortem-actions/`
 **Key frontmatter fields:** `title`, `incident-ref`, `owner`, `status` (open|in-progress|completed|wont-fix), `priority` (low|medium|high), `due-date` (ISO date), `completed-date` (ISO date)
-**Read by:** `cockpit/data/postmortem_actions.py` (PostmortemActionState), `shared/management_bridge.py`
+**Read by:** `logos/data/postmortem_actions.py` (PostmortemActionState), `shared/management_bridge.py`
 **Nudges produced:** Overdue action (priority 70, past `due-date` while status is open or in-progress)
 
 ### review-cycle
 
 **Directory:** `review-cycles/`
 **Key frontmatter fields:** `person`, `cycle`, `status` (not-started|in-progress|calibration|complete), `self-assessment-due` (ISO date), `self-assessment-received` (bool), `peer-feedback-requested` (int), `peer-feedback-received` (int), `review-due` (ISO date), `calibration-date` (ISO date), `delivered` (bool)
-**Read by:** `cockpit/data/review_cycles.py` (ReviewCycleState), `shared/management_bridge.py`
+**Read by:** `logos/data/review_cycles.py` (ReviewCycleState), `shared/management_bridge.py`
 **Nudges produced:** Overdue review (priority 75, past `review-due` and not delivered), peer feedback gap (priority 55, requested > received)
 **Note:** Tracks process state only, never review content (management safety axiom).
 
@@ -156,7 +156,7 @@ canonical regex in `shared/frontmatter.py`.
 
 **Directory:** `status-reports/`
 **Key frontmatter fields:** `date` (ISO date), `cadence` (weekly|monthly|pi), `direction` (upward|lateral), `generated` (bool), `edited` (bool), `type: status-report`
-**Read by:** `cockpit/data/status_reports.py` (StatusReportState)
+**Read by:** `logos/data/status_reports.py` (StatusReportState)
 **Nudges produced:** Status report overdue (priority 55, weekly >9 days stale, monthly >35 days, pi >80 days)
 
 ### Generated artifact types (references/)
@@ -215,7 +215,7 @@ or the management bridge; they exist for operator consumption and API serving.
                        Nudge list (category-slotted, cap=7)
                               |
                               v
-                       Cockpit API (:8050) --> Dashboard
+                       Logos API (:8050) --> Dashboard
 ```
 
 ## 5. Qdrant Collections

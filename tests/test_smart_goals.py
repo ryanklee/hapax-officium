@@ -1,4 +1,4 @@
-"""Tests for cockpit/data/smart_goals.py — SMART goal collection."""
+"""Tests for logos/data/smart_goals.py — SMART goal collection."""
 
 from __future__ import annotations
 
@@ -20,7 +20,7 @@ def _write_md(path: Path, frontmatter: dict, body: str = "") -> None:
 
 class TestCollectSmartGoals:
     def test_active_goal(self, tmp_path: Path):
-        from cockpit.data.smart_goals import collect_smart_goal_state
+        from logos.data.smart_goals import collect_smart_goal_state
 
         _write_md(
             tmp_path / "goals" / "sarah-principal.md",
@@ -53,7 +53,7 @@ class TestCollectSmartGoals:
         assert snap.goals[0].specific == "Lead cross-team review"
 
     def test_overdue_goal(self, tmp_path: Path):
-        from cockpit.data.smart_goals import collect_smart_goal_state
+        from logos.data.smart_goals import collect_smart_goal_state
 
         _write_md(
             tmp_path / "goals" / "jordan-overdue.md",
@@ -77,7 +77,7 @@ class TestCollectSmartGoals:
         assert snap.goals[0].overdue is True
 
     def test_review_overdue(self, tmp_path: Path):
-        from cockpit.data.smart_goals import collect_smart_goal_state
+        from logos.data.smart_goals import collect_smart_goal_state
 
         _write_md(
             tmp_path / "goals" / "marcus-stale.md",
@@ -102,7 +102,7 @@ class TestCollectSmartGoals:
         assert snap.goals[0].review_overdue is True
 
     def test_completed_excluded_from_active(self, tmp_path: Path):
-        from cockpit.data.smart_goals import collect_smart_goal_state
+        from logos.data.smart_goals import collect_smart_goal_state
 
         _write_md(
             tmp_path / "goals" / "done.md",
@@ -125,7 +125,7 @@ class TestCollectSmartGoals:
         assert len(snap.goals) == 1
 
     def test_missing_dir(self, tmp_path: Path):
-        from cockpit.data.smart_goals import collect_smart_goal_state
+        from logos.data.smart_goals import collect_smart_goal_state
 
         config.set_data_dir(tmp_path)
         try:
@@ -136,7 +136,7 @@ class TestCollectSmartGoals:
         assert snap.goals == []
 
     def test_wrong_type_skipped(self, tmp_path: Path):
-        from cockpit.data.smart_goals import collect_smart_goal_state
+        from logos.data.smart_goals import collect_smart_goal_state
 
         _write_md(
             tmp_path / "goals" / "not-goal.md",

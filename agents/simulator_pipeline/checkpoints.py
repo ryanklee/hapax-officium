@@ -48,7 +48,7 @@ async def run_significant_event_checkpoint(event_type: str) -> None:
 async def _refresh_caches() -> None:
     """Refresh data caches (management state, nudges, team health)."""
     try:
-        from cockpit.api.cache import cache
+        from logos.api.cache import cache
 
         await cache.refresh()
     except Exception:

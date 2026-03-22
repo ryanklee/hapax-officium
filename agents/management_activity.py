@@ -4,7 +4,7 @@ Computes management practice metrics deterministically: 1:1 completion rates,
 feedback delivery timing, coaching experiment check-in frequency, career
 conversation recency, and management goal momentum.
 
-Zero LLM calls. All data from cockpit.data.management.
+Zero LLM calls. All data from logos.data.management.
 
 Usage:
     uv run python -m agents.management_activity                  # Human-readable report
@@ -284,10 +284,10 @@ def _collect_management_goals(now: datetime) -> list[GoalMomentum]:
 def generate_management_report(window_days: int = 30) -> ManagementActivityReport:
     """Collect all management activity metrics.
 
-    Fully deterministic — reads data via cockpit.data.management,
+    Fully deterministic — reads data via logos.data.management,
     computes metrics without any LLM calls.
     """
-    from cockpit.data.management import collect_management_state
+    from logos.data.management import collect_management_state
 
     now = datetime.now(UTC)
     snapshot = collect_management_state()

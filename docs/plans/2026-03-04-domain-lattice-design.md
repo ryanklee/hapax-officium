@@ -214,7 +214,7 @@ Events attributed to domains via the registry's `vault_paths`, `profiler_dimensi
 
 ### Implementation
 
-New file: `cockpit/data/momentum.py`. Refresh: 5-minute slow cycle. Persists weekly snapshots to `~/.cache/cockpit/momentum-history.jsonl` for trend computation.
+New file: `logos/data/momentum.py`. Refresh: 5-minute slow cycle. Persists weekly snapshots to `~/.cache/cockpit/momentum-history.jsonl` for trend computation.
 
 ---
 
@@ -264,7 +264,7 @@ Emergence also detects when activity in a declared domain drops to near-zero for
 
 ### Implementation
 
-New file: `cockpit/data/emergence.py`. Buffer persisted to `~/.cache/cockpit/undomained-activity.jsonl`. Candidates persisted to `~/.cache/cockpit/emergence-candidates.json`.
+New file: `logos/data/emergence.py`. Buffer persisted to `~/.cache/cockpit/undomained-activity.jsonl`. Candidates persisted to `~/.cache/cockpit/emergence-candidates.json`.
 
 ---
 
@@ -409,7 +409,7 @@ Each row: domain name, sufficiency bar, percentage, momentum arrow (`^` accelera
 
 Emergence candidates appear below domain list when any exist.
 
-### Data Collector: `cockpit/data/domain_health.py`
+### Data Collector: `logos/data/domain_health.py`
 
 Aggregates from three sources:
 1. `collect_all_domain_gaps()` -> per-domain sufficiency scores
@@ -448,7 +448,7 @@ Five phases, each independently deployable:
 - Update nudge generation with domain-scoped source IDs
 
 ### Phase 2: Momentum Model (ai-agents)
-- New `cockpit/data/momentum.py` collector
+- New `logos/data/momentum.py` collector
 - Activity rate from Langfuse traces + vault modification timestamps
 - Engagement regularity from inter-event gaps
 - Goal alignment from sufficiency score trend (requires Phase 1)
@@ -460,14 +460,14 @@ Five phases, each independently deployable:
 - No migration of existing notes — new fields are additive
 
 ### Phase 4: Emergence Detection (ai-agents)
-- New `cockpit/data/emergence.py`
+- New `logos/data/emergence.py`
 - Undomained activity collection from existing telemetry
 - Weekly clustering via knowledge-maint timer
 - Proposal nudge generation
 
 ### Phase 5: Cockpit Dashboard + Adaptive Sufficiency (ai-agents)
 - `cockpit/widgets/domain_health.py` widget
-- `cockpit/data/domain_health.py` aggregator
+- `logos/data/domain_health.py` aggregator
 - Utilization tracking in audit engine
 - Priority decay/boost logic
 - `/domain` chat commands

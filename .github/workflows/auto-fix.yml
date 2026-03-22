@@ -188,7 +188,7 @@ jobs:
 
             ## Rules
             - Make MINIMAL changes — fix only what's broken
-            - Do NOT modify files in: axioms/, cockpit/engine/, .github/
+            - Do NOT modify files in: axioms/, logos/engine/, .github/
             - Do NOT modify: shared/config.py, shared/axiom_enforcement.py, agents/system_check.py
             - If you cannot fix a failure, say so clearly — do not make speculative changes
 

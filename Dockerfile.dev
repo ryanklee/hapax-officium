@@ -66,7 +66,7 @@ COPY --chown=hapax:hapax claude-config/CLAUDE.md /workspace/CLAUDE.md
 
 COPY --chown=hapax:hapax ai-agents/pyproject.toml ai-agents/uv.lock ai-agents/README.md /app/ai-agents/
 COPY --chown=hapax:hapax ai-agents/agents/ /app/ai-agents/agents/
-COPY --chown=hapax:hapax ai-agents/cockpit/ /app/ai-agents/cockpit/
+COPY --chown=hapax:hapax ai-agents/logos/ /app/ai-agents/logos/
 COPY --chown=hapax:hapax ai-agents/shared/ /app/ai-agents/shared/
 COPY --chown=hapax:hapax ai-agents/profiles/ /app/ai-agents/profiles/
 

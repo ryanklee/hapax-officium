@@ -26,7 +26,7 @@ Offset all host-exposed ports by +100. Rename containers with `mgmt-` prefix. Us
 | MinIO | 9090/9091 | 9190/9191 | Own object storage |
 | Langfuse Worker | 3030 | 3130 | Own worker |
 | ntfy | 8090 | 8190 | Own notification server |
-| Cockpit API | 8051 | 8051 | Unchanged |
+| Logos API | 8051 | 8051 | Unchanged |
 
 **Ollama stays shared.** Only one GPU (RTX 3090, 24GB VRAM). Ollama auto-unloads idle models. Both stacks point at the same Ollama instance. This is acceptable — Ollama is stateless inference, not a data store.
 
@@ -40,7 +40,7 @@ All Obsidian vault dependencies removed. The vault replacement (VS Code + Qdrant
 - `shared/vault_writer.py` — Write calls become no-ops with logged warnings.
 - `shared/vault_utils.py` — Kept (generic frontmatter parser, useful for future data sources).
 - `shared/config.py` — Remove `WORK_VAULT_PATH` and `PERSONAL_VAULT_PATH` constants.
-- `cockpit/data/management.py` — Calls management_bridge, gets empty results naturally. No changes needed.
+- `logos/data/management.py` — Calls management_bridge, gets empty results naturally. No changes needed.
 - `agents/system_check.py` — Remove vault accessibility check (currently 1 of 4 checks, becomes 3).
 - `agents/management_prep.py` — Vault context tools return empty results naturally via management_bridge stub.
 - `agents/management_briefing.py` — Same as above.

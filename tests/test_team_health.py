@@ -1,4 +1,4 @@
-"""Tests for cockpit/data/team_health.py — team health aggregation and Larson classification.
+"""Tests for logos/data/team_health.py — team health aggregation and Larson classification.
 
 Tests classification logic with synthetic data. collect_team_health tests
 use mocked collect_management_state since vault is excised.
@@ -8,8 +8,8 @@ from __future__ import annotations
 
 from unittest.mock import patch
 
-from cockpit.data.management import ManagementSnapshot, PersonState
-from cockpit.data.team_health import (
+from logos.data.management import ManagementSnapshot, PersonState
+from logos.data.team_health import (
     TeamState,
     _compute_majority_team_type,
     classify_larson_state,
@@ -143,7 +143,7 @@ class TestCollectTeamHealth:
             ],
             active_people_count=3,
         )
-        with patch("cockpit.data.team_health.collect_management_state", return_value=mock_snap):
+        with patch("logos.data.team_health.collect_management_state", return_value=mock_snap):
             snap = collect_team_health()
 
         assert snap.total_people == 3
@@ -170,7 +170,7 @@ class TestCollectTeamHealth:
             ],
             active_people_count=2,
         )
-        with patch("cockpit.data.team_health.collect_management_state", return_value=mock_snap):
+        with patch("logos.data.team_health.collect_management_state", return_value=mock_snap):
             snap = collect_team_health()
 
         platform = snap.teams[0]
@@ -184,7 +184,7 @@ class TestCollectTeamHealth:
             people=[PersonState(name="Lone", cognitive_load=2)],
             active_people_count=1,
         )
-        with patch("cockpit.data.team_health.collect_management_state", return_value=mock_snap):
+        with patch("logos.data.team_health.collect_management_state", return_value=mock_snap):
             snap = collect_team_health()
 
         assert len(snap.teams) == 1
@@ -198,7 +198,7 @@ class TestCollectTeamHealth:
             ],
             active_people_count=2,
         )
-        with patch("cockpit.data.team_health.collect_management_state", return_value=mock_snap):
+        with patch("logos.data.team_health.collect_management_state", return_value=mock_snap):
             snap = collect_team_health()
 
         assert snap.teams_falling_behind == 1

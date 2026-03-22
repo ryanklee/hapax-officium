@@ -1,12 +1,12 @@
-"""Tests for cockpit.engine.reactive_rules — 12 concrete reactive rules."""
+"""Tests for logos.engine.reactive_rules — 12 concrete reactive rules."""
 
 from __future__ import annotations
 
 from datetime import datetime
 from pathlib import Path
 
-from cockpit.engine.models import ChangeEvent
-from cockpit.engine.reactive_rules import build_default_rules
+from logos.engine.models import ChangeEvent
+from logos.engine.reactive_rules import build_default_rules
 
 
 def _make_event(

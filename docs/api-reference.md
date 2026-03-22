@@ -1,4 +1,4 @@
-# Cockpit API Reference
+# Logos API Reference
 
 Management cockpit REST API. Serves cached management data, agent execution,
 nudge actions, profile inspection, demo management, reactive engine status,
@@ -20,7 +20,7 @@ cycle mode control, and scout decision tracking.
 |--------|------|---------|
 | GET | `/` | API identity and version |
 
-Returns `{"name": "cockpit-api", "version": "0.2.0"}`.
+Returns `{"name": "logos-api", "version": "0.2.0"}`.
 
 ---
 
@@ -196,7 +196,7 @@ Valid `decision` values: `adopted`, `deferred`, `dismissed`.
 
 ## SPA Hosting
 
-When `cockpit/api/static/` exists (built SPA), the server also serves:
+When `logos/api/static/` exists (built SPA), the server also serves:
 
 | Method | Path | Purpose |
 |--------|------|---------|

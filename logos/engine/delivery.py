@@ -16,7 +16,7 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from cockpit.engine.models import DeliveryItem
+    from logos.engine.models import DeliveryItem
 
 _log = logging.getLogger(__name__)
 

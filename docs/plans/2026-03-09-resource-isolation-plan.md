@@ -65,7 +65,7 @@ Every `container_name:` value gets `mgmt-` prefix:
 | MinIO Console | 9091 | 9191 |
 | ntfy | 8090 | 8190 |
 | Chatterbox | 4123 | 4223 |
-| Cockpit API | 8051 | 8051 (unchanged) |
+| Logos API | 8051 | 8051 (unchanged) |
 
 Internal container ports stay the same. Only the `127.0.0.1:XXXX:YYYY` host mapping changes.
 
@@ -449,10 +449,10 @@ git commit -m "feat: stub vault_writer — all writes become no-ops"
 
 ---
 
-## Task 8: Stub vault reads in cockpit/data/management.py
+## Task 8: Stub vault reads in logos/data/management.py
 
 **Files:**
-- Modify: `~/projects/hapax-containerization/cockpit/data/management.py`
+- Modify: `~/projects/hapax-containerization/logos/data/management.py`
 
 **Step 1: Replace vault-reading implementation with stubs**
 
@@ -555,7 +555,7 @@ Preserves all dataclass types (used by API routes and other callers) but `collec
 
 ```bash
 cd ~/projects/hapax-containerization
-git add cockpit/data/management.py
+git add logos/data/management.py
 git commit -m "feat: stub management collector — vault excised, returns empty snapshot"
 ```
 
@@ -596,7 +596,7 @@ Remove `check_vault_access` from the list. Now 3 checks instead of 4.
 Change line 4:
 ```python
 Zero LLM calls. Checks the 3 services needed for the management system:
-cockpit API, Qdrant, and LiteLLM.
+logos API, Qdrant, and LiteLLM.
 ```
 
 **Step 4: Commit**
@@ -657,8 +657,8 @@ git commit -m "feat: update system_check default ports to isolated stack"
 - Modify: `~/projects/hapax-containerization/agents/management_activity.py`
 - Modify: `~/projects/hapax-containerization/agents/meeting_lifecycle.py`
 - Modify: `~/projects/hapax-containerization/agents/demo_pipeline/research.py`
-- Modify: `~/projects/hapax-containerization/cockpit/data/agents.py`
-- Modify: `~/projects/hapax-containerization/cockpit/data/team_health.py`
+- Modify: `~/projects/hapax-containerization/logos/data/agents.py`
+- Modify: `~/projects/hapax-containerization/logos/data/team_health.py`
 - Modify: `~/projects/hapax-containerization/shared/notify.py`
 
 **Step 1: Audit and fix each file**

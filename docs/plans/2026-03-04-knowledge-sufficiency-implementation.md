@@ -616,7 +616,7 @@ priority, and dependency chain."
 **Repo:** `~/projects/ai-agents/ `
 
 **Files:**
-- Create: `cockpit/data/knowledge_sufficiency.py`
+- Create: `logos/data/knowledge_sufficiency.py`
 - Create: `tests/test_knowledge_sufficiency.py`
 
 This task implements the 5 check types. The audit orchestrator comes in Task 3.
@@ -851,7 +851,7 @@ Expected: FAIL — `ImportError: cannot import name 'check_file_exists' from 'co
 
 **Step 3: Write the implementation**
 
-Create `cockpit/data/knowledge_sufficiency.py`:
+Create `logos/data/knowledge_sufficiency.py`:
 
 ```python
 """Knowledge sufficiency audit — detects missing management knowledge in the vault.
@@ -1031,7 +1031,7 @@ Expected: All 15 tests PASS.
 
 ```bash
 cd ~/projects/ai-agents
-git add cockpit/data/knowledge_sufficiency.py tests/test_knowledge_sufficiency.py
+git add logos/data/knowledge_sufficiency.py tests/test_knowledge_sufficiency.py
 git commit -m "feat(sufficiency): knowledge audit check functions — 5 check types, 15 tests
 
 Implements file_exists, min_count, field_populated, field_coverage,
@@ -1046,7 +1046,7 @@ real vault frontmatter via shared.vault_utils."
 **Repo:** `~/projects/ai-agents/ `
 
 **Files:**
-- Modify: `cockpit/data/knowledge_sufficiency.py`
+- Modify: `logos/data/knowledge_sufficiency.py`
 - Modify: `tests/test_knowledge_sufficiency.py`
 
 This task adds the audit orchestrator that loads the YAML model, runs all checks, and produces a `SufficiencyReport`.
@@ -1235,7 +1235,7 @@ uv run pytest tests/test_knowledge_sufficiency.py::TestCollectKnowledgeGaps -v
 
 Expected: FAIL — `ImportError: cannot import name 'run_audit'`
 
-**Step 3: Append orchestrator to `cockpit/data/knowledge_sufficiency.py`**
+**Step 3: Append orchestrator to `logos/data/knowledge_sufficiency.py`**
 
 Add at the bottom of the file:
 
@@ -1368,7 +1368,7 @@ Expected: All 22 tests PASS.
 
 ```bash
 cd ~/projects/ai-agents
-git add cockpit/data/knowledge_sufficiency.py tests/test_knowledge_sufficiency.py
+git add logos/data/knowledge_sufficiency.py tests/test_knowledge_sufficiency.py
 git commit -m "feat(sufficiency): audit orchestrator — load YAML model, run checks, produce report
 
 Adds run_audit() and collect_knowledge_gaps() entry points.
@@ -1383,7 +1383,7 @@ with gap list, scores, and foundational/structural completion flags."
 **Repo:** `~/projects/ai-agents/ `
 
 **Files:**
-- Modify: `cockpit/data/nudges.py` (lines 29, 574-575)
+- Modify: `logos/data/nudges.py` (lines 29, 574-575)
 - Modify: `tests/test_knowledge_sufficiency.py`
 
 **Step 1: Write the failing test**
@@ -1502,7 +1502,7 @@ uv run pytest tests/test_knowledge_sufficiency.py::TestSufficiencyNudges -v
 
 Expected: FAIL — `ImportError: cannot import name 'gaps_to_nudges'`
 
-**Step 3: Add `gaps_to_nudges` to `cockpit/data/knowledge_sufficiency.py`**
+**Step 3: Add `gaps_to_nudges` to `logos/data/knowledge_sufficiency.py`**
 
 Append to the file:
 
@@ -1555,7 +1555,7 @@ def gaps_to_nudges(gaps: list[KnowledgeGap]) -> list["Nudge"]:
     return nudges
 ```
 
-**Step 4: Modify `cockpit/data/nudges.py` to integrate the new collector**
+**Step 4: Modify `logos/data/nudges.py` to integrate the new collector**
 
 In `nudges.py`, add the new collector function after `_collect_sufficiency_nudges` (after line 498):
 
@@ -1604,7 +1604,7 @@ Expected: All existing tests still pass (no regressions). The new knowledge suff
 
 ```bash
 cd ~/projects/ai-agents
-git add cockpit/data/knowledge_sufficiency.py cockpit/data/nudges.py tests/test_knowledge_sufficiency.py
+git add logos/data/knowledge_sufficiency.py logos/data/nudges.py tests/test_knowledge_sufficiency.py
 git commit -m "feat(sufficiency): knowledge gap nudge integration — priority-ordered, dependency-aware
 
 Adds gaps_to_nudges() that converts unsatisfied knowledge gaps to
@@ -3265,7 +3265,7 @@ git status
 2. **Test /setup**: Open chat sidebar, type `/setup` → should show progress + first question
 3. **Test banner**: If no person notes exist in `10-work/people/`, banner should appear
 4. **Test extraction**: Answer the first question with team member names → verify person notes created
-5. **Verify nudges**: Run `uv run cockpit --once` from `~/projects/ai-agents/ ` → should show knowledge gaps in nudges
+5. **Verify nudges**: Run `uv run logos --once` from `~/projects/ai-agents/ ` → should show knowledge gaps in nudges
 
 ---
 

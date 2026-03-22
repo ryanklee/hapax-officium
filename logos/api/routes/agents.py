@@ -11,9 +11,9 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from sse_starlette.sse import EventSourceResponse
 
-from cockpit.api.cache import cache
-from cockpit.api.rate_limit import rate_limit
-from cockpit.api.sessions import agent_run_manager
+from logos.api.cache import cache
+from logos.api.rate_limit import rate_limit
+from logos.api.sessions import agent_run_manager
 
 router = APIRouter(prefix="/api/agents", tags=["agents"])
 

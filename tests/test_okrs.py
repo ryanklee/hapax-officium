@@ -1,4 +1,4 @@
-"""Tests for cockpit/data/okrs.py — OKR state collection."""
+"""Tests for logos/data/okrs.py — OKR state collection."""
 
 from __future__ import annotations
 
@@ -20,7 +20,7 @@ def _write_md(path: Path, frontmatter: dict, body: str = "") -> None:
 
 class TestCollectOKRs:
     def test_active_okr_with_key_results(self, tmp_path: Path):
-        from cockpit.data.okrs import collect_okr_state
+        from logos.data.okrs import collect_okr_state
 
         _write_md(
             tmp_path / "okrs" / "2026-q1-platform.md",
@@ -71,7 +71,7 @@ class TestCollectOKRs:
         assert okr.key_results[0].confidence == 0.6
 
     def test_scored_okr_excluded_from_active(self, tmp_path: Path):
-        from cockpit.data.okrs import collect_okr_state
+        from logos.data.okrs import collect_okr_state
 
         _write_md(
             tmp_path / "okrs" / "2025-q4-done.md",
@@ -95,7 +95,7 @@ class TestCollectOKRs:
         assert len(snap.okrs) == 1
 
     def test_at_risk_kr_counted(self, tmp_path: Path):
-        from cockpit.data.okrs import collect_okr_state
+        from logos.data.okrs import collect_okr_state
 
         _write_md(
             tmp_path / "okrs" / "2026-q1-risk.md",
@@ -135,7 +135,7 @@ class TestCollectOKRs:
         assert snap.okrs[0].at_risk_count == 1
 
     def test_stale_kr_detected(self, tmp_path: Path):
-        from cockpit.data.okrs import collect_okr_state
+        from logos.data.okrs import collect_okr_state
 
         _write_md(
             tmp_path / "okrs" / "2026-q1-stale.md",
@@ -167,7 +167,7 @@ class TestCollectOKRs:
         assert snap.okrs[0].key_results[0].stale is True
 
     def test_missing_dir_returns_empty(self, tmp_path: Path):
-        from cockpit.data.okrs import collect_okr_state
+        from logos.data.okrs import collect_okr_state
 
         config.set_data_dir(tmp_path)
         try:
@@ -179,7 +179,7 @@ class TestCollectOKRs:
         assert snap.active_count == 0
 
     def test_no_key_results_field(self, tmp_path: Path):
-        from cockpit.data.okrs import collect_okr_state
+        from logos.data.okrs import collect_okr_state
 
         _write_md(
             tmp_path / "okrs" / "2026-q1-bare.md",
@@ -201,7 +201,7 @@ class TestCollectOKRs:
         assert snap.okrs[0].key_results == []
 
     def test_wrong_type_skipped(self, tmp_path: Path):
-        from cockpit.data.okrs import collect_okr_state
+        from logos.data.okrs import collect_okr_state
 
         _write_md(
             tmp_path / "okrs" / "not-okr.md",

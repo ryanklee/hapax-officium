@@ -48,7 +48,7 @@ from agents.management_prep import (
     format_prep_md,
     generate_1on1_prep,
 )
-from cockpit.data.management import (
+from logos.data.management import (
     collect_management_state,
 )
 from shared.vault_utils import parse_frontmatter as _parse_frontmatter

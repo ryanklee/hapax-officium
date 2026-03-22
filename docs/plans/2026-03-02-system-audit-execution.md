@@ -470,18 +470,18 @@ git commit -m "audit: domain 5 — intelligence agents findings"
 
 | Source File | LOC | Test File | Test LOC |
 |-------------|-----|-----------|----------|
-| `cockpit/data/nudges.py` | 478 | `tests/test_nudges.py` | 899 |
-| `cockpit/data/management.py` | 290 | `tests/test_management.py` | 387 |
-| `cockpit/data/agents.py` | 185 | — | — |
-| `cockpit/data/readiness.py` | 173 | `tests/test_readiness.py` | 315 |
-| `cockpit/data/infrastructure.py` | 127 | — | — |
-| `cockpit/data/goals.py` | 109 | `tests/test_goals.py` | 197 |
-| `cockpit/data/briefing.py` | 97 | — | — |
-| `cockpit/data/health.py` | 94 | — | — |
-| `cockpit/data/cost.py` | 93 | — | — |
-| `cockpit/data/decisions.py` | 64 | `tests/test_decisions.py` | 191 |
-| `cockpit/data/scout.py` | 60 | — | — |
-| `cockpit/data/gpu.py` | 37 | — | — |
+| `logos/data/nudges.py` | 478 | `tests/test_nudges.py` | 899 |
+| `logos/data/management.py` | 290 | `tests/test_management.py` | 387 |
+| `logos/data/agents.py` | 185 | — | — |
+| `logos/data/readiness.py` | 173 | `tests/test_readiness.py` | 315 |
+| `logos/data/infrastructure.py` | 127 | — | — |
+| `logos/data/goals.py` | 109 | `tests/test_goals.py` | 197 |
+| `logos/data/briefing.py` | 97 | — | — |
+| `logos/data/health.py` | 94 | — | — |
+| `logos/data/cost.py` | 93 | — | — |
+| `logos/data/decisions.py` | 64 | `tests/test_decisions.py` | 191 |
+| `logos/data/scout.py` | 60 | — | — |
+| `logos/data/gpu.py` | 37 | — | — |
 
 **Total:** ~7,230 source LOC, ~4,054 test LOC.
 
@@ -511,7 +511,7 @@ This is the largest domain. Prioritize:
 
 5. **Accommodation persistence** (`accommodations.py`): Is `profiles/accommodations.json` read and written atomically? What happens on concurrent read+write?
 
-6. **Data collector error isolation**: In `cockpit/data/`, if one collector crashes (e.g., `collect_docker()` when Docker is down), does it break other collectors? Check the `snapshot.py` or cache aggregation logic.
+6. **Data collector error isolation**: In `logos/data/`, if one collector crashes (e.g., `collect_docker()` when Docker is down), does it break other collectors? Check the `snapshot.py` or cache aggregation logic.
 
 7. **Nudge priority scoring** (`data/nudges.py`, 478 LOC): Map all nudge sources and their priority scores. Are scores correct relative to each other? Does the priority ladder (critical > high > medium > low) make sense for cognitive load awareness?
 
@@ -543,7 +543,7 @@ git commit -m "audit: domain 6 — cockpit findings"
 
 **Files to read:**
 
-**Backend** (`~/projects/cockpit/api/`):
+**Backend** (`~/projects/logos/api/`):
 
 | Source File | LOC | Test File | Test LOC |
 |-------------|-----|-----------|----------|
@@ -675,7 +675,7 @@ Check for plaintext secrets in: `.envrc` files, `docker-compose.yml` env section
 
 8. **Dockerfile.api build**: Can it actually build? Run `docker build -f ~/projects/Dockerfile.api ~/projects/ai-agents/ ` mentally — are all COPY sources present? Does `uv sync --frozen --no-dev` succeed?
 
-9. **Docker socket mount**: The cockpit-api container mounts `/var/run/docker.sock:ro`. What can it do with this? Is read-only sufficient protection?
+9. **Docker socket mount**: The logos-api container mounts `/var/run/docker.sock:ro`. What can it do with this? Is read-only sufficient protection?
 
 10. **Langfuse v3 stack**: ClickHouse + Redis + MinIO — are they correctly configured to talk to each other? Volume persistence correct?
 
@@ -727,7 +727,7 @@ Trace the operator model across all touchpoints:
 - **Context tools** (`shared/context_tools.py`): reads `profiles/ryan-digest.json`
 - **System prompts** (`shared/operator.py`): `SYSTEM_CONTEXT` + `get_system_prompt_fragment()`
 - **Accommodations** (`cockpit/accommodations.py`): `profiles/accommodations.json`
-- **Nudge priorities** (`cockpit/data/nudges.py`): priority scoring for cognitive load awareness
+- **Nudge priorities** (`logos/data/nudges.py`): priority scoring for cognitive load awareness
 - **Copilot** (`cockpit/copilot.py`): observational mode
 - **Interview** (`cockpit/interview.py`): profile gap-filling
 

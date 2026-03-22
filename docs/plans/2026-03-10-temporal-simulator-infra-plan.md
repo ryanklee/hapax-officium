@@ -4,7 +4,7 @@
 
 **Goal:** Build the foundation for the temporal simulator: mutable DATA_DIR config, ephemeral simulation directories, manifest schema, workflow semantics documentation, role matrix configuration, API context switching, and engine pause/resume.
 
-**Architecture:** Refactor `DATA_DIR` from a module-level constant into a mutable config holder so the cockpit API can serve different data directories. Add simulation directory lifecycle management (create, seed, switch, cleanup). Document workflow semantics and role definitions in YAML files consumed by the existing context assembly pipeline.
+**Architecture:** Refactor `DATA_DIR` from a module-level constant into a mutable config holder so the logos API can serve different data directories. Add simulation directory lifecycle management (create, seed, switch, cleanup). Document workflow semantics and role definitions in YAML files consumed by the existing context assembly pipeline.
 
 **Tech Stack:** Python 3.12+, FastAPI, Pydantic, pytest, PyYAML
 
@@ -17,19 +17,19 @@
 | `shared/config.py` | Modify | Add mutable `_Config` holder class with `data_dir` property and `set_data_dir()` |
 | `shared/management_bridge.py` | Modify | Switch from `from shared.config import DATA_DIR` to `config.data_dir` |
 | `shared/vault_writer.py` | Modify | Switch from `from shared.config import DATA_DIR` to `config.data_dir` |
-| `cockpit/data/management.py` | Modify | Switch to `config.data_dir` |
-| `cockpit/data/okrs.py` | Modify | Switch to `config.data_dir` |
-| `cockpit/data/smart_goals.py` | Modify | Switch to `config.data_dir` |
-| `cockpit/data/incidents.py` | Modify | Switch to `config.data_dir` |
-| `cockpit/data/postmortem_actions.py` | Modify | Switch to `config.data_dir` |
-| `cockpit/data/review_cycles.py` | Modify | Switch to `config.data_dir` |
-| `cockpit/data/status_reports.py` | Modify | Switch to `config.data_dir` |
+| `logos/data/management.py` | Modify | Switch to `config.data_dir` |
+| `logos/data/okrs.py` | Modify | Switch to `config.data_dir` |
+| `logos/data/smart_goals.py` | Modify | Switch to `config.data_dir` |
+| `logos/data/incidents.py` | Modify | Switch to `config.data_dir` |
+| `logos/data/postmortem_actions.py` | Modify | Switch to `config.data_dir` |
+| `logos/data/review_cycles.py` | Modify | Switch to `config.data_dir` |
+| `logos/data/status_reports.py` | Modify | Switch to `config.data_dir` |
 | `agents/status_update.py` | Modify | Switch to `config.data_dir` |
 | `agents/ingest.py` | Modify | Switch to `config.data_dir` |
 | `agents/drift_detector.py` | Modify | Switch to `config.data_dir` |
 | `agents/review_prep.py` | Modify | Switch to `config.data_dir` |
-| `cockpit/engine/__init__.py` | Modify | Add `pause()`/`resume()` methods |
-| `cockpit/api/routes/engine.py` | Modify | Add `POST /api/engine/simulation-context` endpoint |
+| `logos/engine/__init__.py` | Modify | Add `pause()`/`resume()` methods |
+| `logos/api/routes/engine.py` | Modify | Add `POST /api/engine/simulation-context` endpoint |
 | `shared/simulation.py` | Create | Simulation directory lifecycle: create, seed, manifest, cleanup |
 | `shared/simulation_models.py` | Create | Pydantic models: SimManifest, SimStatus |
 | `config/role-matrix.yaml` | Create | Role definitions (EM only for v1) |
@@ -174,13 +174,13 @@ git commit -m "feat: add mutable _Config holder for dynamic DATA_DIR switching"
 This is the largest task — 13 production files and ~8 test files need updating. The approach: migrate tests first (TDD order), then production code.
 
 **Production files to migrate (13):**
-- `cockpit/data/management.py`
-- `cockpit/data/okrs.py`
-- `cockpit/data/smart_goals.py`
-- `cockpit/data/incidents.py`
-- `cockpit/data/postmortem_actions.py`
-- `cockpit/data/review_cycles.py`
-- `cockpit/data/status_reports.py`
+- `logos/data/management.py`
+- `logos/data/okrs.py`
+- `logos/data/smart_goals.py`
+- `logos/data/incidents.py`
+- `logos/data/postmortem_actions.py`
+- `logos/data/review_cycles.py`
+- `logos/data/status_reports.py`
 - `shared/management_bridge.py`
 - `shared/vault_writer.py`
 - `agents/status_update.py`
@@ -273,7 +273,7 @@ Expected: All pass
 
 - [ ] **Step 8: Migrate engine modules (2 files)**
 
-In `cockpit/engine/__init__.py` lines 37-40, change:
+In `logos/engine/__init__.py` lines 37-40, change:
 ```python
 if data_dir is None:
     from shared.config import DATA_DIR
@@ -286,7 +286,7 @@ if data_dir is None:
     data_dir = config.data_dir
 ```
 
-In `cockpit/engine/reactive_rules.py`, find and migrate any `from shared.config import DATA_DIR` usage (confirmed at line 55).
+In `logos/engine/reactive_rules.py`, find and migrate any `from shared.config import DATA_DIR` usage (confirmed at line 55).
 
 - [ ] **Step 9: Run full test suite**
 
@@ -296,9 +296,9 @@ Expected: ALL tests pass — no regressions
 - [ ] **Step 10: Commit**
 
 ```bash
-git add cockpit/data/ shared/management_bridge.py \
+git add logos/data/ shared/management_bridge.py \
        shared/vault_writer.py agents/ \
-       cockpit/engine/ tests/
+       logos/engine/ tests/
 git commit -m "refactor: migrate all DATA_DIR consumers to config.data_dir"
 ```
 
@@ -1024,7 +1024,7 @@ git commit -m "feat: add role matrix and scenario definitions for simulator"
 ### Task 9: Engine Pause/Resume for Simulation Context
 
 **Files:**
-- Modify: `cockpit/engine/__init__.py`
+- Modify: `logos/engine/__init__.py`
 - Create: `tests/test_engine_pause.py`
 
 - [ ] **Step 1: Write the failing tests**
@@ -1110,7 +1110,7 @@ Expected: FAIL — `pause`, `resume`, `paused` don't exist
 
 - [ ] **Step 3: Add pause/resume to ReactiveEngine**
 
-In `cockpit/engine/__init__.py`, add to `__init__`:
+In `logos/engine/__init__.py`, add to `__init__`:
 ```python
 self.paused: bool = False
 ```
@@ -1170,14 +1170,14 @@ Expected: All pass
 - [ ] **Step 6: Commit**
 
 ```bash
-git add cockpit/engine/__init__.py tests/test_engine_pause.py
+git add logos/engine/__init__.py tests/test_engine_pause.py
 git commit -m "feat: add engine pause/resume for simulation context switching"
 ```
 
 ### Task 10: API Simulation Context Endpoint
 
 **Files:**
-- Modify: `cockpit/api/routes/engine.py`
+- Modify: `logos/api/routes/engine.py`
 - Create: `tests/test_simulation_context_api.py`
 
 - [ ] **Step 1: Write the failing tests**
@@ -1298,7 +1298,7 @@ Expected: FAIL — endpoint doesn't exist
 
 - [ ] **Step 3: Implement the endpoint**
 
-In `cockpit/api/routes/engine.py`, add at top (module-level imports so they are patchable in tests):
+In `logos/api/routes/engine.py`, add at top (module-level imports so they are patchable in tests):
 
 ```python
 from pydantic import BaseModel
@@ -1358,7 +1358,7 @@ Expected: All pass
 - [ ] **Step 6: Commit**
 
 ```bash
-git add cockpit/api/routes/engine.py tests/test_simulation_context_api.py
+git add logos/api/routes/engine.py tests/test_simulation_context_api.py
 git commit -m "feat: add POST /api/engine/simulation-context endpoint"
 ```
 

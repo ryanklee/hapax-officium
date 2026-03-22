@@ -11,7 +11,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
-from cockpit.engine.models import Action, ActionPlan, ChangeEvent
+from logos.engine.models import Action, ActionPlan, ChangeEvent
 
 if TYPE_CHECKING:
     from collections.abc import Callable

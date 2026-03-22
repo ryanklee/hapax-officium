@@ -500,7 +500,7 @@ of the most impressive or relatable capability, not an architecture diagram.
 
 ## Visual Rules
 
-The cockpit web dashboard is at http://localhost:5173 with these pages:
+The logos web dashboard is at http://localhost:5173 with these pages:
 - / — Main dashboard with action items (management nudges), agents grid, output pane. Sidebar: team health, daily briefing, goals tracking.
 - /demos — Demo listing page
 

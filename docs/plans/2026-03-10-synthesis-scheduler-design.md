@@ -29,7 +29,7 @@ The operator must remember to run agents after editing data. Generated artifacts
 
 ### New Component
 
-`cockpit/engine/synthesis.py` — `SynthesisScheduler` class (~150 lines).
+`logos/engine/synthesis.py` — `SynthesisScheduler` class (~150 lines).
 
 Three responsibilities:
 1. **Accumulate** — receive `signal(subdirectory)` calls, maintain dirty set
@@ -198,7 +198,7 @@ Exposed via `ReactiveEngine.force_synthesis()` (public method delegating to `sel
 
 ## Model Change
 
-### `cockpit/engine/models.py`
+### `logos/engine/models.py`
 
 Reorder `ActionPlan` fields so `trigger` (now optional) comes after `created_at` to satisfy Python's dataclass rule that fields with defaults follow fields without:
 
@@ -315,7 +315,7 @@ New env vars following existing `ENGINE_*` pattern:
 
 ## Engine Integration
 
-### Changes to `cockpit/engine/__init__.py`
+### Changes to `logos/engine/__init__.py`
 
 1. Import `SynthesisScheduler`
 2. Accept `agent_run_manager` parameter in constructor
@@ -324,15 +324,15 @@ New env vars following existing `ENGINE_*` pattern:
 5. Start/stop scheduler in `start()`/`stop()`
 6. Include `synthesis` key in `status()` return
 
-### Changes to `cockpit/engine/models.py`
+### Changes to `logos/engine/models.py`
 
 Make `trigger` optional: `trigger: ChangeEvent | None = None`.
 
-### Changes to `cockpit/api/app.py`
+### Changes to `logos/api/app.py`
 
 Pass `agent_run_manager` to `ReactiveEngine()`.
 
-### Changes to `cockpit/api/routes/engine.py`
+### Changes to `logos/api/routes/engine.py`
 
 Add `POST /api/engine/synthesize` endpoint that calls `engine.force_synthesis()`.
 
@@ -356,7 +356,7 @@ Add `POST /api/engine/synthesize` endpoint that calls `engine.force_synthesis()`
 
 ### Cache Extension
 
-`cockpit/api/cache.py` gains two timestamps:
+`logos/api/cache.py` gains two timestamps:
 - `_last_hot_change_at: float` — set by engine on HOT_PATH changes
 - `_last_warm_change_at: float` — set by engine on WARM_PATH changes
 
@@ -416,12 +416,12 @@ Mock strategy: `executor.execute` mocked to capture ActionPlans. `agent_run_mana
 
 | File | Change |
 |------|--------|
-| `cockpit/engine/synthesis.py` | **NEW** — SynthesisScheduler + 4 handlers (~200 lines) |
-| `cockpit/engine/models.py` | Reorder ActionPlan fields, make `trigger` optional |
-| `cockpit/engine/rules.py` | Update ActionPlan construction to use keyword args |
-| `cockpit/engine/__init__.py` | Add scheduler wiring (signal, start/stop, status, force_synthesis) |
-| `cockpit/api/app.py` | Pass agent_run_manager to engine |
-| `cockpit/api/cache.py` | Add `_last_hot_change_at`, `_last_warm_change_at`, accessors |
-| `cockpit/api/routes/data.py` | Add `_freshness` to 4 artifact endpoints |
-| `cockpit/api/routes/engine.py` | Add `POST /api/engine/synthesize` endpoint |
+| `logos/engine/synthesis.py` | **NEW** — SynthesisScheduler + 4 handlers (~200 lines) |
+| `logos/engine/models.py` | Reorder ActionPlan fields, make `trigger` optional |
+| `logos/engine/rules.py` | Update ActionPlan construction to use keyword args |
+| `logos/engine/__init__.py` | Add scheduler wiring (signal, start/stop, status, force_synthesis) |
+| `logos/api/app.py` | Pass agent_run_manager to engine |
+| `logos/api/cache.py` | Add `_last_hot_change_at`, `_last_warm_change_at`, accessors |
+| `logos/api/routes/data.py` | Add `_freshness` to 4 artifact endpoints |
+| `logos/api/routes/engine.py` | Add `POST /api/engine/synthesize` endpoint |
 | `tests/test_synthesis_scheduler.py` | **NEW** — 13 tests |

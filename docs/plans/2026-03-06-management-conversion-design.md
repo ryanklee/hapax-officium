@@ -4,7 +4,7 @@
 
 **Date:** 2026-03-06
 **Status:** Design
-**Scope:** Architecture, agents, cockpit API, frontend, axiom governance, Docker images, Claude Code configuration
+**Scope:** Architecture, agents, logos API, frontend, axiom governance, Docker images, Claude Code configuration
 
 ---
 
@@ -220,7 +220,7 @@ The `axiom-scan.sh` PreToolUse hook adds these patterns. The existing single_ope
 **Current function:** 15 checks across 9 groups (profiles, disk, queues, budget, capacity, qdrant, endpoints, secrets, axioms).
 
 **Converted function:** Minimal self-check that the management system is running:
-- Cockpit API responding
+- Logos API responding
 - Vault directory accessible and readable
 - Qdrant reachable (if used for management data)
 - LiteLLM reachable (for management_prep synthesis)
@@ -249,7 +249,7 @@ The demo pipeline stays. It currently supports audience types including "leaders
 
 ---
 
-## 4. Cockpit API
+## 4. Logos API
 
 ### Current Surface (~30 endpoints across 6 route groups)
 
@@ -470,7 +470,7 @@ All 5 hooks redesigned:
 
 | Image | Size | Purpose |
 |-------|------|---------|
-| hapax-agents | 3.53 GB | 14 agents + cockpit API |
+| hapax-agents | 3.53 GB | 14 agents + logos API |
 | hapax-ingest | 12.7 GB | RAG ingestion (docling + watchdog) |
 | hapax-dev | 2.03 GB | Interactive Claude Code |
 
@@ -478,7 +478,7 @@ All 5 hooks redesigned:
 
 | Image | Est. Size | Purpose |
 |-------|-----------|---------|
-| **management-cockpit** | ~1.2 GB | 5 agents + cockpit API + demo (HTML/markdown mode) |
+| **management-cockpit** | ~1.2 GB | 5 agents + logos API + demo (HTML/markdown mode) |
 | **management-dev** | ~1.5 GB | Claude Code with management-focused configuration |
 
 **hapax-ingest removed entirely.** RAG pipeline has no management function.
@@ -611,24 +611,24 @@ The system reads structured markdown files with YAML frontmatter:
 
 ### Cockpit Collectors (10+ removed)
 
-- `cockpit/data/health.py`
-- `cockpit/data/gpu.py`
-- `cockpit/data/infrastructure.py`
-- `cockpit/data/scout.py`
-- `cockpit/data/drift.py`
-- `cockpit/data/cost.py`
-- `cockpit/data/readiness.py`
-- `cockpit/data/momentum.py`
-- `cockpit/data/emergence.py`
-- `cockpit/data/knowledge_sufficiency.py`
+- `logos/data/health.py`
+- `logos/data/gpu.py`
+- `logos/data/infrastructure.py`
+- `logos/data/scout.py`
+- `logos/data/drift.py`
+- `logos/data/cost.py`
+- `logos/data/readiness.py`
+- `logos/data/momentum.py`
+- `logos/data/emergence.py`
+- `logos/data/knowledge_sufficiency.py`
 - `cockpit/accommodations.py`
 
 ### Cockpit Routes (4 route files removed/gutted)
 
-- `cockpit/api/routes/chat.py` — entire file removed
-- `cockpit/api/routes/profile.py` — gutted to 3 management-profile endpoints
-- `cockpit/api/routes/copilot.py` — entire file removed
-- `cockpit/api/routes/accommodations.py` — entire file removed
+- `logos/api/routes/chat.py` — entire file removed
+- `logos/api/routes/profile.py` — gutted to 3 management-profile endpoints
+- `logos/api/routes/copilot.py` — entire file removed
+- `logos/api/routes/accommodations.py` — entire file removed
 
 ### Shared Modules (15 removed)
 
@@ -689,13 +689,13 @@ This conversion can be done in the containerization workspace without affecting 
 5. Delete removed agents
 6. Update `agents/__init__.py` or module references
 
-### Phase 3: Cockpit API
+### Phase 3: Logos API
 
-1. Transform `cockpit/data/nudges.py` — remove personal nudge categories
-2. Transform `cockpit/data/goals.py` — management goals only
+1. Transform `logos/data/nudges.py` — remove personal nudge categories
+2. Transform `logos/data/goals.py` — management goals only
 3. Remove personal collectors and routes
-4. Update `cockpit/api/main.py` — remove personal route registrations
-5. Update `cockpit/api/routes/data.py` — remove personal data endpoints
+4. Update `logos/api/main.py` — remove personal route registrations
+5. Update `logos/api/routes/data.py` — remove personal data endpoints
 
 ### Phase 4: Frontend
 

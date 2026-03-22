@@ -10,11 +10,11 @@ from datetime import date, timedelta
 from typing import TYPE_CHECKING
 
 from agents.ingest import DocumentType, process_document
-from cockpit.data.management import (
+from logos.data.management import (
     collect_management_state,
 )
-from cockpit.data.nudges import collect_nudges
-from cockpit.data.team_health import collect_team_health
+from logos.data.nudges import collect_nudges
+from logos.data.team_health import collect_team_health
 from shared.config import config
 from shared.management_bridge import generate_facts
 from shared.vault_writer import (

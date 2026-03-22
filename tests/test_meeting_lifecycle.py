@@ -12,7 +12,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 import yaml
 
-from cockpit.data.management import ManagementSnapshot, PersonState
+from logos.data.management import ManagementSnapshot, PersonState
 
 if TYPE_CHECKING:
     from pathlib import Path

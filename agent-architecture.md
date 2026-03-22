@@ -28,7 +28,7 @@ This is the scout agent's purpose. Where the drift detector asks "does documenta
 │                                                      │
 │          System Cockpit (web dashboard)               │
 │       FastAPI backend + React SPA frontend            │
-│     `uv run cockpit` · `cockpit --once` (CLI)        │
+│     `uv run logos` · `cockpit --once` (CLI)        │
 ├──────────────────────────────────────────────────────┤
 │                  TIER 2: ON-DEMAND                    │
 │            Pydantic AI agents invoked by              │
@@ -64,7 +64,7 @@ Claude Code is the primary interactive interface — full MCP access, slash comm
 
 The **System Cockpit** is the operational dashboard, built as a **FastAPI API backend + React SPA frontend** (`cockpit-web`). It provides real-time health monitoring, agent status, nudge management, goal tracking, profile visibility, and briefing display.
 
-- `uv run cockpit` launches the API server (default port 8050, Docker port 8051)
+- `uv run logos` launches the API server (default port 8050, Docker port 8051)
 - `cockpit --once` produces a one-shot CLI snapshot for terminal use or piping
 - The React frontend connects to the FastAPI backend and renders the dashboard in the browser
 
@@ -98,12 +98,12 @@ These live in `agents/`. Each agent uses LiteLLM as its backend (never direct pr
 ### management-prep
 
 **Trigger:** Manual CLI or Claude Code invocation before 1:1s or weekly reviews.
-**Function:** Reads vault management data (people notes, coaching hypotheses, feedback records, meeting history) via `cockpit/data/management.py`, synthesizes context with one LLM call, writes preparation material to vault. Three modes: `--person "Name"` (1:1 prep), `--team-snapshot` (team state overview), `--overview` (condensed management summary).
+**Function:** Reads vault management data (people notes, coaching hypotheses, feedback records, meeting history) via `logos/data/management.py`, synthesizes context with one LLM call, writes preparation material to vault. Three modes: `--person "Name"` (1:1 prep), `--team-snapshot` (team state overview), `--overview` (condensed management summary).
 
 **Boundary:** "LLM Prepares, Human Delivers." System prompt explicitly forbids drafting feedback language, generating coaching hypotheses, or suggesting what the operator should say. Focus is signal aggregation and context synthesis only.
 
 **Model:** claude-sonnet (balanced) for prep/snapshot, claude-haiku (fast) for overview.
-**Data sources:** People notes, meeting notes, coaching hypotheses, feedback records (all via `shared/management_bridge.py` reading DATA_DIR, and `cockpit/data/management.py`).
+**Data sources:** People notes, meeting notes, coaching hypotheses, feedback records (all via `shared/management_bridge.py` reading DATA_DIR, and `logos/data/management.py`).
 **Output:** Markdown written to DATA_DIR (`1on1-prep/`, `briefings/`). Also stdout/JSON.
 
 ### meeting-lifecycle
@@ -217,7 +217,7 @@ These live in `agents/`. Each agent uses LiteLLM as its backend (never direct pr
 
 ## Reactive Engine
 
-The cockpit API process includes a reactive engine (`cockpit/engine/`) that watches `DATA_DIR` for filesystem changes and automatically cascades downstream work.
+The logos API process includes a reactive engine (`logos/engine/`) that watches `DATA_DIR` for filesystem changes and automatically cascades downstream work.
 
 ### Architecture
 

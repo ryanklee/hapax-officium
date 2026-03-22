@@ -1,4 +1,4 @@
-"""Tests for cockpit/data/incidents.py — incident state collection."""
+"""Tests for logos/data/incidents.py — incident state collection."""
 
 from __future__ import annotations
 
@@ -20,7 +20,7 @@ def _write_md(path: Path, frontmatter: dict, body: str = "") -> None:
 
 class TestCollectIncidents:
     def test_open_incident(self, tmp_path: Path):
-        from cockpit.data.incidents import collect_incident_state
+        from logos.data.incidents import collect_incident_state
 
         _write_md(
             tmp_path / "incidents" / "2026-03-05-outage.md",
@@ -46,7 +46,7 @@ class TestCollectIncidents:
         assert snap.incidents[0].severity == "sev1"
 
     def test_closed_incident_not_open(self, tmp_path: Path):
-        from cockpit.data.incidents import collect_incident_state
+        from logos.data.incidents import collect_incident_state
 
         _write_md(
             tmp_path / "incidents" / "2026-02-15-resolved.md",
@@ -68,7 +68,7 @@ class TestCollectIncidents:
         assert snap.incidents[0].open is False
 
     def test_missing_postmortem_counted(self, tmp_path: Path):
-        from cockpit.data.incidents import collect_incident_state
+        from logos.data.incidents import collect_incident_state
 
         _write_md(
             tmp_path / "incidents" / "2026-03-01-no-pm.md",
@@ -90,7 +90,7 @@ class TestCollectIncidents:
         assert snap.incidents[0].has_postmortem is False
 
     def test_postmortem_complete_has_postmortem(self, tmp_path: Path):
-        from cockpit.data.incidents import collect_incident_state
+        from logos.data.incidents import collect_incident_state
 
         _write_md(
             tmp_path / "incidents" / "2026-02-15-done.md",
@@ -111,7 +111,7 @@ class TestCollectIncidents:
         assert snap.incidents[0].has_postmortem is True
 
     def test_teams_affected_parsed(self, tmp_path: Path):
-        from cockpit.data.incidents import collect_incident_state
+        from logos.data.incidents import collect_incident_state
 
         _write_md(
             tmp_path / "incidents" / "2026-03-05-multi.md",
@@ -133,7 +133,7 @@ class TestCollectIncidents:
         assert snap.incidents[0].teams_affected == ["Platform", "Product", "Data"]
 
     def test_missing_dir(self, tmp_path: Path):
-        from cockpit.data.incidents import collect_incident_state
+        from logos.data.incidents import collect_incident_state
 
         config.set_data_dir(tmp_path)
         try:

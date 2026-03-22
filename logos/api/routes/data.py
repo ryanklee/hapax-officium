@@ -13,7 +13,7 @@ from typing import Any
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
-from cockpit.api.cache import cache
+from logos.api.cache import cache
 
 router = APIRouter(prefix="/api", tags=["data"])
 
@@ -43,7 +43,7 @@ def _response(data: Any) -> JSONResponse:
 
 def _freshness_response(data: Any, *, hot: bool = True) -> JSONResponse:
     """Return JSON response with _freshness metadata for synthesis artifacts."""
-    from cockpit.api.cache import cache as _cache
+    from logos.api.cache import cache as _cache
 
     if hot:
         change_age = _cache.hot_change_age()

@@ -85,7 +85,7 @@ def check_readiness(
             if auto_fix:
                 log.warning("auto_fix requested but system_check has no auto-fix capability")
             # Health failures are warnings, not blockers — the demo only
-            # needs LiteLLM, Qdrant, cockpit, and TTS (checked separately)
+            # needs LiteLLM, Qdrant, logos, and TTS (checked separately)
             failed_names = [r.name for r in results if not r.ok]
             warnings.append(
                 f"System check: {failed_count} failed checks: {', '.join(failed_names)} (non-blocking)"
@@ -102,7 +102,7 @@ def check_readiness(
     except Exception:
         issues.append(
             "Cockpit API (:8060) not reachable — start with: "
-            "cd ~/projects/hapax-officium/ai-agents && uv run python -m cockpit.api --port 8060"
+            "cd ~/projects/hapax-officium/ai-agents && uv run python -m logos.api --port 8060"
         )
 
     # 3. Cockpit web

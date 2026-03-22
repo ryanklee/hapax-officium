@@ -544,7 +544,7 @@ def _profile_to_markdown(profile: ManagementProfile) -> str:
 def flush_interview_facts(
     facts: list,
     insights: list,
-    source: str = "interview:cockpit",
+    source: str = "interview:logos",
 ) -> str:
     """Merge interview-sourced facts into the management profile.
 

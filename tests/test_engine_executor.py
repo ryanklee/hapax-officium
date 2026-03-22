@@ -6,8 +6,8 @@ from datetime import datetime
 from pathlib import Path
 from unittest.mock import AsyncMock
 
-from cockpit.engine.executor import PhasedExecutor
-from cockpit.engine.models import Action, ActionPlan, ChangeEvent
+from logos.engine.executor import PhasedExecutor
+from logos.engine.models import Action, ActionPlan, ChangeEvent
 
 
 def _make_event() -> ChangeEvent:

@@ -7,7 +7,7 @@ import logging
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-log = logging.getLogger("cockpit.api.profile")
+log = logging.getLogger("logos.api.profile")
 
 router = APIRouter(prefix="/api/profile", tags=["profile"])
 

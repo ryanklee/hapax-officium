@@ -31,7 +31,7 @@ Management decision support cockpit for engineering managers. Agents prepare con
 hapax-mgmt/
 ├── agents/                    ← from agents/ (19 management agents)
 ├── shared/                    ← from shared/ (25 shared modules)
-├── cockpit/                   ← from cockpit/ (API server + reactive engine)
+├── logos/                   ← from cockpit/ (API server + reactive engine)
 ├── hapax-mgmt-web/            ← from hapax-mgmt-web/ (React dashboard, renamed)
 ├── vscode/                    ← from vscode/ (VS Code extension)
 ├── demo-data/                 ← synthetic seed corpus (checked in)
@@ -87,7 +87,7 @@ Personal LLM-first automation system. 26 agents for sync, briefings, profiling, 
 hapax-core/
 ├── agents/                    ← from agents/ (26 agents)
 ├── shared/                    ← from shared/ (44 modules)
-├── cockpit/                   ← from cockpit/ (full cockpit)
+├── logos/                   ← from cockpit/ (full cockpit)
 ├── hapax-web/                 ← from hapax-mgmt-web/ (renamed)
 ├── system/                    ← from hapax-system/ (skills, hooks, rules)
 ├── specs/                     ← from hapaxromana/ (architecture, axioms)
@@ -315,7 +315,7 @@ All references to these names must be updated in code, docs, configs, and import
 |----------|----------|---------|
 | cockpit-web (in hapax-mgmt) | hapax-mgmt-web | Directory, docs, Docker, nginx config |
 | cockpit-web (in hapax-core) | hapax-web | Directory, docs, Docker |
-| cockpit API / hapax-agents | hapax-mgmt-api (mgmt), hapax-api (core) | Docker service name, docs, port references |
+| logos API / hapax-agents | hapax-mgmt-api (mgmt), hapax-api (core) | Docker service name, docs, port references |
 | ai-agents/ (subdirectory) | top-level agents/, shared/, etc. | pyproject.toml, scripts, CLAUDE.md, Dockerfile |
 | hapaxromana (in hapax-core) | specs/ | CLAUDE.md, cross-references, axiom docs |
 | hapax-system (in hapax-core) | system/ | CLAUDE.md, install.sh, hook paths |

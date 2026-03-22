@@ -10,7 +10,7 @@ import asyncio
 from typing import TYPE_CHECKING
 from unittest.mock import AsyncMock, patch
 
-from cockpit.engine import ReactiveEngine
+from logos.engine import ReactiveEngine
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -26,7 +26,7 @@ class TestPersonFileFullCascade:
     """Person file write triggers refresh_cache (includes nudges + team health)."""
 
     @patch(
-        "cockpit.engine.reactive_rules._refresh_cache",
+        "logos.engine.reactive_rules._refresh_cache",
         new_callable=AsyncMock,
         return_value="cache refreshed",
     )
@@ -67,7 +67,7 @@ class TestCoachingFileRefreshesCache:
     """Coaching file write triggers refresh_cache (includes nudges)."""
 
     @patch(
-        "cockpit.engine.reactive_rules._refresh_cache",
+        "logos.engine.reactive_rules._refresh_cache",
         new_callable=AsyncMock,
         return_value="cache refreshed",
     )
@@ -103,12 +103,12 @@ class TestInboxFileTriggersIngest:
     """Inbox file write triggers ingest_document and refresh_cache."""
 
     @patch(
-        "cockpit.engine.reactive_rules._refresh_cache",
+        "logos.engine.reactive_rules._refresh_cache",
         new_callable=AsyncMock,
         return_value="cache refreshed",
     )
     @patch(
-        "cockpit.engine.reactive_rules._ingest_document",
+        "logos.engine.reactive_rules._ingest_document",
         new_callable=AsyncMock,
         return_value="ingested as note",
     )

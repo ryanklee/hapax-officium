@@ -7,13 +7,13 @@ import os
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
-from cockpit.engine.delivery import DeliveryQueue
-from cockpit.engine.executor import PhasedExecutor
-from cockpit.engine.models import ChangeEvent, DeliveryItem
-from cockpit.engine.reactive_rules import build_default_rules
-from cockpit.engine.rules import evaluate_rules
-from cockpit.engine.synthesis import SynthesisScheduler
-from cockpit.engine.watcher import DataDirWatcher
+from logos.engine.delivery import DeliveryQueue
+from logos.engine.executor import PhasedExecutor
+from logos.engine.models import ChangeEvent, DeliveryItem
+from logos.engine.reactive_rules import build_default_rules
+from logos.engine.rules import evaluate_rules
+from logos.engine.synthesis import SynthesisScheduler
+from logos.engine.watcher import DataDirWatcher
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -185,8 +185,8 @@ class ReactiveEngine:
 
         self._scheduler.signal(event.subdirectory)
 
-        from cockpit.api.cache import cache as _cache
-        from cockpit.engine.synthesis import HOT_PATH, WARM_PATH
+        from logos.api.cache import cache as _cache
+        from logos.engine.synthesis import HOT_PATH, WARM_PATH
 
         if event.subdirectory in HOT_PATH:
             _cache.record_hot_change()

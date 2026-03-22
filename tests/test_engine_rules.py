@@ -1,4 +1,4 @@
-"""Tests for cockpit.engine.rules — Rule, RuleRegistry, evaluate_rules."""
+"""Tests for logos.engine.rules — Rule, RuleRegistry, evaluate_rules."""
 
 from __future__ import annotations
 
@@ -6,8 +6,8 @@ from datetime import datetime
 from pathlib import Path
 from unittest.mock import AsyncMock
 
-from cockpit.engine.models import Action, ActionPlan, ChangeEvent
-from cockpit.engine.rules import Rule, RuleRegistry, evaluate_rules
+from logos.engine.models import Action, ActionPlan, ChangeEvent
+from logos.engine.rules import Rule, RuleRegistry, evaluate_rules
 
 
 def _make_event(

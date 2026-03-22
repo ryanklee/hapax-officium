@@ -6,7 +6,7 @@ from __future__ import annotations
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock
 
-from cockpit.engine import ReactiveEngine
+from logos.engine import ReactiveEngine
 
 
 class TestEnginePause:

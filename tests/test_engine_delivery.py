@@ -4,7 +4,7 @@ import asyncio
 from datetime import datetime
 from unittest.mock import patch
 
-from cockpit.engine.models import DeliveryItem
+from logos.engine.models import DeliveryItem
 
 
 def _make_item(
@@ -22,9 +22,9 @@ def _make_item(
     )
 
 
-@patch("cockpit.engine.delivery._send_notification")
+@patch("logos.engine.delivery._send_notification")
 async def test_enqueue_adds_to_pending(mock_send):
-    from cockpit.engine.delivery import DeliveryQueue
+    from logos.engine.delivery import DeliveryQueue
 
     q = DeliveryQueue()
     item = _make_item()
@@ -33,9 +33,9 @@ async def test_enqueue_adds_to_pending(mock_send):
     assert q.pending[0] is item
 
 
-@patch("cockpit.engine.delivery._send_notification")
+@patch("logos.engine.delivery._send_notification")
 async def test_enqueue_adds_to_recent(mock_send):
-    from cockpit.engine.delivery import DeliveryQueue
+    from logos.engine.delivery import DeliveryQueue
 
     q = DeliveryQueue()
     item = _make_item()
@@ -44,9 +44,9 @@ async def test_enqueue_adds_to_recent(mock_send):
     assert q.recent[0] is item
 
 
-@patch("cockpit.engine.delivery._send_notification")
+@patch("logos.engine.delivery._send_notification")
 async def test_recent_ring_buffer_respects_max_size(mock_send):
-    from cockpit.engine.delivery import DeliveryQueue
+    from logos.engine.delivery import DeliveryQueue
 
     q = DeliveryQueue(max_recent=3)
     for i in range(5):
@@ -56,9 +56,9 @@ async def test_recent_ring_buffer_respects_max_size(mock_send):
     assert q.recent[2].title == "item-4"
 
 
-@patch("cockpit.engine.delivery._send_notification")
+@patch("logos.engine.delivery._send_notification")
 async def test_flush_sends_consolidated_notification(mock_send):
-    from cockpit.engine.delivery import DeliveryQueue
+    from logos.engine.delivery import DeliveryQueue
 
     mock_send.return_value = True
     q = DeliveryQueue()
@@ -73,18 +73,18 @@ async def test_flush_sends_consolidated_notification(mock_send):
     assert len(q.pending) == 0
 
 
-@patch("cockpit.engine.delivery._send_notification")
+@patch("logos.engine.delivery._send_notification")
 async def test_flush_noop_when_empty(mock_send):
-    from cockpit.engine.delivery import DeliveryQueue
+    from logos.engine.delivery import DeliveryQueue
 
     q = DeliveryQueue()
     await q.flush()
     mock_send.assert_not_called()
 
 
-@patch("cockpit.engine.delivery._send_notification")
+@patch("logos.engine.delivery._send_notification")
 async def test_critical_triggers_immediate_flush(mock_send):
-    from cockpit.engine.delivery import DeliveryQueue
+    from logos.engine.delivery import DeliveryQueue
 
     mock_send.return_value = True
     q = DeliveryQueue()
@@ -95,9 +95,9 @@ async def test_critical_triggers_immediate_flush(mock_send):
     assert len(q.pending) == 0
 
 
-@patch("cockpit.engine.delivery._send_notification")
+@patch("logos.engine.delivery._send_notification")
 async def test_high_priority_schedules_flush_within_60s(mock_send):
-    from cockpit.engine.delivery import DeliveryQueue
+    from logos.engine.delivery import DeliveryQueue
 
     mock_send.return_value = True
     q = DeliveryQueue()
@@ -110,9 +110,9 @@ async def test_high_priority_schedules_flush_within_60s(mock_send):
         q._high_flush_handle.cancel()
 
 
-@patch("cockpit.engine.delivery._send_notification")
+@patch("logos.engine.delivery._send_notification")
 async def test_high_priority_no_duplicate_scheduling(mock_send):
-    from cockpit.engine.delivery import DeliveryQueue
+    from logos.engine.delivery import DeliveryQueue
 
     q = DeliveryQueue()
     q.enqueue(_make_item(priority="high", title="HIGH-1"))
@@ -124,9 +124,9 @@ async def test_high_priority_no_duplicate_scheduling(mock_send):
         q._high_flush_handle.cancel()
 
 
-@patch("cockpit.engine.delivery._send_notification")
+@patch("logos.engine.delivery._send_notification")
 async def test_format_batch_single_item(mock_send):
-    from cockpit.engine.delivery import DeliveryQueue
+    from logos.engine.delivery import DeliveryQueue
 
     mock_send.return_value = True
     q = DeliveryQueue()
@@ -136,9 +136,9 @@ async def test_format_batch_single_item(mock_send):
     assert call_kwargs["message"] == "Only One\nthe detail"
 
 
-@patch("cockpit.engine.delivery._send_notification")
+@patch("logos.engine.delivery._send_notification")
 async def test_format_batch_multiple_items(mock_send):
-    from cockpit.engine.delivery import DeliveryQueue
+    from logos.engine.delivery import DeliveryQueue
 
     mock_send.return_value = True
     q = DeliveryQueue()
@@ -154,9 +154,9 @@ async def test_format_batch_multiple_items(mock_send):
     assert "• C" in msg
 
 
-@patch("cockpit.engine.delivery._send_notification")
+@patch("logos.engine.delivery._send_notification")
 async def test_flush_maps_highest_priority(mock_send):
-    from cockpit.engine.delivery import DeliveryQueue
+    from logos.engine.delivery import DeliveryQueue
 
     mock_send.return_value = True
     q = DeliveryQueue()
@@ -168,9 +168,9 @@ async def test_flush_maps_highest_priority(mock_send):
     assert call_kwargs["priority"] == "high"
 
 
-@patch("cockpit.engine.delivery._send_notification")
+@patch("logos.engine.delivery._send_notification")
 async def test_stop_flushes_remaining(mock_send):
-    from cockpit.engine.delivery import DeliveryQueue
+    from logos.engine.delivery import DeliveryQueue
 
     mock_send.return_value = True
     q = DeliveryQueue()
@@ -180,10 +180,10 @@ async def test_stop_flushes_remaining(mock_send):
     assert len(q.pending) == 0
 
 
-@patch("cockpit.engine.delivery._send_notification")
+@patch("logos.engine.delivery._send_notification")
 async def test_flush_loop_fires_periodically(mock_send):
     """start_flush_loop flushes pending items on the interval."""
-    from cockpit.engine.delivery import DeliveryQueue
+    from logos.engine.delivery import DeliveryQueue
 
     mock_send.return_value = True
     q = DeliveryQueue(flush_interval_s=0.05)  # 50ms for testing
@@ -196,10 +196,10 @@ async def test_flush_loop_fires_periodically(mock_send):
     assert len(q.pending) == 0
 
 
-@patch("cockpit.engine.delivery._send_notification")
+@patch("logos.engine.delivery._send_notification")
 async def test_stop_cancels_flush_loop_task(mock_send):
     """stop() cancels the background flush task cleanly."""
-    from cockpit.engine.delivery import DeliveryQueue
+    from logos.engine.delivery import DeliveryQueue
 
     mock_send.return_value = True
     q = DeliveryQueue(flush_interval_s=9999)

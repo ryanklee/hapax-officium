@@ -1,4 +1,4 @@
-"""Tests for cockpit demo API endpoints."""
+"""Tests for logos demo API endpoints."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ import pytest
 from fastapi import HTTPException
 from fastapi.testclient import TestClient
 
-from cockpit.api.app import app
+from logos.api.app import app
 
 
 class TestDemoEndpoints:
@@ -39,7 +39,7 @@ class TestDemoEndpoints:
         assert response.status_code == 200
 
     def test_list_demos_returns_data(self, client, mock_demos):
-        with patch("cockpit.api.routes.demos.OUTPUT_DIR", mock_demos):
+        with patch("logos.api.routes.demos.OUTPUT_DIR", mock_demos):
             response = client.get("/api/demos")
         assert response.status_code == 200
         data = response.json()
@@ -47,7 +47,7 @@ class TestDemoEndpoints:
         assert data[0]["title"] == "Test Demo"
 
     def test_get_demo_detail(self, client, mock_demos):
-        with patch("cockpit.api.routes.demos.OUTPUT_DIR", mock_demos):
+        with patch("logos.api.routes.demos.OUTPUT_DIR", mock_demos):
             response = client.get("/api/demos/20260304-120000-test")
         assert response.status_code == 200
         data = response.json()
@@ -59,7 +59,7 @@ class TestDemoEndpoints:
         assert response.status_code == 404
 
     def test_serve_file(self, client, mock_demos):
-        with patch("cockpit.api.routes.demos.OUTPUT_DIR", mock_demos):
+        with patch("logos.api.routes.demos.OUTPUT_DIR", mock_demos):
             response = client.get("/api/demos/20260304-120000-test/files/slides.md")
         assert response.status_code == 200
         assert b"# slides" in response.content
@@ -70,7 +70,7 @@ class TestDemoEndpoints:
 
     def test_validate_demo_id_rejects_traversal(self):
         """Verify _validate_demo_id rejects path traversal attempts."""
-        from cockpit.api.routes.demos import _validate_demo_id
+        from logos.api.routes.demos import _validate_demo_id
 
         # Clean IDs should pass
         _validate_demo_id("20260304-120000-test")
@@ -89,7 +89,7 @@ class TestDemoEndpoints:
         assert exc_info.value.status_code == 400
 
     def test_delete_demo(self, client, mock_demos):
-        with patch("cockpit.api.routes.demos.OUTPUT_DIR", mock_demos):
+        with patch("logos.api.routes.demos.OUTPUT_DIR", mock_demos):
             response = client.delete("/api/demos/20260304-120000-test")
         assert response.status_code == 200
         assert not (mock_demos / "20260304-120000-test").exists()

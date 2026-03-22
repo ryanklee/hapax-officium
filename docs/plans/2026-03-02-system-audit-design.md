@@ -116,7 +116,7 @@ Ordered from foundation upward — earlier domains inform later ones.
 
 ### Domain 6: Cockpit
 
-**Files:** `cockpit/app.py` (545), `cockpit/chat_agent.py` (985), `cockpit/interview.py` (655), `cockpit/copilot.py` (255), `cockpit/accommodations.py` (163), `cockpit/micro_probes.py` (169), `cockpit/snapshot.py` (364), `cockpit/manual.py` (280), `cockpit/runner.py` (160), `cockpit/voice.py` (28), `cockpit/screens/` (4 files), `cockpit/widgets/` (8 files), `cockpit/data/` (13 collectors)
+**Files:** `cockpit/app.py` (545), `cockpit/chat_agent.py` (985), `cockpit/interview.py` (655), `cockpit/copilot.py` (255), `cockpit/accommodations.py` (163), `cockpit/micro_probes.py` (169), `cockpit/snapshot.py` (364), `cockpit/manual.py` (280), `cockpit/runner.py` (160), `cockpit/voice.py` (28), `cockpit/screens/` (4 files), `cockpit/widgets/` (8 files), `logos/data/` (13 collectors)
 
 **~7,900 LOC.** Largest domain.
 
@@ -136,7 +136,7 @@ Ordered from foundation upward — earlier domains inform later ones.
 
 ### Domain 7: Web Layer
 
-**Files:** `cockpit/api/` (320 LOC), `~/projects/hapax-mgmt-web/` (457 LOC)
+**Files:** `logos/api/` (320 LOC), `~/projects/hapax-mgmt-web/` (457 LOC)
 
 **~777 LOC.** Brand new code.
 
@@ -164,7 +164,7 @@ Ordered from foundation upward — earlier domains inform later ones.
 - Secret management — are any secrets in plaintext anywhere? `.env` files, n8n configs, Docker volumes?
 - Vault folder structure — does it match what `vault_writer.py`, `management_bridge.py`, and profiler expect?
 - `Dockerfile.api` — does it actually build? Are all required files copied? Missing profiles dir at runtime?
-- Docker socket mount security — cockpit-api container has `/var/run/docker.sock:ro`
+- Docker socket mount security — logos-api container has `/var/run/docker.sock:ro`
 - Langfuse v3 stack — ClickHouse + Redis + MinIO correct configuration?
 - Ollama GPU passthrough — is nvidia-container-toolkit properly configured?
 - Log rotation — all services using json-file with 50m/3 files?

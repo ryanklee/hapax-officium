@@ -64,7 +64,7 @@ async def put_cycle_mode(body: CycleModeRequest):
     if returncode != 0:
         import logging
 
-        logging.getLogger("cockpit.api.cycle_mode").error(
+        logging.getLogger("logos.api.cycle_mode").error(
             "hapax-mode failed (exit %d): %s", returncode, output
         )
         raise HTTPException(status_code=500, detail="Cycle mode switch failed")

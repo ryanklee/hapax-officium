@@ -4,17 +4,17 @@
 
 ## Goal
 
-Move Tier 2 agents and the cockpit API from bare-metal systemd into Docker containers alongside the existing `llm-stack` infrastructure. The system must boot cold — no pre-existing data in databases, caches, or vaults.
+Move Tier 2 agents and the logos API from bare-metal systemd into Docker containers alongside the existing `llm-stack` infrastructure. The system must boot cold — no pre-existing data in databases, caches, or vaults.
 
 ## Two Images
 
 ### hapax-agents
 
-Main image. Contains all 13 application-logic agents, the cockpit API, and the demo pipeline. Built from `Dockerfile`.
+Main image. Contains all 13 application-logic agents, the logos API, and the demo pipeline. Built from `Dockerfile`.
 
 **Includes:**
 - All agents: briefing, scout, profiler, digest, management_prep, meeting_lifecycle, code_review, research, knowledge_maint, drift_detector, activity_analyzer, query, demo pipeline
-- Cockpit API server (`:8050`)
+- Logos API server (`:8050`)
 - System tools: `git`, `ffmpeg`, `d2`, Node.js/`npx` (for marp-cli), Playwright + Chromium
 
 **Excludes:**
@@ -22,7 +22,7 @@ Main image. Contains all 13 application-logic agents, the cockpit API, and the d
 - introspect (reads Docker state + systemd for manifest generation)
 - backup.sh (needs `docker compose exec`, `pg_dump`, host paths)
 
-**Default command:** Cockpit API (`uv run python -m cockpit.api --host 0.0.0.0`)
+**Default command:** Logos API (`uv run python -m cockpit.api --host 0.0.0.0`)
 
 ### hapax-ingest
 
@@ -229,7 +229,7 @@ These features work on the host but degrade in the container. Accepted by design
 
 | Feature | Impact | Mitigation |
 |---------|--------|------------|
-| `systemctl --user list-timers` in cockpit | Timer status unavailable in cockpit dashboard | health_monitor (on host) writes timer data to shared cache |
+| `systemctl --user list-timers` in cockpit | Timer status unavailable in logos dashboard | health_monitor (on host) writes timer data to shared cache |
 | `notify-send` desktop notifications | Silent skip in container | ntfy push notifications remain primary channel |
 | `sufficiency_probes.py` systemctl checks | Returns empty in container | Non-critical — sufficiency checks are advisory |
 | CORS origins hardcoded to localhost | Works through port mapping | Document that access pattern must preserve localhost URLs |
@@ -250,7 +250,7 @@ The system boots from zero state:
 
 ## Not Changed
 
-- `cockpit/api/app.py` CORS origins — localhost URLs work through port mapping
+- `logos/api/app.py` CORS origins — localhost URLs work through port mapping
 - `agents/health_monitor.py` hardcoded URLs — stays on host, not containerized
 - `agents/introspect.py` hardcoded URLs — stays on host
 - `shared/sufficiency_probes.py` systemctl calls — graceful degradation accepted

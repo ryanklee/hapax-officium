@@ -909,7 +909,7 @@ After the existing slide rendering block in `generate_demo()`, add video generat
 
 **Step 3: Update cockpit agent registry**
 
-In `cockpit/data/agents.py`, update the demo agent's `--format` flag choices:
+In `logos/data/agents.py`, update the demo agent's `--format` flag choices:
 
 ```python
 AgentFlag("--format", "Output format", flag_type="value",
@@ -925,7 +925,7 @@ Expected: All PASS (existing tests still work, video path not triggered).
 
 ```bash
 cd ~/projects/ai-agents
-git add agents/demo.py cockpit/data/agents.py
+git add agents/demo.py logos/data/agents.py
 git commit -m "feat(demo): wire Phase 2 video pipeline into demo agent"
 ```
 
@@ -1099,7 +1099,7 @@ cd ~/projects/ai-agents
 uv run pytest tests/test_demo*.py -v
 
 # Slides-only still works (no TTS needed)
-# Requires: cockpit API + cockpit-web running
+# Requires: logos API + cockpit-web running
 uv run python -m agents.demo "the entire system for a family member" --format slides
 
 # Video mode (requires: cockpit-web + Chatterbox TTS + voice sample)

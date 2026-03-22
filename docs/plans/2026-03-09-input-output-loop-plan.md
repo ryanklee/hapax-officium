@@ -91,12 +91,12 @@ git commit -m "feat: add DATA_DIR constant and data directory structure"
 
 ---
 
-### Task 2: Rehydrate cockpit/data/management.py
+### Task 2: Rehydrate logos/data/management.py
 
 This is the critical path — all management data flows through `collect_management_state()`.
 
 **Files:**
-- Modify: `cockpit/data/management.py`
+- Modify: `logos/data/management.py`
 - Test: `tests/test_management.py`
 
 **Step 1: Write failing tests**
@@ -253,7 +253,7 @@ Expected: FAIL (no `_parse_frontmatter` export, `collect_management_state` retur
 
 **Step 3: Implement the collector**
 
-Rewrite `cockpit/data/management.py` to scan `DATA_DIR`:
+Rewrite `logos/data/management.py` to scan `DATA_DIR`:
 
 ```python
 """cockpit.data.management — Collect management state from data/ directory.
@@ -518,7 +518,7 @@ Expected: All pass
 **Step 6: Commit**
 
 ```bash
-git add cockpit/data/management.py tests/test_management.py
+git add logos/data/management.py tests/test_management.py
 git commit -m "feat: rehydrate management collector to read from DATA_DIR"
 ```
 
@@ -2079,13 +2079,13 @@ git commit -m "feat: add review_prep agent for performance review evidence aggre
 ### Task 8: Update Agent Registry and System Check
 
 **Files:**
-- Modify: `cockpit/data/agents.py`
+- Modify: `logos/data/agents.py`
 - Modify: `agents/system_check.py`
 - Modify: `CLAUDE.md`
 
 **Step 1: Read current agent registry**
 
-Read `cockpit/data/agents.py` to understand the registry format.
+Read `logos/data/agents.py` to understand the registry format.
 
 **Step 2: Add new agents to registry**
 
@@ -2103,7 +2103,7 @@ Expected: All pass
 **Step 5: Commit**
 
 ```bash
-git add cockpit/data/agents.py agents/system_check.py CLAUDE.md
+git add logos/data/agents.py agents/system_check.py CLAUDE.md
 git commit -m "feat: register ingest, status_update, review_prep agents"
 ```
 
@@ -2382,7 +2382,7 @@ In `profile.ts`:
 **Step 5: Update viewNudges**
 
 In `nudges.ts`:
-- Change from opening `30-system/nudges.md` to fetching from cockpit API (`http://localhost:8051/api/nudges`)
+- Change from opening `30-system/nudges.md` to fetching from logos API (`http://localhost:8051/api/nudges`)
 - Render nudges as a webview panel or markdown document
 
 **Step 6: Test commands manually**
@@ -2413,7 +2413,7 @@ git commit -m "feat: update management commands for data dir paths"
 
 **Step 1: Create process-document command**
 
-`Hapax: Process Document` — file picker → call cockpit API or ingest agent → show results:
+`Hapax: Process Document` — file picker → call logos API or ingest agent → show results:
 
 ```typescript
 // src/commands/process-document.ts
@@ -2483,7 +2483,7 @@ git commit -m "feat: add document processing and guided creation commands"
 
 **Step 1: Create briefing command**
 
-`Hapax: Morning Briefing` — calls cockpit API `/api/agents/management_briefing/run` via SSE, streams result into a new editor tab:
+`Hapax: Morning Briefing` — calls logos API `/api/agents/management_briefing/run` via SSE, streams result into a new editor tab:
 
 ```typescript
 export async function morningBriefing(context: vscode.ExtensionContext) {
@@ -2492,7 +2492,7 @@ export async function morningBriefing(context: vscode.ExtensionContext) {
         language: "markdown",
     });
     await vscode.window.showTextDocument(doc);
-    // Stream from cockpit API SSE endpoint
+    // Stream from logos API SSE endpoint
     // Update document content as chunks arrive
 }
 ```

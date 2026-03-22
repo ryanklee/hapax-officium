@@ -65,7 +65,7 @@ Every input triggers a cascade of outputs.
 | Morning briefing | Daily 07:00 | management_briefing |
 | 1:1 prep docs | Daily 06:30 | management_prep |
 | Profile update | Every 12h | management_profiler |
-| Nudge refresh | Every 5min | cockpit API cache |
+| Nudge refresh | Every 5min | logos API cache |
 | Weekly review | Sunday evening | meeting_lifecycle |
 | Activity report | On demand | management_activity |
 
@@ -115,7 +115,7 @@ DATA_DIR: Path = Path(os.environ.get("HAPAX_DATA_DIR",
 - Same frontmatter parsing logic, same `_make_fact` output format
 - Restore `_people_facts`, `_coaching_facts`, `_feedback_facts`, `_meeting_facts`
 
-**cockpit/data/management.py** — rehydrate to read from `DATA_DIR`:
+**logos/data/management.py** — rehydrate to read from `DATA_DIR`:
 - `collect_management_state()` scans `DATA_DIR` subdirectories
 - Restore `_collect_people`, `_collect_coaching`, `_collect_feedback`
 - Same `ManagementSnapshot` output
@@ -166,7 +166,7 @@ CLI `hapax ingest` ───────┘     data/references/     dir       s
                                       ↓                        profile updates
                                 management_bridge               activity report
                                 management.py
-                                cockpit API cache
+                                logos API cache
                                       ↓
                                 Dashboard (cockpit-web)
                                 VS Code sidebar

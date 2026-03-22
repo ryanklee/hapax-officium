@@ -2,7 +2,7 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
-**Goal:** Build a filesystem-watching reactive engine inside the cockpit API that auto-cascades downstream outputs when data files change.
+**Goal:** Build a filesystem-watching reactive engine inside the logos API that auto-cascades downstream outputs when data files change.
 
 **Architecture:** Watchdog-based inotify watcher on DATA_DIR emits ChangeEvents. A rules engine evaluates events against 6 rules, producing ActionPlans. A phased async executor runs deterministic actions (phase 0), then LLM synthesis (phase 1), then queues delivery (phase 2). A batched delivery queue consolidates notifications respecting attention budget.
 
@@ -60,13 +60,13 @@ feat: add watchdog dependency for reactive engine
 ### Task 2: Core data model — ChangeEvent, Action, ActionPlan, DeliveryItem
 
 **Files:**
-- Create: `cockpit/engine/__init__.py`
-- Create: `cockpit/engine/models.py`
+- Create: `logos/engine/__init__.py`
+- Create: `logos/engine/models.py`
 - Create: `tests/test_engine_models.py`
 
 **Step 1: Create engine package**
 
-Create `cockpit/engine/__init__.py`:
+Create `logos/engine/__init__.py`:
 
 ```python
 """Reactive engine — filesystem-watching event loop for automated cascades."""
@@ -187,7 +187,7 @@ Expected: FAIL — `ModuleNotFoundError: No module named 'cockpit.engine'`
 
 **Step 4: Implement models**
 
-Create `cockpit/engine/models.py`:
+Create `logos/engine/models.py`:
 
 ```python
 """Core data types for the reactive engine."""
@@ -272,7 +272,7 @@ feat: add reactive engine core data models
 ### Task 3: Filesystem watcher with debounce and ignore set
 
 **Files:**
-- Create: `cockpit/engine/watcher.py`
+- Create: `logos/engine/watcher.py`
 - Create: `tests/test_engine_watcher.py`
 
 **Step 1: Write the failing tests**
@@ -438,7 +438,7 @@ Expected: FAIL — `ModuleNotFoundError: No module named 'cockpit.engine.watcher
 
 **Step 3: Implement watcher**
 
-Create `cockpit/engine/watcher.py`:
+Create `logos/engine/watcher.py`:
 
 ```python
 """Filesystem watcher with debounce and self-trigger prevention."""
@@ -630,7 +630,7 @@ feat: add filesystem watcher with debounce and ignore set
 ### Task 4: Rules engine — Rule dataclass and rule registry
 
 **Files:**
-- Create: `cockpit/engine/rules.py`
+- Create: `logos/engine/rules.py`
 - Create: `tests/test_engine_rules.py`
 
 **Step 1: Write the failing tests**
@@ -770,7 +770,7 @@ Expected: FAIL — `ModuleNotFoundError`
 
 **Step 3: Implement rules engine**
 
-Create `cockpit/engine/rules.py`:
+Create `logos/engine/rules.py`:
 
 ```python
 """Rules engine — evaluates filesystem events against registered rules."""
@@ -844,7 +844,7 @@ feat: add rules engine with registry and deduplication
 ### Task 5: Phased async executor
 
 **Files:**
-- Create: `cockpit/engine/executor.py`
+- Create: `logos/engine/executor.py`
 - Create: `tests/test_engine_executor.py`
 
 **Step 1: Write the failing tests**
@@ -1032,7 +1032,7 @@ Expected: FAIL — `ModuleNotFoundError`
 
 **Step 3: Implement executor**
 
-Create `cockpit/engine/executor.py`:
+Create `logos/engine/executor.py`:
 
 ```python
 """Phased async executor — runs ActionPlans with bounded concurrency."""
@@ -1104,7 +1104,7 @@ class PhasedExecutor:
                 tg.create_task(_run_action(action))
 ```
 
-Note: `ActionPlan` needs `errors` and `skipped` fields. Update `cockpit/engine/models.py` to add:
+Note: `ActionPlan` needs `errors` and `skipped` fields. Update `logos/engine/models.py` to add:
 
 ```python
 @dataclass
@@ -1134,7 +1134,7 @@ feat: add phased async executor with bounded LLM concurrency
 ### Task 6: Delivery queue with batching
 
 **Files:**
-- Create: `cockpit/engine/delivery.py`
+- Create: `logos/engine/delivery.py`
 - Create: `tests/test_engine_delivery.py`
 
 **Step 1: Write the failing tests**
@@ -1240,7 +1240,7 @@ Expected: FAIL — `ModuleNotFoundError`
 
 **Step 3: Implement delivery queue**
 
-Create `cockpit/engine/delivery.py`:
+Create `logos/engine/delivery.py`:
 
 ```python
 """Batched delivery queue — consolidates notifications respecting attention budget."""
@@ -1392,7 +1392,7 @@ feat: add batched delivery queue with critical/high priority overrides
 ### Task 7: Concrete reactive rules (the 6 rules)
 
 **Files:**
-- Create: `cockpit/engine/reactive_rules.py`
+- Create: `logos/engine/reactive_rules.py`
 - Create: `tests/test_engine_reactive_rules.py`
 
 **Step 1: Write the failing tests**
@@ -1539,7 +1539,7 @@ Expected: FAIL — `ModuleNotFoundError`
 
 **Step 3: Implement the 6 rules**
 
-Create `cockpit/engine/reactive_rules.py`:
+Create `logos/engine/reactive_rules.py`:
 
 ```python
 """Concrete reactive rules for the management cockpit.
@@ -1820,7 +1820,7 @@ feat: add 6 concrete reactive rules for data cascades
 ### Task 8: ReactiveEngine — top-level orchestrator
 
 **Files:**
-- Modify: `cockpit/engine/__init__.py`
+- Modify: `logos/engine/__init__.py`
 - Create: `tests/test_engine_integration.py`
 
 **Step 1: Write the failing tests**
@@ -1896,7 +1896,7 @@ Expected: FAIL
 
 **Step 3: Implement ReactiveEngine**
 
-Update `cockpit/engine/__init__.py`:
+Update `logos/engine/__init__.py`:
 
 ```python
 """Reactive engine — filesystem-watching event loop for automated cascades."""
@@ -2051,8 +2051,8 @@ feat: add ReactiveEngine orchestrator
 ### Task 9: API endpoints for engine status
 
 **Files:**
-- Create: `cockpit/api/routes/engine.py`
-- Modify: `cockpit/api/app.py`
+- Create: `logos/api/routes/engine.py`
+- Modify: `logos/api/app.py`
 - Create: `tests/test_engine_routes.py`
 
 **Step 1: Write the failing tests**
@@ -2104,7 +2104,7 @@ Expected: FAIL
 
 **Step 3: Implement engine routes**
 
-Create `cockpit/api/routes/engine.py`:
+Create `logos/api/routes/engine.py`:
 
 ```python
 """Engine status API routes."""
@@ -2166,7 +2166,7 @@ async def engine_rules():
 
 **Step 4: Wire into app.py**
 
-Modify `cockpit/api/app.py` — add engine router and lifespan integration:
+Modify `logos/api/app.py` — add engine router and lifespan integration:
 
 ```python
 # Add import
@@ -2347,7 +2347,7 @@ Add new section after Data Directory:
 ```markdown
 ## Reactive Engine
 
-The `cockpit/engine/` package provides a filesystem-watching reactive loop. When files change in `DATA_DIR`, the engine evaluates rules, executes cascading actions (cache refresh, nudge recalculation, LLM synthesis), and delivers batched notifications.
+The `logos/engine/` package provides a filesystem-watching reactive loop. When files change in `DATA_DIR`, the engine evaluates rules, executes cascading actions (cache refresh, nudge recalculation, LLM synthesis), and delivers batched notifications.
 
 Configuration (env vars, all optional):
 
@@ -2362,7 +2362,7 @@ Configuration (env vars, all optional):
 
 **Step 2: Update root CLAUDE.md**
 
-Add `cockpit/engine/` to the repository layout under `cockpit/`.
+Add `logos/engine/` to the repository layout under `cockpit/`.
 
 Add to API section: "3 engine endpoints (status, recent, rules) on /api/engine/."
 

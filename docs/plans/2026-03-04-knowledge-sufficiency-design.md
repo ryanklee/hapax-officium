@@ -101,7 +101,7 @@ Lives at `hapaxromana/knowledge/management-sufficiency.yaml`. Each requirement h
 
 ## Sufficiency Audit
 
-**Module:** `cockpit/data/knowledge_sufficiency.py`
+**Module:** `logos/data/knowledge_sufficiency.py`
 
 Zero LLM. Reads knowledge model, scans vault, produces gap list.
 
@@ -137,7 +137,7 @@ class SufficiencyReport:
 | `field_coverage` | >= threshold% of matching notes have non-empty field |
 | `any_content` | File exists with substantive content |
 
-**Nudge integration:** New source in `cockpit/data/nudges.py`:
+**Nudge integration:** New source in `logos/data/nudges.py`:
 
 ```python
 def _collect_sufficiency_nudges(report: SufficiencyReport) -> list[Nudge]:
@@ -258,8 +258,8 @@ When all foundational requirements are met, system transitions from "bootstrappi
 | File | Change |
 |---|---|
 | `hapaxromana/knowledge/management-sufficiency.yaml` | New — knowledge model |
-| `cockpit/data/knowledge_sufficiency.py` | New — sufficiency audit |
-| `cockpit/data/nudges.py` | Add sufficiency nudge source |
+| `logos/data/knowledge_sufficiency.py` | New — sufficiency audit |
+| `logos/data/nudges.py` | Add sufficiency nudge source |
 | `obsidian-hapax/src/interview/engine.ts` | New — interview state machine |
 | `obsidian-hapax/src/interview/questions.ts` | New — question templates |
 | `obsidian-hapax/src/interview/extractor.ts` | New — LLM extraction |

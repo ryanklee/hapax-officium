@@ -9,7 +9,7 @@ from unittest.mock import MagicMock, patch
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from cockpit.api.routes.engine import router
+from logos.api.routes.engine import router
 
 
 def _make_client():
@@ -37,7 +37,7 @@ def _mock_engine(*, running: bool = True) -> MagicMock:
 class TestEngineStatus:
     def test_status_returns_200(self):
         mock = _mock_engine()
-        with patch("cockpit.api.routes.engine._get_engine", return_value=mock):
+        with patch("logos.api.routes.engine._get_engine", return_value=mock):
             client = _make_client()
             resp = client.get("/api/engine/status")
         assert resp.status_code == 200
@@ -46,7 +46,7 @@ class TestEngineStatus:
         assert data["rules_count"] == 3
 
     def test_status_no_engine(self):
-        with patch("cockpit.api.routes.engine._get_engine", return_value=None):
+        with patch("logos.api.routes.engine._get_engine", return_value=None):
             client = _make_client()
             resp = client.get("/api/engine/status")
         assert resp.status_code == 200
@@ -57,7 +57,7 @@ class TestEngineStatus:
 class TestEngineRecent:
     def test_recent_returns_200_empty(self):
         mock = _mock_engine()
-        with patch("cockpit.api.routes.engine._get_engine", return_value=mock):
+        with patch("logos.api.routes.engine._get_engine", return_value=mock):
             client = _make_client()
             resp = client.get("/api/engine/recent")
         assert resp.status_code == 200
@@ -65,7 +65,7 @@ class TestEngineRecent:
 
     def test_recent_serializes_items(self):
         mock = _mock_engine()
-        from cockpit.engine.models import DeliveryItem
+        from logos.engine.models import DeliveryItem
 
         ts = datetime(2026, 3, 9, 12, 0, 0, tzinfo=UTC)
         item = DeliveryItem(
@@ -78,7 +78,7 @@ class TestEngineRecent:
             artifacts=[Path("/tmp/test.md")],
         )
         mock.recent_items.return_value = [item]
-        with patch("cockpit.api.routes.engine._get_engine", return_value=mock):
+        with patch("logos.api.routes.engine._get_engine", return_value=mock):
             client = _make_client()
             resp = client.get("/api/engine/recent")
         assert resp.status_code == 200
@@ -92,7 +92,7 @@ class TestEngineRecent:
 class TestEngineRules:
     def test_rules_returns_200(self):
         mock = _mock_engine()
-        with patch("cockpit.api.routes.engine._get_engine", return_value=mock):
+        with patch("logos.api.routes.engine._get_engine", return_value=mock):
             client = _make_client()
             resp = client.get("/api/engine/rules")
         assert resp.status_code == 200

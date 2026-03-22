@@ -1,4 +1,4 @@
-"""Tests for cockpit/engine/models.py — reactive engine core data models.
+"""Tests for logos/engine/models.py — reactive engine core data models.
 
 Covers construction, default values, actions_by_phase grouping/sorting,
 and edge cases for all four dataclasses.
@@ -10,7 +10,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from unittest.mock import AsyncMock
 
-from cockpit.engine.models import Action, ActionPlan, ChangeEvent, DeliveryItem
+from logos.engine.models import Action, ActionPlan, ChangeEvent, DeliveryItem
 
 # ── ChangeEvent ──────────────────────────────────────────────────────────
 

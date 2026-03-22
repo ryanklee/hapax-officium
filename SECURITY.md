@@ -38,7 +38,7 @@ the LAN or WAN. Port bindings from `llm-stack/docker-compose.yml`:
 | ntfy             | 127.0.0.1:8190         | 80                 |
 | Chatterbox TTS   | 127.0.0.1:4223         | 5123               |
 | Cockpit Web      | 127.0.0.1:8052         | 80                 |
-| Cockpit API      | 127.0.0.1:8051         | 8050               |
+| Logos API      | 127.0.0.1:8051         | 8050               |
 
 All containers share a single Docker network (`mgmt-cockpit`). There is no
 network segmentation between containers -- any container can reach any other
@@ -160,7 +160,7 @@ configuration files (read-only where possible).
 - **No TLS between services.** All inter-service communication is plaintext HTTP
   over the Docker network and localhost. Acceptable because nothing leaves the
   machine, but a compromised container could sniff traffic.
-- **No authentication on the cockpit API.** Port 8051 serves 32 REST endpoints
+- **No authentication on the logos API.** Port 8051 serves 32 REST endpoints
   with no auth. Protected only by the 127.0.0.1 binding.
 - **No encryption at rest.** Qdrant, PostgreSQL, ClickHouse, and MinIO store data
   unencrypted on Docker volumes. Full-disk encryption (if enabled at the OS level)

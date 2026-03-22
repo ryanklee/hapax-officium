@@ -1,7 +1,7 @@
 """Canonical YAML frontmatter parsing for markdown files.
 
 Single source of truth for the frontmatter regex and parsing logic used by
-management_bridge, cockpit/data/management, cockpit/engine/watcher, and
+management_bridge, logos/data/management, logos/engine/watcher, and
 shared/vault_utils.
 
 All markdown files in DATA_DIR use the ``---`` delimited YAML frontmatter

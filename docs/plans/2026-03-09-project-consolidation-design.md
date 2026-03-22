@@ -8,7 +8,7 @@ Simplify the development surface by consolidating 16 repos down to 10, eliminati
 
 ```
 ~/projects/
-├── ai-agents/               28 agents, cockpit API, shared modules (ORIGIN)
+├── ai-agents/               28 agents, logos API, shared modules (ORIGIN)
 ├── hapax-containerization/  Management cockpit demo seed (COPIES 15 agents from ai-agents)
 ├── hapax-mgmt-web/             React SPA dashboard
 ├── hapaxromana/             Architecture specs, axioms (no code)
@@ -61,7 +61,7 @@ Simplify the development surface by consolidating 16 repos down to 10, eliminati
 
 Dockerfiles live next to the code they package. ai-agents gets:
 
-- `Dockerfile.cockpit-api` — FastAPI cockpit API server (:8050)
+- `Dockerfile.logos-api` — FastAPI logos API server (:8050)
 - `Dockerfile.sync-pipeline` — RAG sync pipeline (cron-scheduled, replaces 8 systemd timers)
 - `docker-compose.yml` — production compose wiring both services + cockpit-web
 
@@ -128,7 +128,7 @@ These cannot be meaningfully containerized:
 
 The current pyproject.toml has ~50 dependencies including heavy audio/video/vision packages. Container images should only install what they need:
 
-**cockpit-api image needs:**
+**logos-api image needs:**
 fastapi, uvicorn, pydantic, pydantic-ai[litellm], qdrant-client, pyyaml, sse-starlette, watchdog, jinja2, httpx, langfuse, ollama
 
 **sync-pipeline image needs:**
@@ -144,10 +144,10 @@ This suggests splitting pyproject.toml into dependency groups or using separate 
 ```yaml
 # ai-agents/ docker-compose.yml
 services:
-  cockpit-api:
+  logos-api:
     build:
       context: .
-      dockerfile: Dockerfile.cockpit-api
+      dockerfile: Dockerfile.logos-api
     ports:
       - "127.0.0.1:8050:8050"
     volumes:
@@ -201,12 +201,12 @@ Environment variable is simpler. Container entrypoint selects crontab based on `
 3. Update all cross-references (CLAUDE.md files, hapaxromana, hapax-system rules)
 
 ### Phase 2: ai-agents containerization (medium risk)
-4. Add dependency groups to pyproject.toml (cockpit-api, sync-pipeline, dev)
-5. Create Dockerfile.cockpit-api (extract from existing hapax-containerization Dockerfile)
+4. Add dependency groups to pyproject.toml (logos-api, sync-pipeline, dev)
+5. Create Dockerfile.logos-api (extract from existing hapax-containerization Dockerfile)
 6. Create Dockerfile.sync-pipeline with crontab
 7. Create docker-compose.yml in ai-agents root
 8. Add cycle-mode awareness to sync-pipeline entrypoint
-9. Test: build images, verify cockpit-api serves, verify sync agents run on schedule
+9. Test: build images, verify logos-api serves, verify sync agents run on schedule
 
 ### Phase 3: hapax-mgmt thinning (medium risk)
 10. Remove duplicated Python code from hapax-mgmt

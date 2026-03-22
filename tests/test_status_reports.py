@@ -1,4 +1,4 @@
-"""Tests for cockpit/data/status_reports.py."""
+"""Tests for logos/data/status_reports.py."""
 
 from __future__ import annotations
 
@@ -22,7 +22,7 @@ class TestCollectStatusReports:
     def test_current_report(self, tmp_path: Path):
         from datetime import date
 
-        from cockpit.data.status_reports import collect_status_report_state
+        from logos.data.status_reports import collect_status_report_state
 
         today = date.today().isoformat()
         _write_md(
@@ -48,7 +48,7 @@ class TestCollectStatusReports:
         assert snap.stale is False
 
     def test_stale_weekly(self, tmp_path: Path):
-        from cockpit.data.status_reports import collect_status_report_state
+        from logos.data.status_reports import collect_status_report_state
 
         _write_md(
             tmp_path / "status-reports" / "2026-01-01-weekly.md",
@@ -70,7 +70,7 @@ class TestCollectStatusReports:
         assert snap.reports[0].stale is True
 
     def test_missing_dir(self, tmp_path: Path):
-        from cockpit.data.status_reports import collect_status_report_state
+        from logos.data.status_reports import collect_status_report_state
 
         config.set_data_dir(tmp_path)
         try:
@@ -82,7 +82,7 @@ class TestCollectStatusReports:
         assert snap.stale is False
 
     def test_latest_date_is_most_recent(self, tmp_path: Path):
-        from cockpit.data.status_reports import collect_status_report_state
+        from logos.data.status_reports import collect_status_report_state
 
         _write_md(
             tmp_path / "status-reports" / "2026-02-01-weekly.md",

@@ -35,7 +35,7 @@ Additional services available via Docker Compose profiles:
 | ntfy | 8190 | full | Push notifications |
 | Chatterbox | 4223 | tts | Voice cloning TTS |
 | cockpit-web | 8052 | management | React dashboard |
-| management-cockpit | 8051 | management | Cockpit API container |
+| management-cockpit | 8051 | management | Logos API container |
 
 Run the system check to confirm the stack is reachable:
 
@@ -65,7 +65,7 @@ Try the briefing:
 uv run python -m agents.management_briefing --save
 ```
 
-### 3. Start the Cockpit API
+### 3. Start the Logos API
 
 ```bash
 uv run python -m cockpit.api --host 127.0.0.1 --port 8050
@@ -77,7 +77,7 @@ The API serves 32 endpoints across 8 route groups. In Docker, the API container 
 
 - [ ] Verify `system_check` passes for all 3 services
 - [ ] Generate a briefing with `--save`
-- [ ] Start the cockpit API and browse the endpoints
+- [ ] Start the logos API and browse the endpoints
 - [ ] Review nudges via the API or dashboard
 - [ ] Run `management_prep --team-snapshot` to see team state
 
@@ -202,7 +202,7 @@ uv run python -m agents.demo --audience "VP Engineering" --duration 15m
 uv run python -m agents.demo --audience "New EM" --duration 10m --voice "management cockpit overview"
 ```
 
-**system_check** — Health checks for 3 core services (cockpit API, Qdrant, LiteLLM). No LLM calls.
+**system_check** — Health checks for 3 core services (logos API, Qdrant, LiteLLM). No LLM calls.
 
 ```bash
 uv run python -m agents.system_check
@@ -218,7 +218,7 @@ uv run python -m agents.system_check
    ```bash
    uv run python -m agents.management_briefing --save
    ```
-2. Start the cockpit API and review nudges — the system surfaces what needs attention.
+2. Start the logos API and review nudges — the system surfaces what needs attention.
 3. Check which 1:1s are coming up and run prep:
    ```bash
    uv run python -m agents.management_prep --person "Sarah Chen"
@@ -397,7 +397,7 @@ Axiom definitions live in `axioms/registry.yaml`.
 
 ---
 
-## Cockpit API
+## Logos API
 
 Start locally:
 
@@ -434,7 +434,7 @@ All LLM calls route through LiteLLM (port 4100) and trace to Langfuse (port 3100
 uv run python -m agents.system_check
 ```
 
-Checks 3 core services: cockpit API, Qdrant, LiteLLM.
+Checks 3 core services: logos API, Qdrant, LiteLLM.
 
 ### GPU/VRAM
 
@@ -461,9 +461,9 @@ Common model sizes:
 | `shared/operator.py` | Operator manifest loading, system prompt generation |
 | `shared/profile_store.py` | Management profile facts in Qdrant (6 dimensions) |
 | `shared/context_tools.py` | On-demand management context tools for agents |
-| `cockpit/api/` | FastAPI server with routes in `routes/` |
-| `cockpit/engine/` | Reactive engine (inotify watcher, rule evaluator, phased executor) |
-| `cockpit/data/` | Data collectors (management, nudges, agents) |
+| `logos/api/` | FastAPI server with routes in `routes/` |
+| `logos/engine/` | Reactive engine (inotify watcher, rule evaluator, phased executor) |
+| `logos/data/` | Data collectors (management, nudges, agents) |
 | `demo-data/` | Synthetic seed corpus (checked into git) |
 | `data/` | Live management data (gitignored) |
 | `axioms/registry.yaml` | Axiom definitions |
@@ -478,13 +478,13 @@ Common model sizes:
 # Run any agent
 uv run python -m agents.<name> [flags]
 
-# Cockpit API (local)
+# Logos API (local)
 uv run python -m cockpit.api --host 127.0.0.1 --port 8050
 
 # Docker services
 docker compose up -d                          # Core services
 docker compose --profile full up -d           # All services including Langfuse
-docker compose --profile management up -d     # Cockpit API + web dashboard
+docker compose --profile management up -d     # Logos API + web dashboard
 docker compose ps                             # Status
 
 # Tests

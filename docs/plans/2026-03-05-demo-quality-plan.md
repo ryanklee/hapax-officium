@@ -511,7 +511,7 @@ def check_readiness(
 
     Checks:
     1. Health monitor (with --fix if auto_fix=True)
-    2. Cockpit API (:8050) reachable
+    2. Logos API (:8050) reachable
     3. Cockpit web (:5173) reachable
     4. TTS service (if require_tts=True)
     5. Voice sample exists (if require_tts=True)
@@ -520,7 +520,7 @@ def check_readiness(
     # from agents.health_monitor import run_checks, HealthReport
     # from agents.health_monitor import http_get (for service checks)
     # ...health_monitor.run_checks(auto_fix=auto_fix) returns HealthReport
-    # Check cockpit API: http_get("http://localhost:8050/health")
+    # Check logos API: http_get("http://localhost:8050/health")
     # Check cockpit web: http_get("http://localhost:5173")
     # Check TTS: http_get("http://localhost:4123/docs")
     # Check voice sample: Path("profiles/voice-sample.wav").exists()
@@ -529,7 +529,7 @@ def check_readiness(
 The full implementation should:
 1. Import `run_checks` from `agents.health_monitor` and call it with `auto_fix=auto_fix`
 2. Extract health score from the report (e.g., `f"{report.healthy_count}/{report.total_checks}"`)
-3. Check cockpit API reachability via `http_get("http://localhost:8050/health")`
+3. Check logos API reachability via `http_get("http://localhost:8050/health")`
 4. Check cockpit web reachability via `http_get("http://localhost:5173")`
 5. If `require_tts`: check Chatterbox at `http://localhost:4123/docs` and voice sample at `PROFILES_DIR / "voice-sample.wav"`
 6. Collect issues (critical = stops demo) and warnings (informational)

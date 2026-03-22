@@ -35,7 +35,7 @@ Secrets: `.env` file generated from `pass` store via `generate-env.sh`.
 
 | Component | Invocation | Schedule | Resource Limit |
 |-----------|------------|----------|----------------|
-| cockpit API | `uv run python -m cockpit.api` | Always running | — |
+| logos API | `uv run python -m cockpit.api` | Always running | — |
 | health_monitor | `health-watchdog` | Every 15 min | 2G / 60% CPU |
 | briefing | `briefing-watchdog` | Daily 07:00 | 2G / 60% CPU |
 | digest | `digest-watchdog` | Daily 06:45 | 2G / 60% CPU |
@@ -83,7 +83,7 @@ All agents connect to services via HTTP. Environment variables already exist for
 | Langfuse | `LANGFUSE_HOST` | `http://localhost:3000` | All agents (observability) |
 | ntfy | `NTFY_BASE_URL` | `http://localhost:8090` | notify.py |
 | n8n | (hardcoded) | `http://localhost:5678` | health_monitor (healthz only) |
-| Cockpit API | (hardcoded) | `http://localhost:8050` | health_monitor (healthz only) |
+| Logos API | (hardcoded) | `http://localhost:8050` | health_monitor (healthz only) |
 
 **Action needed:** Make Ollama URL configurable via env var in `shared/config.py`.
 
@@ -93,9 +93,9 @@ All agents connect to services via HTTP. Environment variables already exist for
 |-----------|---------|------|------|--------|
 | `data/` | Work vault | rw | ~500MB | vault_writer, management_bridge, briefing, management_prep, meeting_lifecycle |
 | `data/` | Personal vault | rw | ~200MB | vault_writer |
-| `profiles/` | Operator profile data | rw | 347MB | profiler, briefing, activity_analyzer, cockpit API |
+| `profiles/` | Operator profile data | rw | 347MB | profiler, briefing, activity_analyzer, logos API |
 | `~/documents/rag-sources/` | RAG document drop zone | ro | 344MB | ingest (watches for new files) |
-| `~/.cache/cockpit/` | Cockpit session state | rw | 36KB | cockpit API |
+| `~/.cache/cockpit/` | Cockpit session state | rw | 36KB | logos API |
 | `~/.cache/axiom-audit/` | Axiom audit trail | rw | 292KB | drift_detector, axiom tools |
 | `~/.cache/rag-ingest/` | Dedup tracker + retry queue | rw | 20MB | ingest |
 | `~/.cache/health-watchdog/` | Health alert state | rw | 8KB | health_monitor (HOST ONLY) |
@@ -117,7 +117,7 @@ No agent needs direct GPU access. All GPU work happens via network calls:
 
 | Agent | Reason |
 |-------|--------|
-| cockpit API | Already has Dockerfile.api. Pure HTTP service. |
+| logos API | Already has Dockerfile.api. Pure HTTP service. |
 | briefing | Reads profile + Langfuse, writes to vault. No host tools. |
 | scout | Reads Qdrant + LiteLLM. `pass` call for Tavily key → replace with env var. |
 | research | Qdrant search + LLM. Stateless. |
@@ -155,7 +155,7 @@ No agent needs direct GPU access. All GPU work happens via network calls:
 │                                                          │
 │  [existing infrastructure]    [NEW: agents profile]      │
 │   ollama (:11434)              hapax-agents (:8050)      │
-│   qdrant (:6333)                - cockpit API            │
+│   qdrant (:6333)                - logos API            │
 │   litellm (:4000)               - all application agents │
 │   langfuse (:3000)              - profiles/ volume       │
 │   postgres (:5432)              - vault volumes          │
@@ -299,7 +299,7 @@ ExecStart=/usr/bin/docker compose -f ~/llm-stack/docker-compose.yml \
   run --rm hapax-agents uv run python -m agents.briefing --save
 ```
 
-The cockpit API and RAG ingest run as persistent containers (`restart: unless-stopped`).
+The logos API and RAG ingest run as persistent containers (`restart: unless-stopped`).
 Scheduled agents run as one-shot containers (`docker compose run --rm`).
 
 ## Open Questions

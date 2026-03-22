@@ -12,7 +12,7 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass, field
 
-from cockpit.data.management import ManagementSnapshot, PersonState, collect_management_state
+from logos.data.management import ManagementSnapshot, PersonState, collect_management_state
 
 _log = logging.getLogger(__name__)
 

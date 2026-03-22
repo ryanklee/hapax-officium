@@ -127,7 +127,7 @@ All LLM agents fail simultaneously with no fallback. system_check detects this, 
                        │ cache refresh
                        ▼
 ┌─────────────────────────────────────────────────────────────┐
-│ Cockpit API (:8050) — DataCache (300s refresh loop)         │
+│ Logos API (:8050) — DataCache (300s refresh loop)         │
 │  /api/management, /nudges, /briefing, /team/health, /agents │
 │  /api/engine/status, /recent, /rules                        │
 │  /api/agents/{name}/run (SSE streaming, single-agent lock)  │

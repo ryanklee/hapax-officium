@@ -55,7 +55,7 @@ PROTECTED_PATHS = [
     "shared/axiom_*",
     "shared/config.py",
     "axioms/*",
-    "cockpit/engine/*",
+    "logos/engine/*",
     ".github/*",
 ]
 

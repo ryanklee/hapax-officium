@@ -169,7 +169,7 @@ class TestFormatAsText:
 
 class TestMapSpeakers:
     def test_exact_match(self):
-        from cockpit.data.management import PersonState
+        from logos.data.management import PersonState
 
         segments = [TranscriptSegment(speaker="Alice Smith", text="hi")]
         people = [PersonState(name="Alice Smith")]
@@ -177,7 +177,7 @@ class TestMapSpeakers:
         assert mapping["Alice Smith"] == "Alice Smith"
 
     def test_first_name_match(self):
-        from cockpit.data.management import PersonState
+        from logos.data.management import PersonState
 
         segments = [TranscriptSegment(speaker="Alice", text="hi")]
         people = [PersonState(name="Alice Smith")]
@@ -185,7 +185,7 @@ class TestMapSpeakers:
         assert mapping["Alice"] == "Alice Smith"
 
     def test_no_match_keeps_original(self):
-        from cockpit.data.management import PersonState
+        from logos.data.management import PersonState
 
         segments = [TranscriptSegment(speaker="Unknown Person", text="hi")]
         people = [PersonState(name="Alice Smith")]

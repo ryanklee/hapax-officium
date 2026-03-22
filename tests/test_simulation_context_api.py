@@ -8,7 +8,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 from fastapi.testclient import TestClient
 
-from cockpit.api.routes.engine import router, set_engine
+from logos.api.routes.engine import router, set_engine
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -39,8 +39,8 @@ class TestSimulationContextEndpoint:
         client = self._make_client(engine)
 
         with (
-            patch("cockpit.api.routes.engine.config"),
-            patch("cockpit.api.routes.engine.cache") as mock_cache,
+            patch("logos.api.routes.engine.config"),
+            patch("logos.api.routes.engine.cache") as mock_cache,
         ):
             mock_cache.refresh = AsyncMock()
             response = client.post(
@@ -59,8 +59,8 @@ class TestSimulationContextEndpoint:
         client = self._make_client(engine)
 
         with (
-            patch("cockpit.api.routes.engine.config"),
-            patch("cockpit.api.routes.engine.cache") as mock_cache,
+            patch("logos.api.routes.engine.config"),
+            patch("logos.api.routes.engine.cache") as mock_cache,
         ):
             mock_cache.refresh = AsyncMock()
             response = client.post(

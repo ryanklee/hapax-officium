@@ -17,7 +17,7 @@ from typing import TYPE_CHECKING
 log = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
-    from cockpit.data.management import ManagementSnapshot
+    from logos.data.management import ManagementSnapshot
 
 MAX_VISIBLE_NUDGES = 7  # attention budget cap — cognitive overload prevention
 
@@ -48,7 +48,7 @@ def _collect_management_nudges(
     """Check management state for stale 1:1s, overdue coaching/feedback, high load."""
     try:
         if snap is None:
-            from cockpit.data.management import collect_management_state
+            from logos.data.management import collect_management_state
 
             snap = collect_management_state()
 
@@ -123,7 +123,7 @@ def _collect_team_health_nudges(
 ) -> None:
     """Check team health for falling-behind or treading-water teams."""
     try:
-        from cockpit.data.team_health import collect_team_health
+        from logos.data.team_health import collect_team_health
 
         health = collect_team_health(snapshot=snap)
         for team in health.teams:
@@ -165,7 +165,7 @@ def _collect_career_staleness_nudges(
     """Check for stale career conversations and missing growth vectors."""
     try:
         if snap is None:
-            from cockpit.data.management import collect_management_state
+            from logos.data.management import collect_management_state
 
             snap = collect_management_state()
 
@@ -211,7 +211,7 @@ def _collect_career_staleness_nudges(
 def _collect_okr_nudges(nudges: list[Nudge]) -> None:
     """Add nudges for at-risk and stale OKR key results."""
     try:
-        from cockpit.data.okrs import collect_okr_state
+        from logos.data.okrs import collect_okr_state
 
         snap = collect_okr_state()
     except Exception:
@@ -250,7 +250,7 @@ def _collect_okr_nudges(nudges: list[Nudge]) -> None:
 def _collect_smart_goal_nudges(nudges: list[Nudge]) -> None:
     """Add nudges for overdue SMART goals and stale reviews."""
     try:
-        from cockpit.data.smart_goals import collect_smart_goal_state
+        from logos.data.smart_goals import collect_smart_goal_state
 
         snap = collect_smart_goal_state()
     except Exception:
@@ -289,7 +289,7 @@ def _collect_smart_goal_nudges(nudges: list[Nudge]) -> None:
 def _collect_incident_nudges(nudges: list[Nudge]) -> None:
     """Add nudges for open incidents and missing postmortems."""
     try:
-        from cockpit.data.incidents import collect_incident_state
+        from logos.data.incidents import collect_incident_state
 
         snap = collect_incident_state()
     except Exception:
@@ -327,7 +327,7 @@ def _collect_incident_nudges(nudges: list[Nudge]) -> None:
 def _collect_postmortem_action_nudges(nudges: list[Nudge]) -> None:
     """Add nudges for overdue postmortem actions."""
     try:
-        from cockpit.data.postmortem_actions import collect_postmortem_action_state
+        from logos.data.postmortem_actions import collect_postmortem_action_state
 
         snap = collect_postmortem_action_state()
     except Exception:
@@ -352,7 +352,7 @@ def _collect_postmortem_action_nudges(nudges: list[Nudge]) -> None:
 def _collect_review_cycle_nudges(nudges: list[Nudge]) -> None:
     """Add nudges for overdue review cycles and peer feedback gaps."""
     try:
-        from cockpit.data.review_cycles import collect_review_cycle_state
+        from logos.data.review_cycles import collect_review_cycle_state
 
         snap = collect_review_cycle_state()
     except Exception:
@@ -391,7 +391,7 @@ def _collect_review_cycle_nudges(nudges: list[Nudge]) -> None:
 def _collect_status_report_nudges(nudges: list[Nudge]) -> None:
     """Add nudge if status report is stale."""
     try:
-        from cockpit.data.status_reports import collect_status_report_state
+        from logos.data.status_reports import collect_status_report_state
 
         snap = collect_status_report_state()
     except Exception:

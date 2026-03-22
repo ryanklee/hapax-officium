@@ -37,7 +37,7 @@ try:
 except ImportError:
     pass
 
-from cockpit.data.management import (
+from logos.data.management import (
     ManagementSnapshot,
     PersonState,
     collect_management_state,

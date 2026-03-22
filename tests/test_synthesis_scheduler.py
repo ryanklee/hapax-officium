@@ -1,4 +1,4 @@
-"""Tests for cockpit/engine/synthesis.py — SynthesisScheduler."""
+"""Tests for logos/engine/synthesis.py — SynthesisScheduler."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ import asyncio
 import time
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from cockpit.engine.synthesis import (
+from logos.engine.synthesis import (
     HOT_PATH,
     SynthesisScheduler,
 )
@@ -97,10 +97,10 @@ class TestQuietWindow:
         scheduler, executor = _make_scheduler(quiet_window_s=0.05)
 
         with (
-            patch("cockpit.engine.synthesis._synthesize_briefing", new_callable=AsyncMock),
-            patch("cockpit.engine.synthesis._synthesize_snapshot", new_callable=AsyncMock),
-            patch("cockpit.engine.synthesis._synthesize_overview", new_callable=AsyncMock),
-            patch("cockpit.api.cache.cache") as mock_cache,
+            patch("logos.engine.synthesis._synthesize_briefing", new_callable=AsyncMock),
+            patch("logos.engine.synthesis._synthesize_snapshot", new_callable=AsyncMock),
+            patch("logos.engine.synthesis._synthesize_overview", new_callable=AsyncMock),
+            patch("logos.api.cache.cache") as mock_cache,
         ):
             mock_cache.refresh = AsyncMock()
 
@@ -156,7 +156,7 @@ class TestFailure:
         scheduler, executor = _make_scheduler(quiet_window_s=0.05)
         executor.execute = AsyncMock(side_effect=Exception("LLM down"))
 
-        with patch("cockpit.api.cache.cache") as mock_cache:
+        with patch("logos.api.cache.cache") as mock_cache:
             mock_cache.refresh = AsyncMock()
             scheduler.signal("people")
             await asyncio.sleep(0.1)
@@ -170,7 +170,7 @@ class TestForce:
         """force() triggers immediate synthesis."""
         scheduler, executor = _make_scheduler(quiet_window_s=999)
 
-        with patch("cockpit.api.cache.cache") as mock_cache:
+        with patch("logos.api.cache.cache") as mock_cache:
             mock_cache.refresh = AsyncMock()
             scheduler.signal("people")
             await scheduler.force()

@@ -1,4 +1,4 @@
-"""Entry point for the cockpit: web dashboard API server."""
+"""Entry point for logos: web dashboard API server."""
 
 from __future__ import annotations
 
@@ -7,8 +7,8 @@ import argparse
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="System cockpit — web dashboard API server for the agent stack",
-        prog="cockpit",
+        description="System logos — web dashboard API server for the agent stack",
+        prog="logos",
     )
     parser.add_argument(
         "--host",
@@ -32,7 +32,7 @@ def main() -> None:
     import uvicorn
 
     uvicorn.run(
-        "cockpit.api.app:app",
+        "logos.api.app:app",
         host=args.host,
         port=args.port,
         reload=args.reload,

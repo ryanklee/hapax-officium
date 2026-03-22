@@ -2,7 +2,7 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
-**Goal:** Containerize Tier 2 agents + cockpit API into two Docker images (`hapax-agents`, `hapax-ingest`) that boot cold with no pre-existing data.
+**Goal:** Containerize Tier 2 agents + logos API into two Docker images (`hapax-agents`, `hapax-ingest`) that boot cold with no pre-existing data.
 
 **Architecture:** Two images join the existing `llm-stack` Docker network. An entrypoint script bootstraps Qdrant collections and Ollama models before launching the main process. Systemd timers on the host invoke containerized agents via `docker compose run --rm`.
 
@@ -708,7 +708,7 @@ In `llm-stack/docker-compose.yml`, add before the `volumes:` block (before line 
 ```yaml
   # ===================== AGENTS =====================
 
-  # --- Hapax Agents + Cockpit API ---
+  # --- Hapax Agents + Logos API ---
   hapax-agents:
     build:
       context: ../projects/ai-agents
@@ -877,7 +877,7 @@ docker run --rm --network llm-stack \
 
 Expected: Entrypoint creates collections, pulls model (or confirms they exist), then prints "bootstrap complete".
 
-**Step 4: Smoke-test cockpit API**
+**Step 4: Smoke-test logos API**
 
 ```bash
 docker run --rm --network llm-stack \

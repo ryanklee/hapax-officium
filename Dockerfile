@@ -50,7 +50,7 @@ COPY --from=build /app/.venv /app/.venv
 
 # Copy application code
 COPY agents/ agents/
-COPY cockpit/ cockpit/
+COPY logos/ logos/
 COPY shared/ shared/
 COPY profiles/ profiles/
 COPY pyproject.toml uv.lock README.md ./
@@ -74,4 +74,4 @@ HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
     CMD curl -f http://localhost:8050/ || exit 1
 
 ENTRYPOINT ["./entrypoint.sh"]
-CMD ["uv", "run", "python", "-m", "cockpit.api", "--host", "0.0.0.0"]
+CMD ["uv", "run", "python", "-m", "logos.api", "--host", "0.0.0.0"]
