@@ -124,7 +124,7 @@ Supporting software for a research project implementing Clark & Brennan's (1991)
 | [hapax-constitution](https://github.com/ryanklee/hapax-constitution) | Governance specification — axioms, implications, canons |
 | **hapax-officium** (this repo) | Supporting software — management decision support |
 | [hapax-watch](https://github.com/ryanklee/hapax-watch) | Research instrument — Wear OS biometric companion |
-| [cockpit-mcp](https://github.com/ryanklee/cockpit-mcp) | Infrastructure — MCP server for Claude Code |
+| [hapax-mcp](https://github.com/ryanklee/hapax-mcp) | Infrastructure — MCP server for Claude Code |
 
 ## License
 
