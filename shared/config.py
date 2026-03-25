@@ -14,18 +14,27 @@ from qdrant_client import QdrantClient
 
 # ── Environment ──────────────────────────────────────────────────────────────
 
-LITELLM_BASE: str = os.environ.get(
-    "LITELLM_API_BASE",
-    os.environ.get("LITELLM_BASE_URL", "http://localhost:4100"),
-)
-LITELLM_KEY: str = os.environ.get("LITELLM_API_KEY", "")
-QDRANT_URL: str = os.environ.get("QDRANT_URL", "http://localhost:6433")
+if os.environ.get("HAPAX_USE_SETTINGS") == "1":
+    from shared.settings import OfficiumSettings
+
+    _settings = OfficiumSettings()
+    LITELLM_BASE: str = _settings.litellm.base_url
+    LITELLM_KEY: str = _settings.litellm.api_key.get_secret_value()
+    QDRANT_URL: str = _settings.qdrant.url
+    OLLAMA_URL: str = _settings.ollama.url
+else:
+    LITELLM_BASE: str = os.environ.get(
+        "LITELLM_API_BASE",
+        os.environ.get("LITELLM_BASE_URL", "http://localhost:4100"),
+    )
+    LITELLM_KEY: str = os.environ.get("LITELLM_API_KEY", "")
+    QDRANT_URL: str = os.environ.get("QDRANT_URL", "http://localhost:6433")
+    OLLAMA_URL: str = os.environ.get("OLLAMA_URL", "http://localhost:11534")
 
 if not LITELLM_KEY:
     logging.getLogger("shared.config").warning(
         "LITELLM_API_KEY is not set — LLM calls will fail until a valid key is provided"
     )
-OLLAMA_URL: str = os.environ.get("OLLAMA_URL", "http://localhost:11534")
 
 # ── Canonical paths ─────────────────────────────────────────────────────────
 
