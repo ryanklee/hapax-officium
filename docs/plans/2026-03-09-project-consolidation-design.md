@@ -116,7 +116,7 @@ These cannot be meaningfully containerized:
 | Claude Code | IS the operator interface |
 | hapax-system | Configures Claude Code |
 | hapax-vscode | VS Code extension |
-| hapax_voice | Mic + screen + speaker + wake word |
+| hapax_daimonion | Mic + screen + speaker + wake word |
 | audio_recorder | Continuous ffmpeg mic capture |
 | bt-keepalive | Bluetooth audio stream |
 | LLM hotkey scripts | Wayland compositor integration |
