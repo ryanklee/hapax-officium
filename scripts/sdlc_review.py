@@ -27,14 +27,14 @@ from pydantic import BaseModel
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from shared.axiom_registry import load_axioms
-from shared.langfuse_trace_export import TraceContext, is_file_export
-from shared.sdlc_github import (
+from sdlc.github import (
     add_pr_labels,
     fetch_pr_changed_files,
     fetch_pr_diff,
     post_pr_comment,
 )
+from sdlc.trace_export import TraceContext, is_file_export
+from shared.axiom_registry import load_axioms
 
 # ---------------------------------------------------------------------------
 # Structured output
@@ -186,7 +186,7 @@ def run_review(pr_number: int, *, dry_run: bool = False) -> ReviewResult:
         _post_review_results(pr_number, result)
 
     try:
-        from shared.sdlc_log import log_sdlc_event
+        from sdlc.log import log_sdlc_event
 
         log_sdlc_event(
             "review",
@@ -216,7 +216,7 @@ def run_review(pr_number: int, *, dry_run: bool = False) -> ReviewResult:
         pass
 
     try:
-        from shared.audit import log_audit
+        from sdlc.audit import log_audit
 
         log_audit(
             action="sdlc_review",

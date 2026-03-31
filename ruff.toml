@@ -19,6 +19,9 @@ ignore = [
     "SIM108", # ternary operator (readability preference)
 ]
 
+[lint.per-file-ignores]
+"demo/**" = ["SIM115", "B023", "TCH", "TC001", "TC003"]  # Vendored from hapax-constitution
+
 [lint.isort]
 known-first-party = ["agents", "shared", "logos"]
 

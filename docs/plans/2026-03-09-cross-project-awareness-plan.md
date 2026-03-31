@@ -102,7 +102,7 @@ Analysis agents (5): research, code_review, introspect, drift_detector, scout.
 
 Content agents (4): digest, knowledge_maint, ingest, activity_analyzer.
 
-Audio agents (3): audio_processor, hapax_voice, audio_recorder (systemd).
+Audio agents (3): audio_processor, hapax_daimonion, audio_recorder (systemd).
 
 Other (3): query, profiler_sources, demo pipeline differences.
 

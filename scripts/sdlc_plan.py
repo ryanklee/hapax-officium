@@ -26,9 +26,9 @@ from pydantic import BaseModel
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+from sdlc.github import fetch_issue, post_issue_comment
+from sdlc.trace_export import TraceContext, is_file_export
 from shared.axiom_registry import load_axioms
-from shared.langfuse_trace_export import TraceContext, is_file_export
-from shared.sdlc_github import fetch_issue, post_issue_comment
 
 # ---------------------------------------------------------------------------
 # Structured output
@@ -215,7 +215,7 @@ def run_plan(issue_number: int, *, dry_run: bool = False, post_comment: bool = T
     duration_ms = int((time.monotonic() - t0) * 1000)
 
     try:
-        from shared.sdlc_log import log_sdlc_event
+        from sdlc.log import log_sdlc_event
 
         log_sdlc_event(
             "plan",
@@ -237,7 +237,7 @@ def run_plan(issue_number: int, *, dry_run: bool = False, post_comment: bool = T
         pass
 
     try:
-        from shared.audit import log_audit
+        from sdlc.audit import log_audit
 
         log_audit(
             action="sdlc_plan",
