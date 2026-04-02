@@ -69,3 +69,6 @@ coverage/
 *.sqlite
 *.db-wal
 *.db-shm
+
+# Agent manifests (generated runtime)
+agents/manifests/
