@@ -165,7 +165,7 @@ Call lookup_constraints() for additional operator constraints.
 """
 
 digest_agent = Agent(
-    get_model("fast"),
+    get_model("local-fast"),
     system_prompt=get_system_prompt_fragment("digest") + "\n\n" + SYSTEM_PROMPT,
     output_type=Digest,
 )
