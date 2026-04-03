@@ -348,7 +348,7 @@ async def add_summary(report: MaintenanceReport) -> MaintenanceReport:
     from shared.config import get_model
 
     agent = Agent(
-        get_model("fast"),
+        get_model("local-fast"),
         system_prompt="Summarize this knowledge base maintenance report in 2-3 sentences. Be specific about numbers.",
     )
     from shared.axiom_tools import get_axiom_tools

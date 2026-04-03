@@ -150,7 +150,7 @@ CRITICAL BOUNDARIES:
 """
 
 extract_agent = Agent(
-    get_model("fast"),
+    get_model("local-fast"),
     system_prompt=get_system_prompt_fragment("meeting-lifecycle") + "\n\n" + EXTRACT_SYSTEM_PROMPT,
     output_type=MeetingExtraction,
 )

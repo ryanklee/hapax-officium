@@ -135,7 +135,7 @@ Call lookup_constraints() for additional operator constraints.
 """
 
 drift_agent = Agent(
-    get_model("fast"),
+    get_model("local-fast"),
     system_prompt=get_system_prompt_fragment("drift-detector") + "\n\n" + SYSTEM_PROMPT,
     output_type=DriftReport,
 )
@@ -743,7 +743,7 @@ CATEGORY-SPECIFIC GUIDANCE:
 """
 
 fix_agent = Agent(
-    get_model("fast"),
+    get_model("local-fast"),
     system_prompt=FIX_SYSTEM_PROMPT,
     output_type=FixReport,
 )
