@@ -119,12 +119,18 @@ export interface NudgeActionResponse {
   action: string;
 }
 
-// --- Cycle Mode ---
+// --- Working Mode ---
 
-export interface CycleModeResponse {
-  mode: "dev" | "prod";
+export interface WorkingModeResponse {
+  mode: "research" | "rnd";
   switched_at: string | null;
 }
+
+/** @deprecated Use WorkingModeResponse instead. cycle_mode/dev/prod was retired
+ *  in the workspace-wide working_mode migration. The values are now research/rnd
+ *  even when accessed via the deprecated cycleMode() client. Slated for removal
+ *  per hapax-council/docs/officium-design-language.md §9. */
+export type CycleModeResponse = WorkingModeResponse;
 
 // --- Scout Decisions ---
 
