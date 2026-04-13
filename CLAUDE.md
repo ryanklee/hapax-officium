@@ -4,6 +4,8 @@
 
 Shared conventions (uv, ruff, testing, git workflow, pydantic-ai) are in the workspace `CLAUDE.md` — this file covers officium-specific details only.
 
+**Sister surfaces:** the [vscode extension](vscode/CLAUDE.md) is the operator-facing reading surface for officium data; [`hapax-mcp`](https://github.com/ryanklee/hapax-mcp) provides the same Logos API to Claude Code via MCP. **Spec dependency:** governance axioms come from [`hapax-constitution`](https://github.com/ryanklee/hapax-constitution) via the `hapax-sdlc[demo]` package; see `axioms/registry.yaml` for the locally extended set.
+
 **Safety principle:** LLMs prepare, humans deliver. Never generate feedback language, coaching recommendations, or evaluations of individual team members.
 
 ## Quick Start
