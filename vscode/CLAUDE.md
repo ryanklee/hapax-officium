@@ -4,9 +4,9 @@
 
 VS Code extension for the Hapax system. Replaces the archived `obsidian-hapax` plugin. Provides an LLM chat sidebar, Qdrant RAG search, and management commands -- all embedded in the vault editing workflow.
 
-Part of the three-tier Hapax architecture. This is a Tier 1 interface (interactive). Architecture specs live in `~/projects/hapax-constitution/`.
+Part of the three-tier Hapax architecture. This is a Tier 1 interface (interactive). Architecture specs live in [hapax-constitution](https://github.com/ryanklee/hapax-constitution).
 
-> **Sister extension:** kept byte-near-identical with `hapax-council/vscode/CLAUDE.md`. The only intentional difference is the logos API port (8050 here, 8051 there). Any other drift is a bug — edit both in sync.
+> **Sister extension:** kept byte-near-identical with `hapax-council/vscode/CLAUDE.md`. Intentional differences: this file targets the officium Logos API (port 8050 vs council's 8051). Any other drift is a bug — edit both in sync.
 
 ## Build and Run
 

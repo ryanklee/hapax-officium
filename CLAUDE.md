@@ -96,3 +96,5 @@ Same pattern as council. Management_safety is primary review focus. Scripts in `
 | Qdrant | `QDRANT_URL` | `http://localhost:6433` |
 | Ollama | `OLLAMA_URL` | `http://localhost:11534` |
 | DATA_DIR | `HAPAX_DATA_DIR` | `./data` |
+
+> Subject to the workspace CLAUDE.md rotation policy: `hapax-council/docs/superpowers/specs/2026-04-13-claude-md-excellence-design.md`.
