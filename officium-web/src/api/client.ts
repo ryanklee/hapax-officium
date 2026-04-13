@@ -41,8 +41,14 @@ export const api = {
   demos: () => get<import("./types").Demo[]>("/demos"),
   demo: (id: string) => get<import("./types").Demo>(`/demos/${id}`),
   deleteDemo: (id: string) => del<{ deleted: string }>(`/demos/${id}`),
-  cycleMode: () => get<import("./types").CycleModeResponse>("/cycle-mode"),
-  setCycleMode: (mode: "dev" | "prod") => put<import("./types").CycleModeResponse>("/cycle-mode", { mode }),
+  workingMode: () => get<import("./types").WorkingModeResponse>("/working-mode"),
+  setWorkingMode: (mode: "research" | "rnd") =>
+    put<import("./types").WorkingModeResponse>("/working-mode", { mode }),
+  /** @deprecated Use workingMode(). Routes through /working-mode under the hood. */
+  cycleMode: () => get<import("./types").WorkingModeResponse>("/working-mode"),
+  /** @deprecated Use setWorkingMode(). Accepts research/rnd, not dev/prod. */
+  setCycleMode: (mode: "research" | "rnd") =>
+    put<import("./types").WorkingModeResponse>("/working-mode", { mode }),
   scoutDecisions: () => get<import("./types").ScoutDecisionsResponse>("/scout/decisions"),
   scoutDecide: (component: string, decision: string, notes?: string) =>
     post<import("./types").ScoutDecision>(`/scout/${component}/decide`, { decision, notes: notes ?? "" }),

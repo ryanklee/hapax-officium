@@ -1,29 +1,49 @@
-"""shared/cycle_mode.py — Cycle mode reader.
+"""shared/cycle_mode.py — DEPRECATED backward-compat shim.
 
-Single source of truth for the current cycle mode (dev or prod).
-The mode file is written by the hapax-mode CLI script and the
-logos API. Agents read it at invocation to adjust thresholds.
+The cycle_mode (dev/prod) system has been replaced by working_mode
+(research/rnd). New code should import from shared.working_mode directly.
+
+This module re-exports the working_mode symbols under the old cycle_mode
+names so any straggling import keeps working during the migration window.
+The mode FILE has moved from `~/.cache/hapax/cycle-mode` to
+`~/.cache/hapax/working-mode` — the constant `MODE_FILE` here points at
+the new location.
+
+Slated for deletion per `hapax-council/docs/officium-design-language.md` §9.
 """
 
 from __future__ import annotations
 
-import os
-from enum import StrEnum
-from pathlib import Path
+import warnings
+
+from shared.working_mode import (
+    WORKING_MODE_FILE as MODE_FILE,
+)
+from shared.working_mode import (
+    WorkingMode,
+    get_working_mode,
+    set_working_mode,
+)
+
+# Old name retained for backward compat. The values are research/rnd, not
+# dev/prod — any caller still passing dev/prod was already broken because
+# the workspace migrated long ago.
+CycleMode = WorkingMode
+
+# Old function name aliases.
+get_cycle_mode = get_working_mode
+set_cycle_mode = set_working_mode
+
+__all__ = ["MODE_FILE", "CycleMode", "get_cycle_mode", "set_cycle_mode"]
 
 
-class CycleMode(StrEnum):
-    PROD = "prod"
-    DEV = "dev"
-
-
-_CACHE_DIR = Path(os.environ.get("XDG_CACHE_HOME", os.path.expanduser("~/.cache")))
-MODE_FILE = _CACHE_DIR / "hapax" / "cycle-mode"
-
-
-def get_cycle_mode() -> CycleMode:
-    """Read the current cycle mode. Defaults to PROD if file is missing or invalid."""
-    try:
-        return CycleMode(MODE_FILE.read_text().strip())
-    except (FileNotFoundError, ValueError):
-        return CycleMode.PROD
+def __getattr__(name: str):  # pragma: no cover — defensive deprecation hook
+    """Emit DeprecationWarning when a caller imports from this module."""
+    if name in __all__:
+        warnings.warn(
+            f"shared.cycle_mode.{name} is deprecated; import from shared.working_mode instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return globals()[name]
+    raise AttributeError(f"module 'shared.cycle_mode' has no attribute {name!r}")

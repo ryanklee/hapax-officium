@@ -47,6 +47,8 @@ docker compose up -d             # Infrastructure (LiteLLM, Qdrant, etc.)
 
 FastAPI on `:8050`. 34 endpoints across 8 route groups: data, profile, agents, nudges, demos, engine, working_mode, scout.
 
+The canonical mode endpoint is `/api/working-mode` (returns `research`/`rnd`); `/api/cycle-mode` is a deprecated alias kept during the migration window. Officium intentionally omits council's `fortress` mode (no studio surface). The mode file is shared workspace-wide at `~/.cache/hapax/working-mode`. To bridge officium tools through `hapax-mcp`, run a second mcp instance with `LOGOS_BASE_URL=http://localhost:8050/api` (the default points at council).
+
 ## Reactive Engine
 
 `logos/engine/` watches `DATA_DIR` for changes, evaluates 12 rules, executes cascading actions. Nudges: 3 categories (people, goals, operational), 9 collectors, category-slotted attention caps.
