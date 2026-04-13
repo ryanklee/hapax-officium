@@ -43,7 +43,7 @@ docker compose up -d             # Infrastructure (LiteLLM, Qdrant, etc.)
 
 ## Logos API
 
-FastAPI on `:8050`. 34 endpoints across 8 route groups: data, profile, agents, nudges, demos, engine, working_mode (code still named `cycle_mode.py` — migration pending, see council's `working_mode.py`), scout.
+FastAPI on `:8050`. 34 endpoints across 8 route groups: data, profile, agents, nudges, demos, engine, working_mode, scout.
 
 ## Reactive Engine
 
