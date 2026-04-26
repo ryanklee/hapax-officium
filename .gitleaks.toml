@@ -4,35 +4,38 @@ title = "hapax PII rules"
 [[rules]]
 id = "operator-full-name"
 description = "Operator full name"
-regex = '''(?i)Ryan\s+Kleeberger'''
+regex = '(?i)Ryan\s+Kleeberger'
 tags = ["pii", "name"]
 [rules.allowlist]
-paths = ['''hooks/''', '''tests/''', '''\.gitleaks\.toml''']
+paths = ['hooks/', 'tests/', '\.gitleaks\.toml']
 
 [[rules]]
 id = "operator-location"
 description = "Operator location"
-regex = '''Minneapolis[- ]St\.?\s*Paul'''
+regex = 'Minneapolis[- ]St\.?\s*Paul'
 tags = ["pii", "location"]
 [rules.allowlist]
-paths = ['''hooks/''', '''tests/''', '''\.gitleaks\.toml''']
+paths = ['hooks/', 'tests/', '\.gitleaks\.toml']
 
 [[rules]]
 id = "home-directory-path"
 description = "Home directory absolute path"
-regex = '''/home/hapax/'''
+regex = '/home/hapax/'
 tags = ["pii", "path"]
 [rules.allowlist]
-paths = ['''.gitignore''', '''CLAUDE\.md''', '''hooks/''', '''\.claude/''', '''\.gitleaks\.toml''', '''systemd/''', '''process-compose\.yaml''', '''scripts/''']
+paths = ['.gitignore', 'CLAUDE\.md', 'hooks/', '\.claude/', '\.gitleaks\.toml', 'systemd/', 'process-compose\.yaml', 'scripts/']
 
 [[rules]]
 id = "browsing-data-path"
 description = "Browsing or audio capture data path"
-regex = '''rag-sources/(chrome|audio)/'''
+regex = 'rag-sources/(chrome|audio)/'
 tags = ["pii", "browsing"]
 [rules.allowlist]
-paths = ['''hooks/''', '''tests/''', '''\.gitleaks\.toml''']
+paths = ['hooks/', 'tests/', '\.gitleaks\.toml']
 
 # Allow known false positives
+# CITATION.cff and .zenodo.json are formal-context citation/deposit metadata
+# that require the operator legal name per axiom-derived requires_legal_name
+# operational property (formal-address-required surfaces).
 [allowlist]
-paths = ['''LICENSE''', '''CITATION\.cff''', '''\.gitleaksignore''', '''node_modules/''', '''\.venv/''']
+paths = ['LICENSE', 'CITATION\.cff', '\.zenodo\.json', '\.gitleaksignore', 'node_modules/', '\.venv/']
